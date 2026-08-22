@@ -16,6 +16,7 @@ from packages.contracts.models import (
     ExpediteOption,
     PriceBreak,
     Quote,
+    TranscriptTurn,
 )
 
 
@@ -68,6 +69,25 @@ def _expedite(value: Any) -> ExpediteOption | None:
     return ExpediteOption(days=days, surcharge=surcharge)
 
 
+def _transcript(value: Any) -> list[TranscriptTurn]:
+    if not isinstance(value, list):
+        return []
+    turns: list[TranscriptTurn] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        text = item.get("text")
+        speaker = item.get("speaker")
+        turns.append(
+            TranscriptTurn(
+                offset_seconds=_int(item.get("offset_seconds")) or 0,
+                speaker=speaker if isinstance(speaker, str) else "unknown",
+                text=text if isinstance(text, str) else "",
+            )
+        )
+    return turns
+
+
 def _confidence(value: Any) -> float:
     # CALL-E sends {"score": 0.82, "label": "high"}, not a bare float.
     if isinstance(value, dict):
@@ -118,6 +138,10 @@ def normalize_result(
             else None
         ),
         notes=notes,
+        summary=notes,
+        transcript=_transcript(
+            payload.get("transcript_turns") if isinstance(payload, dict) else None
+        ),
         transcript_url=payload.get("transcript_url") if isinstance(payload, dict) else None,
         recording_url=payload.get("recording_url") if isinstance(payload, dict) else None,
         confidence=_confidence(payload.get("completion_confidence") if isinstance(payload, dict) else 0.0),

@@ -284,12 +284,23 @@ def _flatten(record: dict) -> dict:
     if not isinstance(recipient, dict):
         recipient = {}
 
+    # The transcript sits two levels down, on the attempt that connected.
+    # A redialled number has several attempts; the last one is the one that
+    # produced the answers.
+    attempts = recipient.get("attempts")
+    attempts = [a for a in attempts if isinstance(a, dict)] if isinstance(attempts, list) else []
+    transcript_turns = next(
+        (a.get("transcript_turns") for a in reversed(attempts) if a.get("transcript_turns")),
+        [],
+    )
+
     return {
         **record,
         "structured_result": (
             recipient.get("structured_result") or record.get("structured_result")
         ),
         "summary": recipient.get("summary") or record.get("summary"),
+        "transcript_turns": transcript_turns,
     }
 
 
