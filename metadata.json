@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NSJHY86AN01Y8JJK6HE9WG",
+  "strategy": "manual-commit",
+  "branch": "slice-b/calls-from-cockpit",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".env.example",
+    ".gitignore",
+    "backend/api/main.py",
+    "backend/api/routers/calle.py",
+    "backend/api/routers/cases.py",
+    "backend/api/routers/meta.py",
+    "backend/api/routers/tools.py",
+    "backend/api/settings.py",
+    "backend/detect/shortage_detector.py",
+    "backend/outreach/calle.py",
+    "backend/outreach/normalize.py",
+    "backend/outreach/router.py",
+    "backend/record/dialling.py",
+    "backend/settings.py",
+    "backend/store.py",
+    "backend/tests/test_calle_webhook.py",
+    "backend/tests/test_outreach_from_cockpit.py",
+    "backend/tests/test_tools_contract.py",
+    "backend/tests/test_tunnel.py",
+    "backend/tunnel.py",
+    "cases/CASE-001/events.jsonl",
+    "cases/CASE-001/outreach.json",
+    "cases/CASE-001/sourcing_case.yaml",
+    "cases/CASE-002/events.jsonl",
+    "cases/CASE-002/sourcing_case.yaml",
+    "conftest.py",
+    "packages/contracts/__init__.py",
+    "packages/contracts/export.py",
+    "packages/contracts/schemas.py",
+    "run.py",
+    "test/test_schemas.py",
+    "ui/app/cockpit/page.tsx",
+    "ui/components/cockpit/calls-panel.tsx",
+    "ui/lib/api/client.ts",
+    "ui/lib/contracts.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 5166,
+    "cache_read_tokens": 959457,
+    "output_tokens": 3175,
+    "api_call_count": 5
+  }
+}
