@@ -1,0 +1,50 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/melbourne directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Rename our entire tool from stockout to "SupplyOS" and from now on use the following logo svg: 
+
+<svg width="42" height="38" viewBox="0 0 42 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.7735 0C11.5581 0 8.58697 1.71539 6.97927 4.5L1.20577 14.5C-0.401922 17.2846 -0.401925 20.7154 1.20577 23.5L6.97927 33.5C8.58697 36.2846 11.5581 38 14.7735 38H26.3205C29.5359 38 32.507 36.2846 34.1147 33.5L39.8882 23.5C41.4959 20.7154 41.4959 17.2846 39.8882 14.5L34.1147 4.5C32.507 1.71539 29.5359 0 26.3205 0H14.7735ZM26.3205 6L19.1036 6C17.9489 6 17.2274 7.24989 17.8056 8.24939C19.5896 11.3332 21.3779 14.4147 23.1592 17.5C23.6951 18.4282 23.6951 19.5718 23.1592 20.5C21.3779 23.5853 19.5896 26.6668 17.8056 29.7506C17.2274 30.7501 17.9489 32 19.1036 32H26.3205C27.3923 32 28.3827 31.4282 28.9186 30.5L34.6921 20.5C35.228 19.5718 35.228 18.4282 34.6921 17.5L28.9186 7.5C28.3827 6.5718 27.3923 6 26.3205 6Z" fill="#0A0D12"/>
+</svg>
+
+
+I created a logo component, which will create a logo file with two components: logo icon and logo. Logo has both logo icon and text. You can reuse the logo icon throughout our app.
+
+For example, inside the top left of our sidebar, we should display the logo icon. It should be 24x24 in those cases. The logo text should use our primary font and both styles, and "better website" should be white.
+
+In both cases, you should just use the program color. Make the logo icon accept Tailwind classes, and depending on what text class you give it, it should change the color.
+
+Oh, yeah. Make our website better. Change it from "join the private beta" to "open chat" and remove the input field for now. Just hide it for now. We will maybe keep it for later.
+
+All clear?
+
+---
+
+Perfekt, now below the logo in our sidebar, add a separator on the same height as the separator of our chat top bar. The logo in our sidebar should be 20x20 not 24x24, apart from that looks good.
+
+---
+
+make the separator a lot lighter, it shoudl use the default color.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/lnTWy5/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/lnTWy5/PR instructions.md

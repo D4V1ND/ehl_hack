@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NT4YZDVPA7NEHE91SCJQ0D",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/rename-to-supplyos",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "AGENTS.md",
+    "CONTEXT.md",
+    "app/layout.tsx",
+    "app/page.tsx",
+    "app/prototype/README.md",
+    "app/prototype/cockpit-screens.html",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/logo.tsx",
+    "components/prototype/website-prototype.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "lib/case-001.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 277026,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7737600,
+    "output_tokens": 33224,
+    "api_call_count": 69
+  }
+}
