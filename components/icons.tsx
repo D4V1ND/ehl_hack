@@ -28,6 +28,7 @@ export {
   IconExternalLink as ExternalLinkIcon,
   IconGitPullRequest as GitPullRequestIcon,
   IconLayoutSidebarLeftCollapse as PanelLeftIcon,
+  IconLayoutSidebarRightExpand as PanelRightOpenIcon,
   IconLoader2 as Loader2Icon,
   IconPackage as PartIcon,
   IconPackages as QuantityIcon,

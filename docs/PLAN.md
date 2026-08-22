@@ -247,17 +247,17 @@ The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`
 
 The prototype enters an existing Session, matching an external ERP link. The sidebar lists fixture Sessions; every selection opens the same CASE-001 rehearsal. The linked Incident appears inline in the first user message, and a bottom composer accepts local follow-up messages.
 
-`/chat` has the main conversation and one resizable **Candidate** panel. Its navigation and Candidate sidebars have bounded viewport-relative widths. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
+`/chat` has the main conversation and one resizable, closable **Candidate** panel. The Session sidebar spans 10–20% of the viewport; the Candidate panel spans 20–50%. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Toggling the Candidate panel preserves the conversation and its scroll position. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. One full-width fixed header holds Incident context, run status, Replay, and Candidate restore. Thread content, Tool calls, the borderless upward-expanding Decision bar, and the composer use `w-full` in one centred column capped at 50% of the viewport. Only the conversation between the header and bottom dock scrolls.
 
 | # | Deliverable |
 |---|---|
 | A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists icon-free fixture Sessions that all render the same CASE-001 rehearsal |
 | A1 | **Incident context** — the first user message contains an inline primary-colour CASE-001 mention, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
-| A2 | **Status rail** — stages and Devin session state live in the main conversation |
-| A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
+| A2 | **Run status** — a small state-coloured pebble, current stage, and Replay live in the single conversation header; a background-colour tooltip shows all five connected stages |
+| A3 | **Candidate panel** — one closable panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule; a top-right header icon restores it |
 | A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows transcript, masked number, and structured Claim progress |
 | A5 | **Claim versus Supplier Record** — Candidate detail keeps the separation explicit, then shows Landed Cost and the selected split Strategy |
-| A6 | **Decision bar** — compact at the thread end, expandable for rationale, runner-ups, and checks. A human marks the Decision approved in Stockout; approved is final. No PR card or merge approval |
+| A6 | **Decision bar** — borderless and fixed above the composer, with details that expand upward for rationale, runner-ups, and checks. A human marks the Decision approved in Stockout; approved is final. No PR card or merge approval |
 
 **Data:** SQLite is the intended operational datastore. This implementation remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 

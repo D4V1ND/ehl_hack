@@ -30,8 +30,8 @@ import {
 } from "@/components/ui/sidebar"
 import { INCIDENTS } from "@/lib/case-001"
 
-const LEFT_SIDEBAR_MIN = 5
-const LEFT_SIDEBAR_MAX = 15
+const LEFT_SIDEBAR_MIN = 10
+const LEFT_SIDEBAR_MAX = 20
 
 export function CockpitShell({
   children,
@@ -120,19 +120,26 @@ function WorkspacePanels({
     return () => media.removeEventListener("change", update)
   }, [])
 
-  if (!showsCandidatePanel || !rightSidebar) return children
+  if (!showsCandidatePanel) return children
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel minSize="35vw">{children}</ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel
-        defaultSize="26rem"
-        minSize="15vw"
-        maxSize="50vw"
-      >
-        {rightSidebar}
+      <ResizablePanel id="conversation" minSize="30vw">
+        {children}
       </ResizablePanel>
+      {rightSidebar ? (
+        <>
+          <ResizableHandle withHandle />
+          <ResizablePanel
+            id="candidates"
+            defaultSize="30vw"
+            minSize="20vw"
+            maxSize="50vw"
+          >
+            {rightSidebar}
+          </ResizablePanel>
+        </>
+      ) : null}
     </ResizablePanelGroup>
   )
 }
