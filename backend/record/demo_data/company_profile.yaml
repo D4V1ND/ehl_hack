@@ -1,0 +1,70 @@
+# B5 — the rules of the house.
+#
+# Every one of the four policy rules reads exactly one field from this file.
+# That is what makes "supplier rejected, citing the rule by name" possible, and
+# what makes adding a new part class a data change rather than a code change.
+
+legal_entity: Meridian Motors GmbH
+country: DE
+
+# blocked_origin_country
+# Origins we may not buy from at all. Sanctions, export control and a board-level
+# counterfeit-risk decision after the 2024 bearing incident.
+blocked_origin_countries: [CN, RU, BY, IR, KP]
+
+# missing_required_certification
+# Per part class, not per part. Adding "electronic_component" later means adding
+# a row here, not touching code.
+required_certifications:
+  rolling_bearing: [ISO_9001, DIN_625_CONFORMITY]
+  fastener: [ISO_9001]
+  seal: [ISO_9001]
+  electronic_component: [ISO_9001, ROHS, REACH]
+
+# audit_required_and_not_audited
+# A supplier of a part at or above this criticality must have been audited on
+# site. A new supplier promising an excellent lead time is not the same as an
+# incumbent promising a mediocre one.
+audit_required_above_criticality: high
+
+# Budget gates. Above the second-quote threshold a single quote is not enough to
+# recommend on; above the single-PO ceiling it goes to a human buyer regardless.
+single_po_budget_eur: '75000.00'
+requires_second_quote_above_eur: '25000.00'
+
+# Carrying-cost model. This is what turns a naive "buy more, it is cheaper" into
+# an actual optimum: a 25% price break is only real if the capital and the
+# warehouse space it ties up cost less than the discount.
+wacc: 0.089
+warehousing_eur_per_pallet_month: '14.50'
+pieces_per_pallet: 12000
+
+# Ad valorem duty by origin. EU-internal is zero; the rest is why the cheapest
+# unit price is routinely not the cheapest landed cost.
+duty_rates:
+  DE: 0.0
+  RO: 0.0
+  DK: 0.0
+  IT: 0.0
+  PL: 0.0
+  CZ: 0.0
+  AT: 0.0
+  SE: 0.0
+  TR: 0.0
+  GB: 0.027
+  CN: 0.082
+  IN: 0.082
+  JP: 0.027
+  US: 0.045
+
+# Freight, per kg of shipped weight. Part weight x quantity, by mode.
+freight_eur_per_kg:
+  air: '4.85'
+  sea: '0.42'
+  road: '1.15'
+
+# Transit days on top of the supplier's own lead time.
+transit_days:
+  air: 2
+  sea: 32
+  road: 4

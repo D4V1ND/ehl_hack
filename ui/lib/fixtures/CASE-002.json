@@ -1,0 +1,147 @@
+{
+  "case_id": "CASE-002",
+  "stage": "detected",
+  "incident": {
+    "case_id": "CASE-002",
+    "part_id": "PRT-M8X40",
+    "plant_id": "PLANT-LEI",
+    "production_line": "ASSY-1",
+    "qty_required": 180000,
+    "qty_on_hand": 22000,
+    "needed_by": "2026-09-11",
+    "line_stop_at": "2026-09-11T06:00:00Z",
+    "line_stop_cost_per_hour": "9200.00",
+    "currency": "EUR",
+    "incumbent_supplier_id": "SUP-SHW",
+    "reason": "Consumption on ASSY-1 ran 18% above forecast for six weeks; on-hand is now below the reorder point with no open PO covering the quarter."
+  },
+  "part": {
+    "part_id": "PRT-M8X40",
+    "item_code": "DIN933-M8x40-A2",
+    "item_name": "Hex head bolt M8x40 A2-70",
+    "description": "Fully threaded hex head bolt, M8 x 40 mm, stainless A2-70, DIN 933.",
+    "spec": {
+      "standard": "DIN 933",
+      "thread": "M8",
+      "length_mm": "40",
+      "material": "A2-70 stainless",
+      "drive": "hex"
+    },
+    "stock_uom": "Nos",
+    "criticality": "medium",
+    "part_class": "fastener",
+    "weight_kg": 0.022,
+    "hs_code": "7318.15.69",
+    "standard_cost": "0.18"
+  },
+  "profile_summary": {
+    "legal_entity": "Meridian Motors GmbH",
+    "blocked_origin_countries": [
+      "CN",
+      "RU",
+      "BY",
+      "IR",
+      "KP"
+    ],
+    "required_certifications": [
+      "ISO_9001"
+    ],
+    "audit_required_above_criticality": "high",
+    "wacc": 0.089
+  },
+  "candidates": [],
+  "supplier_records": [
+    {
+      "supplier_id": "SUP-FBP",
+      "supplier_name": "Fixando Bolt Praha s.r.o.",
+      "country": "CZ",
+      "locale": "en-GB",
+      "phone_masked": "+49*******0216",
+      "email": "export@fixando-bolt.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-DIN912M8X30A2",
+        "PRT-DIN933M10X30A2",
+        "PRT-DIN934M10A2",
+        "PRT-M8X40"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "0.16",
+      "standard_lead_days": 12,
+      "certifications": [
+        "ISO_9001"
+      ],
+      "certification_expires_at": "2027-06-30",
+      "audit_status": "audited",
+      "known_allocations": 0,
+      "max_historical_fill": 250000,
+      "price_breaks": [
+        {
+          "min_qty": 25000,
+          "unit_price": "0.17"
+        },
+        {
+          "min_qty": 200000,
+          "unit_price": "0.14"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-SHW",
+      "supplier_name": "Schrauben Werk Schwaben GmbH",
+      "country": "DE",
+      "locale": "de-DE",
+      "phone_masked": "+49*******0203",
+      "email": "verkauf@schrauben-schwaben.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-DIN125M8A2",
+        "PRT-DIN933M6X25A2",
+        "PRT-DIN933M8X25A2",
+        "PRT-DIN934M8A2",
+        "PRT-M8X40"
+      ],
+      "approved": true,
+      "preferred": true,
+      "incumbent": true,
+      "contract_unit_price": "0.18",
+      "standard_lead_days": 7,
+      "certifications": [
+        "ISO_9001"
+      ],
+      "certification_expires_at": "2027-08-31",
+      "audit_status": "audited",
+      "known_allocations": 40000,
+      "max_historical_fill": 500000,
+      "price_breaks": [
+        {
+          "min_qty": 10000,
+          "unit_price": "0.21"
+        },
+        {
+          "min_qty": 100000,
+          "unit_price": "0.18"
+        },
+        {
+          "min_qty": 500000,
+          "unit_price": "0.15"
+        }
+      ]
+    }
+  ],
+  "outreach_tasks": [],
+  "claims": [],
+  "decision": null,
+  "devin_session_url": null,
+  "last_event_seq": 2
+}
