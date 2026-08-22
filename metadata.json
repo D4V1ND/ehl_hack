@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NFDYBPP2J62304PBGAPPA9",
+  "strategy": "manual-commit",
+  "branch": "ui",
+  "checkpoints_count": 14,
+  "files_touched": [
+    "backend/api/deps.py",
+    "backend/api/routers/cases.py",
+    "backend/api/routers/meta.py",
+    "backend/api/routers/tools.py",
+    "backend/detect/shortage_detector.py",
+    "backend/record/mock_erp.py",
+    "backend/store/__init__.py",
+    "backend/store/case_store.py",
+    "backend/store/events.py",
+    "backend/tests/test_claim_never_raises.py",
+    "packages/contracts/__init__.py",
+    "packages/contracts/claim.schema.json",
+    "packages/contracts/enums.py",
+    "packages/contracts/export.py",
+    "packages/contracts/models.py",
+    "packages/contracts/safe.py",
+    "packages/contracts/schema.json",
+    "pytest.ini",
+    "slice-b-core-api-erp-ui.md",
+    "ui/lib/contracts.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 410,
+    "cache_creation_tokens": 426528,
+    "cache_read_tokens": 61010041,
+    "output_tokens": 317157,
+    "api_call_count": 206
+  }
+}
