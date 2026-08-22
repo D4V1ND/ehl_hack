@@ -118,3 +118,45 @@ make sure "Entire" works for me and skills of "entire" are set up for me
 ---
 
 now we're gonna make sure Call-E calls from our UI
+
+---
+
+whats the command
+
+---
+
+(base) lenigovi@Leni:~/lenisworks/Munich_Hack_20260822/ehl_hack$ ./run.sh
+  x node v18.20.8 is too old for Next 16 (ui/.nvmrc pins 22).
+  You already have v22.23.2 installed — run: nvm use 22
+
+---
+
+we should demo an actual call, this is non negotiable. we will not all "all suppliers" all at once. we will call whichever we select. phone number: +4915251990523
+
+---
+
+http://localhost:3000/cockpit
+Internal Server Error
+
+---
+
+app not visible
+
+http://localhost:3000/cockpit
+Internal Server Error
+
+---
+
+it didn't actually call my number, it pretended to call. it has to call
+
+---
+
+NetworkError when attempting to fetch resource
+
+---
+
+phone does not ring
+
+---
+
+when I run ./run.sh terminal command finalizes, before I had to do ctrl+C
