@@ -1,0 +1,118 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/paramaribo directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/Ruqdsx/image.png (19.0 KB)
+- .context/attachments/9okZGR/image.png (18.0 KB)
+</system_instruction>
+
+
+
+Couple of small UI changes:
+
+Status:
+- The status UI: .context/attachments/Ruqdsx/image.png  should be moved as a small status badge to the top right of our chat top bar, to be clear the badge has no bg- only a muted bg hover bg - it's a normal button so use the button component, it shoud display a pebble (map one status to a color somewhere) and the status. 
+- When i hover over this button display a tooltip in structure like this: .context/attachments/9okZGR/image.png  but just with hairs between the pebbles, the pevvles should be size-2 not as big as in the image
+
+Decision + composer:
+- The decision card + composer should be fixed to the bottom
+- Remove the separateors between them and above them
+- Remove the border of my decision card (keep it of my componser)
+- The border should use same color as the separators
+- Remove the "needs human review" badge
+- When I expand the decision, it shoudl expand up, not down +  the chevron should move 45 degrees so that the point points toward the rgiht (use the emilkowalksi animation skills for that)
+- In the design doc in general mention to use those design skills, no need for a big section, just one sentence should be enough
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/r6B3Y8/image.png (27.1 KB)
+</system_instruction>
+
+
+
+"Decision and composer remain fixed in the bottom dock without separators." - no, still not fixed to the bottom
+
+Make tooltips also have our background color, like reverse colors.
+
+CHevron doesn't animate rn always looks up 45*
+
+So it should be by default at zero degrees, then it should turn to the right, basically, it should first point down and then to the right.
+
+What's the way do we have two top bars here? Just move the replay button next to the status button and remove the rehearsal. The rest, just remove it: .context/attachments/r6B3Y8/image.png  - We just one top bar.
+
+Oh, yeah. Also, instead of displaying the number of the candidates in the right sidebar, display an X button. That closes the sidebar and instead displays a sidebar open icon next to the decision (like on the right of the decision button), which I can then click to open the candidates' sidebar again.
+
+Also, adjust the left sidebar so it can expand to at least 20%, and the minimum is 10%. From the right sidebar, the minimum is about 15. The minimum is 20%, and the maximum is 50%. Scroll down a little bit.
+
+One more small thing: style the scroll bar of my chat so that:
+
+1. First of all, only the right side of the sidebar is visible, but the background for the sidebar is not visible.
+
+2. Use a muted color as the main color.
+
+3. The top bar should be fixed, as well as the composer (which right now isn't there).
+
+4. Only the chat content between the top bar and the composer should be scrollable.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/rt5VHt/image.png (35.4 KB)
+</system_instruction>
+
+
+
+The expand button should be in our top chat bar then on the right.
+
+The decisoin card should always be as wide as the composer, not wider as you see here: .context/attachments/rt5VHt/image.png 
+
+The tool call content conatiner same thing, composer, card, and content should all fit the wdith of the chat container, only the top bar spans the full width.
+
+Make sense? The conatiner is max 40% the width.
+
+---
+
+So the content should have max 50% of the screen width,not 50% of the available content width, but always have w-full on.
+
+Apart from that looks good.
+
+Also when I close / open the right sidebar it always scrolls from up to down, it shold just stay where it currently is.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/rvjUUi/image.png (198.5 KB)
+</system_instruction>
+
+
+
+Wtf is this now? .context/attachments/rvjUUi/image.png  Make sure text is correctly indented, all my tool calls should be correctly indented
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/mvh84M/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/mvh84M/PR instructions.md

@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NTF22XXB1A5KEVKDZHBSW6",
+  "session_id": "01a02b79-4957-72c1-ae73-44bbc10449d8",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T22:46:45.61466Z",
+  "branch": "lorenzkrinner/keep-sidebar-visible",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    ".agents/skills/prototype/LOGIC.md",
+    ".agents/skills/prototype/SKILL.md",
+    ".agents/skills/prototype/UI.md",
+    ".agents/skills/prototype/agents/openai.yaml",
+    "skills-lock.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "d063c8ca39e1",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 296117,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 8449280,
+    "output_tokens": 54928,
+    "api_call_count": 87
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T22:46:45.546824Z",
+    "agent_lines": 136,
+    "agent_removed": 200,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 136,
+    "total_lines_changed": 336,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
