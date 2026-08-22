@@ -1,0 +1,97 @@
+Entire.io checkpoint capture is not working reliably on
+  this feature branch. Fix it by updating the branch from
+  `development`, enabling the local Entire integration, and
+  completing a real end-to-end verification. Do everything
+  autonomously in this session without creating another
+  branch.
+
+  Before running any commands, send the user this short
+  message:
+
+  ?Entire checkpoint capture is currently not working
+  correctly on this branch. I?ll update the branch from
+  development, repair the local Entire setup, and verify
+  that a checkpoint reaches GitHub. This should take about
+  five minutes, so you can simply check back when I?m done.?
+
+  Then:
+
+  1. Confirm you are on the intended feature branch. Never
+  rebase or commit directly on `main` or `development`.
+
+  2. Preserve any uncommitted work, fetch the latest remote
+  state, and rebase the current branch onto `origin/
+  development`:
+
+     git fetch origin --prune
+     git rebase origin/development
+
+     Restore the preserved work afterward. Resolve conflicts
+     carefully without discarding either the feature work or
+     unrelated user changes. Do not create another branch.
+
+  3. Install Entire if necessary, then repair and validate
+  the setup from the repository root:
+
+     entire enable
+     entire doctor
+     entire status --json
+
+     The status must report that Entire is enabled. Fix any
+     safe configuration problems you find.
+
+  4. Confirm that Entire sees an active agent session:
+
+     entire session current
+
+     If the current session was started before Entire became
+     active, start a short fresh local agent subprocess
+     after enabling Entire and keep it active during the
+     verification commit. Handle this autonomously.
+
+  5. Create an empty verification commit so no test file is
+  added:
+
+     git commit --allow-empty -m "chore: verify Entire
+     checkpoint capture"
+
+     Accept the prompt to link the commit to the active
+     Entire session.
+
+  6. Verify that the commit message contains an `Entire-
+  Checkpoint:` trailer:
+
+     git log -1 --format='%H%n%B'
+     entire checkpoint list
+
+  7. Push the current feature branch. If the rebase rewrote
+  commits already on the remote, use `--force-with-lease`,
+  never plain `--force`. Never push to `main` or
+  `development`.
+
+  8. Confirm the push reports that Entire checkpoint refs
+  were pushed. Also verify the checkpoint ref exists on the
+  remote:
+
+     git ls-remote origin 'refs/entire/checkpoints/*'
+
+  9. Finish or condense the test agent session if needed,
+  run `entire doctor` once more, and push again if Entire
+  created another finalized checkpoint ref.
+
+  The task is complete only when:
+
+  - The feature branch is based on the latest `origin/
+  development`.
+  - Entire reports `"enabled": true`.
+  - `entire doctor` passes.
+  - The verification commit contains an `Entire-Checkpoint:`
+  trailer.
+  - The corresponding Entire checkpoint ref exists on
+  GitHub.
+  - Existing user work remains intact.
+
+  At the end, give the user a concise summary containing the
+  branch name, rebase result, verification commit hash,
+  Entire checkpoint ID, remote verification result, and any
+  conflicts or remaining issues.
