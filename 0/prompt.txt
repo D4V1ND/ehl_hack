@@ -207,3 +207,7 @@ delete try_real_outreach. create a whole new one
 ---
 
 delete try_real_outreach. create a whole new one with how you have the mini json format data at the beginning and calling the endpoint till you print the output. dont call yet, I will run the test myself
+
+---
+
+why is it still in https? I want it to be the test of the call e endpoint we built with SDK
