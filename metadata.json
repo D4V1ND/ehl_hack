@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0NA9DMF52J00SZM5SR0PJ0S",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/mvp-ui",
-  "checkpoints_count": 16,
+  "checkpoints_count": 17,
   "files_touched": [
     ".env.example",
     "AGENTS.md",
@@ -54,13 +54,20 @@
       "compact_transcript": "/2/transcript.jsonl",
       "content_hash": "/2/content_hash.txt",
       "prompt": "/2/prompt.txt"
+    },
+    {
+      "metadata": "/3/metadata.json",
+      "transcript": "/3/full.jsonl",
+      "compact_transcript": "/3/transcript.jsonl",
+      "content_hash": "/3/content_hash.txt",
+      "prompt": "/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 675131,
+    "input_tokens": 680944,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 10721152,
-    "output_tokens": 68390,
-    "api_call_count": 16
+    "cache_read_tokens": 10891658,
+    "output_tokens": 69076,
+    "api_call_count": 17
   }
 }
