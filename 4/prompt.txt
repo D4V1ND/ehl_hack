@@ -1,0 +1,21 @@
+how should we use entire checkpoints in this repo? when should we create them?
+
+---
+
+my agents do this automatically right? What even are checkpoints?
+
+---
+
+why do we then only have 1 checkpoint in 37 commits?
+
+---
+
+is everything correctly set up? so bascially a checkpoint is a commit right? and the problem was just that entire was setup wrong before or what?
+
+---
+
+how can we fix all of this? or even backfill all sessions?
+
+---
+
+Okay, store that in github issues as a ticket
