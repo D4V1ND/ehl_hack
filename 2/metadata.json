@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NGDANNGZ314XX8F3EGV5AH",
+  "session_id": "8101ea23-76de-456f-a0d7-dd5ec4eff5ed",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T19:50:53.27867Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    "components/cockpit/cockpit-chat.tsx"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high-fast",
+  "turn_id": "639b9aea5be7",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 186682,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 546304,
+    "output_tokens": 2644,
+    "api_call_count": 1
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T19:50:53.261311Z",
+    "agent_lines": 98,
+    "agent_removed": 116,
+    "human_added": 0,
+    "human_modified": 3,
+    "human_removed": 13,
+    "total_committed": 101,
+    "total_lines_changed": 287,
+    "agent_percentage": 74.56445993031359,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 535,
+      "agent_lines_removed": 100
+    }
+  ]
+}

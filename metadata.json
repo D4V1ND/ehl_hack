@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0NGDANNGZ314XX8F3EGV5AH",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/mvp-ui",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "components/cockpit/cockpit-chat.tsx",
     "components/cockpit/cockpit-shell.tsx",
@@ -23,13 +23,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 199792,
+    "input_tokens": 386474,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 2060544,
-    "output_tokens": 18606,
-    "api_call_count": 39
+    "cache_read_tokens": 2606848,
+    "output_tokens": 21250,
+    "api_call_count": 40
   }
 }
