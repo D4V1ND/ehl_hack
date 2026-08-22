@@ -1,0 +1,120 @@
+read sourcing_agent_plan_v3.md and understand the tasks.
+my colleagues are implementing other parts of the project, my task is 6/SliceB: core API, ERP mock, supplier data, UI.
+
+It should be easy to navigate, easy to understand, modern looking, aesthetic.
+
+make a proposal:
+where to add the files in the repo, what to add,
+
+---
+
+currently we are building minimum viable product in the hackathon. we'll show our goals in the best way and we'll level up later. what is the best UI option for this purpose?
+
+---
+
+ok start building
+
+---
+
+provide the command to run my part of the task
+
+---
+
+can you make a shell file that runs all of this so that I can use a single command
+
+---
+
+continue. we also need a sql database
+
+---
+
+where is the database
+
+---
+
+cant open in sql
+
+---
+
+I noticed you deleted some files (app/global.css) I need to undo deletes because it might be used by others. does that mess up with the deployment of my task
+
+---
+
+what do you mean isolated move commit
+
+---
+
+I didn't want to change anything that other people need in the first place. how can we keep everything as it is and make sure my task is added only
+
+---
+
+great now everything is broken
+
+---
+
+can you go back to before the correction
+
+---
+
+I meant to the exact stage before this prompt: "I noticed you deleted some files (app/global.css) I need to undo deletes because it might be used by others. does that mess up with the deployment of my task"
+
+so we still had everything inside ui etc
+
+---
+
+i just clicked commit and it's taking forever it's not committing
+
+---
+
+should I rebase
+
+---
+
+(base) lenigovi@Leni:~/lenisworks/Munich_Hack_20260822/ehl_hack$ git push -u origin ui
+fatal: unable to access 'https://github.com/D4V1ND/ehl_hack.git/': Could not resolve host: github.com
+
+---
+
+help me resolve the conflict
+
+---
+
+should i sync
+
+---
+
+can you do it in the correct way
+
+---
+
+so Devin AI runs on cloud and it cannot reach our local database, is that correct?
+
+---
+
+we're closer to option B. one question: if we host everything on Devin, does it give us a link?
+
+---
+
+https://docs.devin.ai/get-started/devin-intro
+
+this is the documentation, make research and find correct information
+
+---
+
+what is the best solution for us
+
+---
+
+btw one question regarding the previous PR I opened, when merging which one should I select
+
+---
+
+./run.sh doesnt work on my teammates' computer because they have mac and windows
+
+---
+
+make sure "Entire" works for me and skills of "entire" are set up for me
+
+---
+
+now we're gonna make sure Call-E calls from our UI
