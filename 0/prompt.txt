@@ -1,0 +1,31 @@
+how can we implement ERPNext for test_calle.py
+
+---
+
+implement ERPNext quickly to show how it works but do not connect to test_calle yet
+
+---
+
+add call-e api key, I'll add the key there
+
+---
+
+how to run the project
+
+---
+
+lenigovi@Leni:~/lenisworks/Munich_Hack_20260822/ehl_hack$ ./run.sh demo -- --live-erp
+usage: erpnext_demo.py [-h] [--live-erp] [--incident INCIDENT] [--part PART]
+erpnext_demo.py: error: unrecognized arguments: -- --live-erp
+
+---
+
+(base) lenigovi@Leni:~/lenisworks/Munich_Hack_20260822/ehl_hack$ ./run.sh demo --live-erp
+cannot reach a live ERPNext: ERPNext credentials missing from the environment: ERPNEXT_BASE_URL, ERPNEXT_API_KEY, ERPNEXT_API_SECRET
+  fill them in in .env, or drop --live-erp to use the offline demo data.
+
+I want to see it without using credentials for now
+
+---
+
+I want to see the app
