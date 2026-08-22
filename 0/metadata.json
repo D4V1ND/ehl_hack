@@ -1,0 +1,133 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NPCVP687VWG4AT33WQTZPC",
+  "session_id": "fe73d815-51d0-4b6b-9e0c-1cab18ef63d5",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:35:31.0128052Z",
+  "branch": "call_e",
+  "checkpoints_count": 7,
+  "save_step_count": 8,
+  "files_touched": [
+    "backend/outreach/calle.py",
+    "backend/outreach/normalize.py",
+    "backend/settings.py",
+    "packages/contracts/schemas.py",
+    "test/test_schemas.py",
+    "test/try_real_outreach.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "b94f8b0c81ba",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 384,
+    "cache_creation_tokens": 668430,
+    "cache_read_tokens": 24364865,
+    "output_tokens": 93716,
+    "api_call_count": 192
+  },
+  "session_metrics": {
+    "turn_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:35:30.83713Z",
+    "agent_lines": 0,
+    "agent_removed": 1,
+    "human_added": 556,
+    "human_modified": 566,
+    "human_removed": 0,
+    "total_committed": 571,
+    "total_lines_changed": 1123,
+    "agent_percentage": 0.08904719501335707,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 111,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3987,
+      "agent_lines_removed": 317,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 25,
+        "test/try_real_outreach.py": 86
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 153,
+      "user_lines_removed": 1,
+      "agent_lines_added": 4129,
+      "agent_lines_removed": 459,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34,
+        "backend/outreach/calle.py": 31,
+        "test/try_real_outreach.py": 88
+      },
+      "user_removed_per_file": {
+        "backend/outreach/calle.py": 1
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 122,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4159,
+      "agent_lines_removed": 459,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34,
+        "test/try_real_outreach.py": 88
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 122,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4159,
+      "agent_lines_removed": 459,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34,
+        "test/try_real_outreach.py": 88
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 122,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4159,
+      "agent_lines_removed": 459,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34,
+        "test/try_real_outreach.py": 88
+      }
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 122,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4203,
+      "agent_lines_removed": 489,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34,
+        "test/try_real_outreach.py": 88
+      }
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 34,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4559,
+      "agent_lines_removed": 643,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 34
+      }
+    }
+  ]
+}

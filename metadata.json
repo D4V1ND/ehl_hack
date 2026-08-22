@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NPCVP687VWG4AT33WQTZPC",
+  "strategy": "manual-commit",
+  "branch": "call_e",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "backend/outreach/calle.py",
+    "backend/outreach/normalize.py",
+    "backend/settings.py",
+    "packages/contracts/schemas.py",
+    "test/test_schemas.py",
+    "test/try_real_outreach.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 384,
+    "cache_creation_tokens": 668430,
+    "cache_read_tokens": 24364865,
+    "output_tokens": 93716,
+    "api_call_count": 192
+  }
+}
