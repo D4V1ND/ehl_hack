@@ -131,22 +131,7 @@ export function CockpitChat() {
   }
 
   return (
-    <CockpitShell
-      active="chat"
-      trailing={
-        <p
-          className="flex items-center gap-2 truncate text-sm text-muted-foreground tabular-nums"
-          aria-live="polite"
-        >
-          {phase === "running" ? <DotLoader /> : null}
-          {currentStep}
-          <span className="text-muted-foreground/70">
-            {" "}
-            · {visible} Event{visible === 1 ? "" : "s"}
-          </span>
-        </p>
-      }
-    >
+    <CockpitShell>
       <div className="flex h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4">
         <div className="flex items-center gap-4 text-sm">
           <span className="font-mono">{INCIDENT.caseId}</span>

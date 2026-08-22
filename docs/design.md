@@ -18,7 +18,7 @@ How the approved Cockpit looks and behaves. Product name on this surface is **St
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — Stockout, Sourcing run, rehearsal, Munich + Stuttgart plants, bearings. No Dashboard link.
+Chrome: `CockpitShell` — a full-height frame with no top navigation bar. Case context and run progress stay in the Cockpit content.
 
 | Route | File | What you see |
 |---|---|---|
