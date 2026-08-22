@@ -149,3 +149,9 @@
   background: var(--muted);
   background-clip: content-box;
 }
+
+@layer components {
+  .call-sidebar {
+    @apply bg-transparent text-muted-foreground;
+  }
+}
