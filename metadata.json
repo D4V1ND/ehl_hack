@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NWVM75D2HFYJX4Z2HZCF5C",
+  "strategy": "manual-commit",
+  "branch": "call_e",
+  "checkpoints_count": 11,
+  "files_touched": [
+    "backend/fixtures/supplier_phones.json",
+    "backend/outreach/__pycache__/calle.cpython-313.pyc",
+    "backend/outreach/__pycache__/normalize.cpython-313.pyc",
+    "packages/contracts/__pycache__/models.cpython-313.pyc",
+    "test/__pycache__/test_calle_provider.cpython-313-pytest-9.0.3.pyc",
+    "test/__pycache__/test_normalize.cpython-313-pytest-9.0.3.pyc",
+    "test/__pycache__/try_real_outreach.cpython-313.pyc"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 144,
+    "cache_creation_tokens": 113995,
+    "cache_read_tokens": 6206012,
+    "output_tokens": 34615,
+    "api_call_count": 72
+  }
+}

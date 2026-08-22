@@ -1,0 +1,111 @@
+look at backend/outreach/main.py and explain to me in simple language what it does.
+
+---
+
+create a test py file: structured Input -> outreach to give input -> quotes to get output -> print it out. what do you think of this simple test?
+
+---
+
+how to run the test. js tell me, I run it
+
+---
+
+backend.outreach.calle.InvalidPhoneNumber: no phone number for supplier-acme. where should I write doen of the number
+
+---
+
+why only when I end the test script. it starts calling me??
+
+---
+
+yeah
+
+---
+
+js do one supplier, only quick test
+
+---
+
+I got this when calling it, I havent even I have done any call for PS C:\Users\davin\Desktop\python\ehl_hack> python test/try_outreach_roundtrip.py --live
+health:  {'ok': True, 'fake_calls': False}
+receipt: {'case_id': 'CASE-TRY', 'task_ids': ['TRY-001'], 'provider': 'calle'}
+
+The calls are placed now, but CALL-E dials them out of a queue,
+so the phone rings a while after this line. Ctrl+C does NOT cancel
+them — the call still happens and still bills, you just lose the
+result, because the thread collecting it dies with this process.
+
+  · [outreach_dispatched] Dialling +4********0979
+  · [call_accepted] CALL-E accepted the call for supplier-acme
+  · [quote_received] supplier-acme: quoted
+--- quote TRY-001 (supplier-acme) ---
+  qty offered:  5000
+  unit price:   5 EUR
+  moq:          None
+  lead time:    19 days
+  incoterm:     None
+  certs:        none claimed
+  payment:      None
+  price breaks: [{"min_qty": 10000, "unit_price": "4"}]
+  confidence:   0.82
+  summary:      The call reached a live supplier and gathered a partial quote: €5 per unit for 5,000 units, €4 per unit at 10,000 units, delivery by September 10, and 5,000 units reportedly in stock. The procurement task is incomplete because the bot ended before confirming all numerical details, negotiating toward the target price, and clarifying MOQ, incoterm/freight/insurance, certification, tax basis, and whether stock is free or already promised.
+    [   0s] bot: Hello,
+    [   0s] bot: I’m an AI assistant calling for Meridian Motors. This call is recorded.
+    [   7s] user: What's the people? Yes.
+    [  11s] bot: I’m requesting quotation information for five thousand units of deep groove ball bearing,
+    [  15s] bot: part number six, two, zero, three, dash, two, R, S;
+    [  19s] bot: again, six, two, zero, three, dash, two, R, S, needed by September fifteenth,
+    [  25s] bot: twenty twenty-six.
+    [  33s] user: Okay. So what, how many pieces do you need? How many how many units do you even need?
+    [  36s] bot: Five thousand units.
+    [  44s] user: Okay. Let's talk about the price.
+    [  46s] bot: Sure — what’s your unit price for five thousand pieces,
+    [  47s] user: Where's the price?
+    [  55s] bot: What’s your price for five thousand units of the deep groove ball bearing,
+    [  59s] bot: part number six, two, zero, three, dash, two, R, S?
+    [  70s] user: I would say for each 1, For each piece, it will cost €5.
+    [  72s] bot: Thanks.
+    [  73s] bot: Do you have any price breaks for larger volumes, and what’s the minimum order quantity?
+    [  81s] user: Yep. So if you if you order 10,000, then I will give you, like, €4.
+    [  83s] bot: Okay.
+    [  84s] bot: What’s the lead time in days for five thousand units?
+    [  92s] user: I would say by September 10.
+    [  94s] bot: And what would be the incoterm,
+    [  96s] bot: and who covers freight and insurance?
+    [ 103s] user: No 1 covers the insurance, and I don't have quality insurance.
+    [ 105s] bot: Thanks.
+    [ 106s] bot: Is there any valid quality certification for this part?
+    [ 114s] user: Wait. Let's go back to the price. Is it including tax?
+    [ 115s] bot: No,
+    [ 116s] bot: I’m asking for your quotation before tax.
+    [ 120s] user: No.
+    [ 123s] bot: Thanks.
+    [ 124s] bot: Is there any stock on hand for these units — either free stock or already promised?
+    [ 125s] user: I am the supplier. He is calling for me.
+    [ 131s] bot: Thanks — can you tell me whether any of the units are physically in stock and available,
+    [ 136s] bot: or already promised?
+    [ 145s] user: So it's a gross price. Can you repeat again the name of your pro can you repeat the I mean, 5,000 are in stock, but can you please repeat the the product name once again?
+    [ 147s] bot: Deep groove ball bearing,
+    [ 149s] bot: part number six, two, zero, three, dash, two, R, S.
+    [ 155s] user: Thank you.
+    [ 157s] bot: Could you also confirm the part number once more: six,
+    [ 161s] bot: two, zero, three, dash, two, R, S?
+    [ 167s] user: Yep. That's right.
+    [ 171s] bot: Thanks — I have the details I needed.
+    [ 173s] bot: Thank you for your time, bye.
+    [ 175s] user: But can you say 5 times in a row, please? No. No.
+    [ 176s] user: Please repeat
+
+all 1 quote(s) received in 0m01s.
+
+---
+
+I deleted them, but still same output
+
+---
+
+why it comes after my script ends? should I wait longer?
+
+---
+
+how to create a PR to merge from branch call_e to branch main
