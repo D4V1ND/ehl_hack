@@ -1,0 +1,37 @@
+# The shortages, as our own records see them. No supplier claim is involved yet.
+#
+# CASE-001 is the demo. Its numbers are load-bearing: 4 200 on hand at 350/day is
+# exactly twelve days of production, so the line stops on 2026-09-03 unless
+# something arrives before then. test/test_seed_scenario.py asserts that no
+# single compliant supplier can both cover 36 000 pieces and beat that date --
+# if someone tunes a number and quietly kills the demo, that test goes red.
+
+- case_id: CASE-001
+  part_id: PRT-6204
+  plant_id: PLANT-MUC
+  production_line: ASSY-3
+  qty_required: 36000
+  qty_on_hand: 4200
+  needed_by: 2026-09-03
+  line_stop_at: 2026-09-03T06:00:00Z
+  line_stop_cost_per_hour: '18400.00'
+  currency: EUR
+  incumbent_supplier_id: SUP-KBY
+  reason: >-
+    PO-2291 (30 000 pcs, Kugellager Bayern) slipped from 2026-08-26 to
+    2026-09-17. On-hand cover is 12 days at the ASSY-3 take rate of 350/day.
+
+- case_id: CASE-002
+  part_id: PRT-M8X40
+  plant_id: PLANT-LEI
+  production_line: ASSY-1
+  qty_required: 180000
+  qty_on_hand: 22000
+  needed_by: 2026-09-11
+  line_stop_at: 2026-09-11T06:00:00Z
+  line_stop_cost_per_hour: '9200.00'
+  currency: EUR
+  incumbent_supplier_id: SUP-SHW
+  reason: >-
+    Consumption on ASSY-1 ran 18% above forecast for six weeks; on-hand is now
+    below the reorder point with no open PO covering the quarter.

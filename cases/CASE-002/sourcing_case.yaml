@@ -1,0 +1,22 @@
+case_id: CASE-002
+opened_at: '2026-08-22T16:59:39.748356+00:00'
+opened_by: shortage_detector
+part:
+  part_id: PRT-M8X40
+  item_code: DIN933-M8x40-A2
+  part_class: fastener
+  criticality: medium
+  spec:
+    standard: DIN 933
+    thread: M8
+    length_mm: '40'
+    material: A2-70 stainless
+    drive: hex
+plant_id: PLANT-LEI
+production_line: ASSY-1
+qty_required: 180000
+qty_on_hand: 22000
+needed_by: '2026-09-11'
+line_stop_at: '2026-09-11T06:00:00+00:00'
+line_stop_cost_per_hour: '9200.00'
+trigger: available 20,500 is below the reorder point 45,000 (10 days of cover)

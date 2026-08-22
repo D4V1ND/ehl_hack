@@ -1,0 +1,285 @@
+# ERPNext `Bin`-shaped: what is physically in a warehouse right now.
+# `daily_consumption` is the line take rate -- it is what turns a quantity into a
+# date, and therefore what dates the line stop.
+#
+# PRT-6204: 4 200 on hand at 350/day is exactly 12 days of cover. That is the demo.
+- part_id: PRT-6204
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 4200
+  reserved_qty: 0
+  reorder_level: 9000
+  daily_consumption: 350
+- part_id: PRT-M8X40
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 22000
+  reserved_qty: 1500
+  reorder_level: 45000
+  daily_consumption: 2100
+- part_id: PRT-60002RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 2442
+  reserved_qty: 274
+  reorder_level: 1260
+  daily_consumption: 60
+- part_id: PRT-60012RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 1855
+  reserved_qty: 54
+  reorder_level: 720
+  daily_consumption: 40
+- part_id: PRT-60022RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 40443
+  reserved_qty: 1203
+  reorder_level: 14400
+  daily_consumption: 800
+- part_id: PRT-60032RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 13117
+  reserved_qty: 871
+  reorder_level: 4320
+  daily_consumption: 240
+- part_id: PRT-60042RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 3266
+  reserved_qty: 346
+  reorder_level: 2250
+  daily_consumption: 90
+- part_id: PRT-60052RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 6289
+  reserved_qty: 431
+  reorder_level: 2700
+  daily_consumption: 90
+- part_id: PRT-6204ZZ
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 14721
+  reserved_qty: 784
+  reorder_level: 4500
+  daily_consumption: 180
+- part_id: PRT-62052RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 9240
+  reserved_qty: 532
+  reorder_level: 16800
+  daily_consumption: 800
+- part_id: PRT-62062RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 56578
+  reserved_qty: 2126
+  reorder_level: 29400
+  daily_consumption: 1400
+- part_id: PRT-62072RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 19784
+  reserved_qty: 1380
+  reorder_level: 6720
+  daily_consumption: 320
+- part_id: PRT-62082RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 3208
+  reserved_qty: 96
+  reorder_level: 2700
+  daily_consumption: 90
+- part_id: PRT-63012RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 3299
+  reserved_qty: 329
+  reorder_level: 1620
+  daily_consumption: 90
+- part_id: PRT-63022RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 25246
+  reserved_qty: 1737
+  reorder_level: 9450
+  daily_consumption: 450
+- part_id: PRT-63032RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 2262
+  reserved_qty: 182
+  reorder_level: 1260
+  daily_consumption: 60
+- part_id: PRT-63042RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 36825
+  reserved_qty: 2171
+  reorder_level: 16800
+  daily_consumption: 800
+- part_id: PRT-63052RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 2446
+  reserved_qty: 219
+  reorder_level: 1620
+  daily_consumption: 90
+- part_id: PRT-63062RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 68392
+  reserved_qty: 6997
+  reorder_level: 24000
+  daily_consumption: 800
+- part_id: PRT-68022RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 9669
+  reserved_qty: 1148
+  reorder_level: 6000
+  daily_consumption: 240
+- part_id: PRT-68032RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 49881
+  reserved_qty: 5816
+  reorder_level: 20000
+  daily_consumption: 800
+- part_id: PRT-69002RS
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 2512
+  reserved_qty: 127
+  reorder_level: 1500
+  daily_consumption: 60
+- part_id: PRT-DIN933M6X25A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 16046
+  reserved_qty: 522
+  reorder_level: 8100
+  daily_consumption: 450
+- part_id: PRT-DIN933M8X25A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 3761
+  reserved_qty: 278
+  reorder_level: 2160
+  daily_consumption: 120
+- part_id: PRT-DIN933M10X30A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 15492
+  reserved_qty: 461
+  reorder_level: 5040
+  daily_consumption: 240
+- part_id: PRT-DIN933M10X50A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 10904
+  reserved_qty: 610
+  reorder_level: 6720
+  daily_consumption: 320
+- part_id: PRT-DIN933M12X40A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 112031
+  reserved_qty: 11592
+  reorder_level: 35000
+  daily_consumption: 1400
+- part_id: PRT-DIN912M6X20A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 11483
+  reserved_qty: 1241
+  reorder_level: 8000
+  daily_consumption: 320
+- part_id: PRT-DIN912M8X30A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 8448
+  reserved_qty: 249
+  reorder_level: 9600
+  daily_consumption: 320
+- part_id: PRT-DIN912M10X40A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 10356
+  reserved_qty: 116
+  reorder_level: 4320
+  daily_consumption: 240
+- part_id: PRT-DIN934M8A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 2439
+  reserved_qty: 233
+  reorder_level: 1620
+  daily_consumption: 90
+- part_id: PRT-DIN934M10A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 3054
+  reserved_qty: 266
+  reorder_level: 1200
+  daily_consumption: 40
+- part_id: PRT-DIN125M8A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 66270
+  reserved_qty: 349
+  reorder_level: 35000
+  daily_consumption: 1400
+- part_id: PRT-DIN125M10A2
+  warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  actual_qty: 18109
+  reserved_qty: 1782
+  reorder_level: 6720
+  daily_consumption: 320
+- part_id: PRT-SIM20X47X7
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 12082
+  reserved_qty: 1092
+  reorder_level: 6720
+  daily_consumption: 320
+- part_id: PRT-SIM25X52X7
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 1944
+  reserved_qty: 181
+  reorder_level: 2700
+  daily_consumption: 90
+- part_id: PRT-SIM30X52X7
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 42423
+  reserved_qty: 4848
+  reorder_level: 14400
+  daily_consumption: 800
+- part_id: PRT-SIM35X62X8
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 140253
+  reserved_qty: 406
+  reorder_level: 42000
+  daily_consumption: 1400
+- part_id: PRT-SIM40X62X8
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 22414
+  reserved_qty: 358
+  reorder_level: 8100
+  daily_consumption: 450
+- part_id: PRT-ORING25X3
+  warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  actual_qty: 4525
+  reserved_qty: 91
+  reorder_level: 1620
+  daily_consumption: 90

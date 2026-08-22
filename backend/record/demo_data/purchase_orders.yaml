@@ -1,0 +1,46 @@
+# Open POs. `revised_date` later than `promised_date` is a slip, and a slip that
+# now lands past a requirement date is what fires the shortage detector (B4).
+
+- po_id: PO-2291
+  part_id: PRT-6204
+  supplier_id: SUP-KBY
+  qty: 30000
+  promised_date: 2026-08-26
+  revised_date: 2026-09-17
+  status: open
+
+- po_id: PO-2304
+  part_id: PRT-62052RS
+  supplier_id: SUP-KBY
+  qty: 8000
+  promised_date: 2026-09-01
+  status: open
+
+- po_id: PO-2311
+  part_id: PRT-M8X40
+  supplier_id: SUP-SHW
+  qty: 100000
+  promised_date: 2026-08-19
+  revised_date: 2026-08-31
+  status: open
+
+- po_id: PO-2318
+  part_id: PRT-SIM25X52X7
+  supplier_id: SUP-DSW
+  qty: 15000
+  promised_date: 2026-09-04
+  status: open
+
+- po_id: PO-2322
+  part_id: PRT-62062RS
+  supplier_id: SUP-NRD
+  qty: 6000
+  promised_date: 2026-09-08
+  status: open
+
+- po_id: PO-2327
+  part_id: PRT-DIN912M8X30A2
+  supplier_id: SUP-VIT
+  qty: 40000
+  promised_date: 2026-09-15
+  status: open
