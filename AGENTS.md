@@ -1,6 +1,6 @@
 # Stockout
 
-An EHL Game Jam procurement-as-code demo. A shortage launches an agent that finds suppliers, gathers structured CALL-E claims, checks policy and landed cost, and ships a recommendation as a reviewable pull request.
+An EHL Game Jam sourcing demo for a German automotive manufacturer. A bearing shortage launches an agent that gathers structured CALL-E Claims, checks policy and landed cost, and presents a human-approved Decision in Stockout.
 
 Planning documents still use the working name **SupplyGuard**. The product UI currently uses **Stockout**. Keep the name of the surface you are changing unless the developer asks for a rename.
 
@@ -16,10 +16,10 @@ These instructions are good defaults. The developer's explicit request can overr
 
 We will not trade these away as we iterate.
 
-1. **Procurement as code.** Cases, claims, checks, costs, and recommendations are diffable repository artifacts.
+1. **Auditable sourcing.** Cases, Claims, checks, costs, and Decisions remain traceable.
 2. **Claims are not facts.** What a supplier says stays separate from the factory's trusted records.
 3. **Self-checking decisions.** Compliance and landed-cost logic are executable and tested before a recommendation ships.
-4. **Human approval.** The agent recommends. A human approves by reviewing and merging the pull request.
+4. **Human approval.** The agent recommends. A human marks the Decision approved in Stockout; approved is final.
 
 ## Who is who
 
@@ -32,9 +32,9 @@ Use the domain words from `docs/PLAN.md` and `docs/specs/supplyguard-plan-1-foun
 
 ## How it works
 
-The planned path is shortage trigger → Devin Session → system-of-record lookup → supplier outreach → structured Claims → compliance and landed-cost checks → repository artifacts → pull request. The cockpit renders progress and the final recommendation.
+The planned path is shortage trigger → Devin Session → system-of-record lookup → parallel supplier outreach → structured Claims → compliance and landed-cost checks → Decision → human approval in Stockout. The Cockpit renders progress and the approved final state.
 
-The repository is still a walking skeleton. It currently contains the Next.js landing page, `/dashboard` (Incident list), the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. Confirm that a planned module exists before extending it.
+The repository is still a walking skeleton. It currently contains the Next.js landing page, the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. The implementation remains fixture-driven. Confirm that a planned module exists before extending it.
 
 ## Where code lives
 
@@ -49,7 +49,7 @@ The repository is still a walking skeleton. It currently contains the Next.js la
 
 1. **An accidental real call.** Rehearsal is always the default. Live calling requires every explicit guard and can spend money or contact a person.
 2. **A Claim treated as truth.** Supplier statements and trusted factory records remain separate types through every layer.
-3. **A shortcut around the audit trail.** Decisions ship as files with executable checks and human review, not opaque prose or automatic purchasing.
+3. **A shortcut around the audit trail.** Decisions retain executable checks and human review, not opaque prose or automatic purchasing.
 
 ## Non-negotiable domain rules
 
@@ -63,7 +63,7 @@ The repository is still a walking skeleton. It currently contains the Next.js la
 
 ## Taste
 
-The repository is the datastore for case artifacts. Prefer files, pure functions, and narrow adapters. Keep external systems at the boundary.
+SQLite is the intended operational datastore. This implementation remains fixture-driven; Supabase is explicitly out of scope and ignored. Prefer pure functions and narrow adapters. Keep external systems at the boundary.
 
 Build fixtures before live integrations. Keep policy rules and cost functions deterministic. Use one shared contract for backend types, JSON Schema, and UI consumers when those layers exist.
 
@@ -111,7 +111,7 @@ The task is incomplete until every affected document is updated or the no-change
 ## Docs 
 
 - `docs/PLAN.md` — before changing product scope, architecture, contracts, case artifacts, orchestration, or the demo flow.
-- `docs/design.md` — before changing Cockpit layout, `/dashboard`, Files/Results, call UI, or design references.
+- `docs/design.md` — before changing Cockpit layout, Candidate cards or panel, call modal, status rail, Decision bar, or design references.
 - `docs/agents/devin-mcp.md` — before using Devin MCP for repository research, Sessions, Knowledge, playbooks, schedules, or integrations.
 - `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` — when creating, reading, or labeling GitHub issues.
 - `docs/agents/domain.md` — when changing domain vocabulary or architectural decisions.

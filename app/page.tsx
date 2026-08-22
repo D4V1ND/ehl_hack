@@ -9,7 +9,6 @@ import {
   Bot,
   Calculator,
   Check,
-  GitPullRequest,
   Phone,
   Search,
   ShieldCheck,
@@ -20,7 +19,7 @@ const steps = [
   { label: "Thinking", color: "bg-chart-2", icon: Bot },
   { label: "Calling", color: "bg-chart-3", icon: Phone },
   { label: "Costing", color: "bg-chart-4", icon: Calculator },
-  { label: "Done", color: "bg-chart-5", icon: Check },
+  { label: "Approved", color: "bg-chart-5", icon: Check },
 ]
 
 const features = [
@@ -33,7 +32,7 @@ const features = [
   {
     title: "CALL-E negotiates for you",
     description:
-      "Our voice agent calls distributors in parallel, asks for price breaks, MOQ, lead time and certs, and returns a structured quote.",
+      "Our voice agent calls distributors in parallel, asks for price breaks, MOQ, lead time and certs, and returns a structured Claim.",
     icon: Phone,
   },
   {
@@ -49,15 +48,15 @@ const features = [
     icon: ShieldCheck,
   },
   {
-    title: "Decision as a pull request",
+    title: "One auditable Decision",
     description:
-      "The case, quotes, cost report and PO draft ship as a GitHub PR — reviewable, diffable and mergeable.",
-    icon: GitPullRequest,
+      "Policy checks, landed cost, runner-ups, and rationale stay together until a human marks the Decision approved in Stockout.",
+    icon: Check,
   },
   {
-    title: "No human in the loop",
+    title: "Parallel supplier outreach",
     description:
-      "A reorder-point scanner or a single button launches the whole run. The agent checks its own work before it opens the PR.",
+      "A single launch creates Outreach Tasks for bearing suppliers in parallel while the Cockpit keeps every Claim visible.",
     icon: Bot,
   },
 ]
@@ -114,24 +113,17 @@ export default function Home() {
               <span className="text-primary">Give it an engineer.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              A production line is 12 days from standing still. Stockout reads the ERP,
-              finds suppliers, dispatches voice agents, runs a landed-cost model, checks
-              compliance, and ships the decision as a pull request.
+              A German automotive manufacturer is 12 days from a bearing shortage.
+              Stockout coordinates the Munich and Stuttgart plants, contacts suppliers
+              in parallel, checks Claims, and prepares one Decision for human approval.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
                 nativeButton={false}
-                render={<Link href="/dashboard" />}
+                render={<Link href="/chat" />}
               >
                 Launch a case
                 <ArrowRight data-icon="inline-end" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="default"
-                className="h-10 rounded-md border border-border bg-card px-[18px] text-sm font-medium text-foreground hover:bg-muted"
-              >
-                View a sample PR
               </Button>
             </div>
 
@@ -194,8 +186,8 @@ export default function Home() {
               How it works
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
-              Each stage is a color in the agent timeline. The cockpit shows it live; the
-              repo preserves it forever.
+              Each stage is visible in the Cockpit, from plant Incident through parallel
+              bearing outreach to the approved Decision.
             </p>
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {steps.map((step, index) => {
@@ -229,8 +221,8 @@ export default function Home() {
               See the whole run in under 90 seconds.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-              Fixture-first, replayable, and built for the stage. Run the demo command and
-              watch a shortage become a pull request.
+              Fixture-first, replayable, and built for the stage. Run the demo and watch
+              a bearing shortage become a checked, human-approved Decision.
             </p>
             <div className="mx-auto mt-10 inline-block rounded-xl border border-border bg-card p-5 text-left font-mono text-sm text-foreground">
               <span className="text-muted-foreground">$</span> make demo
@@ -254,15 +246,15 @@ export default function Home() {
             <div className="lg:col-span-2">
               <span className="text-lg font-semibold text-foreground">stockout</span>
               <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-                Autonomous sourcing for engineering teams. Built for the EHL Game Jam
-                Munich · Cognition track.
+                Bearing sourcing for a German automotive manufacturer, centered on the
+                Munich and Stuttgart plants.
               </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">Product</h3>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground">Features</a></li>
-                <li><a href="/dashboard" className="hover:text-foreground">Cockpit</a></li>
+                <li><a href="/chat" className="hover:text-foreground">Cockpit</a></li>
                 <li><a href="#" className="hover:text-foreground">Pricing</a></li>
               </ul>
             </div>

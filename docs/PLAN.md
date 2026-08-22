@@ -12,18 +12,18 @@ This plan builds **on top of** [`docs/specs/supplyguard-plan-1-foundation-spec.m
 
 > **Procurement is an engineering problem. Give it an engineer.**
 >
-> A production line is 12 days from standing still because a part won't arrive. We file that shortage with Devin. Devin reads the system of record, works out exactly what's missing, finds candidate suppliers, dispatches **CALL-E** agents to phone them and gather claims, runs those claims against the factory's own records, through a **landed-cost model** (quantity price breaks, MOQ, freight, duty, carrying cost) and through the company's **compliance rules** — then ships the whole decision as a **pull request**: the case, the executable checks, the real call transcripts, the cost model, and a recommended purchase order.
+> A German automotive manufacturer is 12 days from a bearing shortage across its Munich and Stuttgart plants. Devin reads the system of record, finds Candidates, launches parallel **CALL-E** Outreach Tasks, checks Claims against Supplier Records, runs landed-cost and compliance models, and presents one Decision in Stockout. A human marks that Decision approved; approved is final.
 
 ### Why this wins the Cognition track
 
 | Track requirement | How we satisfy it |
 |---|---|
-| "output can be expressed as code" | A procurement decision **is a Git repo**: `sourcing_case.yaml`, `policy/*.py`, `cost_model.py`, `claims/*.json`, `decision.md`. Procurement-as-code. |
+| "output can be expressed as code" | Policy and landed-cost checks remain executable and testable; the user-facing output is an auditable Decision in Stockout. |
 | "programmatically triggers Devin sessions" | Reorder-point scanner / webhook / UI button → `POST /v1/sessions` on the Devin API. No human writes the prompt. |
-| "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Devin must get both green **before** opening the PR. |
-| "produces real artifacts without a human in the loop" | A merged PR, real recorded CALL-E calls, real claims, a costed PO recommendation. |
+| "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Both must be green before the Decision is ready for approval. |
+| "produces real artifacts without a human in the loop" | Structured Claims, checked Strategies, and a costed recommendation are produced before human approval. |
 
-**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the *autonomous layer* — Devin is the procurement engineer, CALL-E is one of its tools, and the deliverable is reviewable, testable, diffable code.
+**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the autonomous layer: Devin is the procurement engineer, CALL-E is one tool, checks are executable, and the human approves one auditable Decision in Stockout.
 
 ---
 
@@ -101,8 +101,8 @@ The foundation spec explicitly puts comparison and decision-making out of scope:
 **Three genuine conflicts to settle:**
 
 1. **Demo scale.** The spec's demo data is 12 units needed / 4 on hand → shortfall of **8 units**. At 8 units there are no quantity price breaks, no freight-mode trade-off, no split order, no carrying cost — the entire cost engine in §5 has nothing to chew on, and the decision is trivially "call the preferred supplier." **Proposal:** keep the 4-supplier fixture shape exactly as specified, but scale the incident to a realistic production quantity (e.g. 40 000 pcs against a 12-day line stop) and give each supplier record price-break tiers. Small data change, and it's the difference between a demo with a punchline and one without.
-2. **Claims are per-supplier; decisions are per-case.** The spec has no case/incident-scoped artifact directory. We need `cases/<case_id>/` as the unit Devin commits, with claims filed underneath it. Additive, but it needs agreeing.
-3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** Read as permanent, it forbids the submission. **Proposal:** it stays true in the strict sense — Devin *recommends*, with a human approving the PR — and we say so explicitly, because "the human approves the merge" is a better answer to a judge's governance question than "it buys things autonomously."
+2. **Claims are per-supplier; Decisions are per-case.** SQLite stores both scopes and their relationship. Fixture objects preserve the same boundary until persistence is implemented.
+3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** It stays true in the strict sense: Devin recommends, and a human marks the Decision approved in Stockout. Approved is final; there is no PR card or merge approval.
 
 ---
 
@@ -115,22 +115,22 @@ The five steps, in order — and the order is the whole point. Most hackathon te
 | We assumed we need… | Interrogated | Verdict |
 |---|---|---|
 | A real ERP | Judges see JSON from an endpoint either way | ❌ mock behind the adapter |
-| A database | A case is ~8 files and we want them in Git anyway | ❌ **the repo is the database** |
+| A production database in this fixture UI | The rehearsal must run with no backend | ⚠️ SQLite intended; fixtures now |
 | User accounts / auth | Nobody logs into a 4-minute demo | ❌ delete |
-| An approve/reject workflow in-app | Merging the PR *is* the approval | ❌ read-only review view |
+| A PR-based approve/reject workflow | Approval belongs on the Decision in Stockout | ❌ delete PR and merge approval |
 | Transcript→JSON extraction | CALL-E's `recipient_result_schema` does it | ❌ delete |
 | A parallel call dispatcher | CALL-E `recipients[]` is the dispatcher | ❌ delete |
 | WebSockets for live updates | Append-only event log + 2s poll looks identical on stage | ❌ delete |
 | Calling Chinese suppliers | CALL-E has no CN region | ❌ → email/Alibaba channel |
-| A real PO PDF | A committed `po_draft.md` is more on-thesis | ⚠️ downgrade |
+| A real PO PDF | The Cockpit Decision carries the approval evidence | ❌ delete |
 | Many part classes | One part told well, with `part_class` as the seam | ⚠️ one primary, one secondary |
-| **Devin: API-triggered, self-checking, artifact-emitting** | **This is the graded requirement** | ✅ **the only thing truly required** |
+| **Devin: API-triggered and self-checking** | **This is the graded requirement** | ✅ **the only thing truly required** |
 
 ### Step 2 — Delete the part or process
 
-Deleted outright: Postgres, ORM/migrations, auth, Docker Compose orchestration, the email channel *on the MVP path*, Alibaba automation, the dispatcher, the extraction layer, WebSockets, multi-tenancy.
+Deleted outright: Postgres, Supabase, auth, Docker Compose orchestration, the email channel *on the MVP path*, Alibaba automation, the extraction layer, WebSockets, and multi-tenancy.
 
-The big one, and the one that makes the pitch coherent: **delete the database.** State lives in `cases/<case_id>/` as files Devin writes and commits; the UI reads a served JSON index of that directory. The artifact *is* the datastore, so there's zero gap between what the system knows and what the judges can review.
+**SQLite is the intended operational datastore.** The current implementation remains fixture-driven and needs no backend. Supabase is explicitly ignored. Files can remain exportable audit artifacts, but the repository is not the operational datastore.
 
 > Musk's caveat: if you don't add back ~10% of what you deleted, you didn't delete enough. Expect to re-add the email channel and the PO PDF late. Fine.
 
@@ -138,7 +138,7 @@ The big one, and the one that makes the pitch coherent: **delete the database.**
 
 - **One** FastAPI process serves the Devin tool endpoints *and* the UI read API. No service mesh.
 - **One** contracts module (Pydantic) → JSON Schema exported for the UI **and** for CALL-E's `recipient_result_schema`. One source of truth, three consumers, contract drift impossible.
-- **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 3 real claims — and **the cheapest unit price is not the right answer** (§5).
+- **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 Candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 4 Claims — and **the cheapest unit price is not the right answer** (§5).
 - Policy rules and cost functions as pure functions over dataclasses. No rules engine, no DSL.
 
 ### Step 4 — Accelerate cycle time
@@ -153,13 +153,13 @@ Only once a human-triggered case runs green end-to-end: switch on the reorder-po
 
 ### The MVP as one testable sentence
 
-> `python -m orchestrator.run --case CASE-001` (or the cron detector firing) launches a real Devin session that reads the system of record, produces 5 candidates, filters them through the policy rules, gets 3 claims back through CALL-E (rehearsal or live), checks each claim against our records, computes landed cost with quantity breaks and freight, ranks the options including a split-order strategy, gets both `pytest` suites green, and opens a GitHub PR with the case, claims, policy report, cost model and PO draft — **with no human input after the trigger.** The cockpit shows all of it live.
+> `python -m orchestrator.run --case CASE-001` (or the detector firing) launches a Devin session that reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes landed cost, ranks split-order Strategies, and gets both `pytest` suites green. The Cockpit shows the run, then a human marks the Decision approved in Stockout.
 
 Everything else in this document is optional.
 
 ### The hour-3 walking skeleton — build this before anything pretty
 
-End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded part from the stub API → writes a two-line `decision.md` → opens a PR → UI shows "done" + PR link.
+End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded bearing from the fixture → creates a checked Decision → UI shows ready for approval.
 
 **Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose.
 
@@ -197,7 +197,8 @@ LandedCost  = { supplier_ref, qty, goods_cost, freight, duty, tooling, carrying_
 OrderLine   = { supplier_ref, qty, mode:"air"|"sea"|"road", eta, landed: LandedCost }
 Strategy    = { lines:[OrderLine], total_cost, coverage_date, risk_score, rationale }
 Decision    = { case_id, strategies:[Strategy], recommended, runner_ups,
-                policy_report_url, cost_report_url, pr_url }
+                policy_report_url, cost_report_url, status:"ready"|"approved",
+                approved_at, approved_by }
 Event       = { case_id, ts, actor:"devin"|"calle"|"system", stage, level, message, payload }
 ```
 
@@ -240,29 +241,29 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
-Two routes. `/dashboard` lists Incidents. `/chat` is one case. A2–A6 are turns and inline blocks in that transcript, not extra routes. The ERP still owns the live stock picture; Stockout lists Incidents so a judge can pick a case. Until Slice B fixtures land, both pages run hardcoded CASE-001 rehearsal data.
+One product route: `/chat`. The landing CTA opens it directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
 
-`/chat` is a split: conversation on the left, working object on the right. The right pane has a **Files | Results** tab switch. Files is the Manus list of case artifacts. Results is the live object for this beat (call transcript, Claim vs record, or PR).
+`/chat` has the main conversation and one fixed **Candidate** panel. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
 
 | # | Deliverable |
 |---|---|
-| A0 | **Incident list** — `/dashboard`. Rows of Incidents (case id, part, hours-to-line-stop, stage). Open a row → `/chat` for that case |
-| A1 | **Shortage chip** — compact Incident context already in the case (hours-to-line-stop, stock vs. reorder point) and a "Launch sourcing agent" control. Not a second ERP incident page |
-| A2 | **Case timeline** — stages live from the event feed, with the Devin session link |
-| A3 | **Candidates in the thread** — matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
-| A4 | **Live calls** — Results tab: Lindy-style transcript, Grok-style connected bar, masked numbers, structured Claim strip filling in |
-| A5 | **Claim vs. record comparison** — Results tab: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
-| A6 | **Decision turn** — rationale, runner-ups. Results tab: PR card. Files tab: case artifacts. Human approval is merge, not an in-app button |
+| A0 | **Direct entry** — `/` links to `/chat`; Cockpit chrome has no Dashboard link |
+| A1 | **Incident context** — compact Munich and Stuttgart plant context for the 6204-2RS bearing shortage and a launch control |
+| A2 | **Status rail** — stages and Devin session state live in the main conversation |
+| A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
+| A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows transcript, masked number, and structured Claim progress |
+| A5 | **Claim versus Supplier Record** — Candidate detail keeps the separation explicit, then shows Landed Cost and the selected split Strategy |
+| A6 | **Decision bar** — compact at the thread end, expandable for rationale, runner-ups, and checks. A human marks the Decision approved in Stockout; approved is final. No PR card or merge approval |
 
-**Unblock:** build 100% against contract fixtures + `make replay`; the UI must be fully demoable with the backend switched off. **DoD:** the demo command tells the whole story with no backend running.
+**Data:** SQLite is the intended operational datastore. This implementation remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 
 ### SLICE B — Core API, system of record & seed data
 | # | Deliverable |
 |---|---|
 | B1 | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
-| B2 | **Case store + event log** — files under `cases/<id>/`, `GET /cases/{id}/events` |
+| B2 | **Case store + event log** — SQLite behind the case API, `GET /cases/{id}/events`; fixtures stand in for it in the current UI |
 | B3 | **Devin tool endpoints** — `/tools/part/{id}`, `/tools/stock`, `/tools/suppliers`, `/tools/price_history`, `/tools/alternates`, `POST /tools/outreach`, `POST /tools/claims`. Boring, fast, documented, stable. |
 | B4 | **Shortage detector** — reorder-point + open-PO-delay scan → launches a Devin session. The "no human in the loop" trigger. *(Step 5 — build last.)* |
 | B5 | **Company profile YAML** — legal entity, country, blocked origin countries, required certs **per part class**, audit requirements, budget thresholds, WACC + warehousing rate for carrying cost |
@@ -283,22 +284,22 @@ The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`
 
 **DoD:** one real call to a teammate's own number produces a schema-valid `Claim` end-to-end.
 
-### SLICE D — Devin orchestration & procurement-as-code
+### SLICE D — Devin orchestration & auditable sourcing
 The slice the judges are actually grading. Strongest Devin-API person; must not be a side job.
 
 | # | Deliverable |
 |---|---|
 | D1 | **Session launcher** — Devin API client: create session with structured prompt + `case_id`, stream status, capture session URL into the event log |
-| D2 | **Prompt pack / playbook** — versioned, in-repo: the procedure, the available tool endpoints, the artifacts to write, and the rule *"both test suites must be green before you open the PR"* |
+| D2 | **Prompt pack / playbook** — versioned, in-repo: the procedure, tool endpoints, outputs, and the rule *"both test suites must be green before the Decision is ready for approval"* |
 | D3 | **Policy-as-code** — the four rules from §2.5 as pure functions |
 | D4 | **Self-check suites** — `pytest` over the policy **and** the cost model; fail loudly. **This is the "checks its own work" requirement — name it explicitly on stage.** |
 | D5 | **Cost engine** (§5) — `cost_model.py` + strategy search over split orders and quantity breaks |
 | D6 | **Claim-vs-record verification** — the comparison the foundation spec deliberately left out: claimed price vs. contract price, claimed lead time vs. standard, `qty_offered` vs. `known_allocations`, certification claim vs. `certification_expires_at`. Low-confidence claims get distrusted, not used. |
-| D7 | **Artifact writer** — `cases/<id>/{sourcing_case.yaml, candidates.json, claims/*.json, policy_report.md, cost_report.md, decision.md, po_draft.md}` → branch → PR |
+| D7 | **Decision persistence** — store the case, Claims, policy and cost reports, Decision, and approval state in SQLite; allow audit exports |
 | D8 | **Web supplier research** — Devin searches for distributors matching the exact spec → `Candidate` records with `why_matched` and a contact channel |
 
-**Unblock:** you need only the contracts + stub. Start by launching one Devin session from a script that reads a fixture case and opens a PR with a hand-written `decision.md`. **Close the loop empty, then fill it.**
-**DoD:** one command → real session → real PR → both suites green → zero human input.
+**Unblock:** you need only the contracts and fixtures. Start with one Devin session that reads a fixture bearing case and produces a checked Decision. **Close the loop empty, then fill it.**
+**DoD:** one command → real session → Decision ready → both suites green → human approval in Stockout.
 
 ---
 
@@ -317,11 +318,8 @@ Until that's answered, assume nothing. Everything below holds regardless:
 1. **One monorepo — this one.** Four top-level areas matching the slices. One repo = one review surface = one integration to configure.
 2. **Everything lands through a PR. Nothing is pushed to `main` directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
 3. **Never force-push, never squash-merge, never rewrite history.** History *is* the evidence. Merge commits keep the trail intact. Entire's checkpoints are git refs — rewriting refs is exactly what breaks them.
-4. **Two PR streams, clearly labelled:**
-   - `feat/*` — the system being built (Devin sessions doing engineering work)
-   - `case/CASE-xxx` — the artifacts the *product* generates (Devin sessions doing procurement work)
-   The second stream is what proves autonomy. Have **several merged** by demo time, not one.
-5. **Every PR body carries its Devin session URL** (Devin's PR tooling adds this automatically — don't strip it). Prompt → diff → review → merge, fully traceable.
+4. **Development PRs stay separate from product Decisions.** `feat/*` PRs audit engineering work. Product cases live in SQLite and end as approved Decisions in Stockout.
+5. **Every development PR body carries its Devin session URL** when available. This engineering review flow is not product approval.
 6. **`AGENTS.md` at the repo root**, and keep `CLAUDE.md` in sync with it — conventions, how to run things, the tool endpoints, commit style. Makes every session reproducible and shows the panel our operating manual.
 7. **`DEMO.md`** — the exact commands to reproduce the demo from a clean clone. Costs 10 minutes; judges love it.
 8. **One Devin session per meaningful unit of work** — not one 40-hour session. Easier to audit, easier to point at on stage.
@@ -335,13 +333,13 @@ Hourly sync, 5 minutes, structured: **(1) what's green, (2) what I need from who
 | Phase | Focus | Gate |
 |---|---|---|
 | **H0–H1** | Together: freeze contracts, `AGENTS.md`, **resolve the Entire/Devin coverage question (§7)**, CALL-E accounts + keys, **public tunnel working**, agree the demo script | Contracts merged, tunnel reachable, Entire coverage confirmed |
-| **H1–H3** | **Walking skeleton** (§3) + each slice's fake running standalone | One command → empty PR + UI shows it |
+| **H1–H3** | **Walking skeleton** (§3) + each slice's fake running standalone | One command → checked fixture Decision in the UI |
 | **H3–H8** | Real logic per slice, still on fakes | Each slice demoable alone |
 | **H8** | **Integration checkpoint #1** — A↔B and D↔B real, C in rehearsal | One case end-to-end in rehearsal |
 | **H8–H14** | Real Devin session, cost + policy suites green, **first real CALL-E call** | |
 | **H14** | **Integration checkpoint #2** — everything real, one full case | 🎥 **Record the backup demo video the moment this goes green** |
 | **H14–H18** | Polish, better seed data, the compliance-rejection beat, the allocated-stock beat, the split-order beat, second case, optional session fan-out | |
-| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, get the `case/*` PRs merged | |
+| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, verify the approved Decision ending | |
 
 Two rules that save hackathons: **record the backup video the first time the happy path works**, and **hard freeze 3 hours out, no exceptions.**
 

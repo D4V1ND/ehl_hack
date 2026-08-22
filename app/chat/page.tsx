@@ -5,7 +5,7 @@ import { CockpitChat } from "@/components/cockpit/cockpit-chat"
 export const metadata: Metadata = {
   title: "Cockpit",
   description:
-    "One chat. Launch a sourcing run and watch Claims, checks, and the Decision.",
+    "Resolve a bearing shortage across the Munich and Stuttgart plants, from Claims to an approved Decision.",
 }
 
 export default function ChatPage() {

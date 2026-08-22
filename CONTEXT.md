@@ -1,6 +1,6 @@
 # Stockout
 
-A factory shortage launches an agent that gathers supplier Claims, checks them against trusted records, and ships a purchase recommendation as a pull request.
+A bearing shortage at a German automotive manufacturer launches an agent that gathers supplier Claims, checks them against trusted records, and prepares a Decision for human approval in Stockout.
 
 ## Language
 
@@ -33,12 +33,12 @@ One way to cover the shortfall: one or more order lines, possibly a split across
 _Avoid_: plan, scenario, option pack
 
 **Decision**:
-The ranked Strategies plus the recommended purchase, with links to the policy report, cost report, and pull request.
-_Avoid_: recommendation blob, verdict
+The ranked Strategies plus the recommended purchase and its policy and cost checks. A human marks the Decision approved in Stockout; approved is the final state.
+_Avoid_: recommendation blob, verdict, pull request, merge approval
 
 **Cockpit**:
-One chat screen. The user launches a sourcing run and watches tool calls, Claims, and the Decision in that transcript.
-_Avoid_: console (as the product surface), control room, multi-page dashboard, marketing landing
+One `/chat` screen for a bearing shortage across the Munich and Stuttgart plants. The main conversation contains the status rail, parallel Outreach Tasks, concise Claim progress, and the Decision. A fixed Candidate panel shows stable, independently expandable Candidate rows. `?call=<id>` opens the large call modal. A compact expandable Decision bar ends the thread.
+_Avoid_: console (as the product surface), control room, multi-page dashboard, file tree, Files/Results tabs
 
 **Event**:
 One append-only log line for the case: actor, stage, message, payload.
