@@ -1,0 +1,62 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/paramaribo directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- app/chat/page.tsx (352 B)
+- .context/attachments/rqgdda/image.png (45.7 KB)
+- .context/attachments/ETA31v/image.png (5.3 KB)
+</system_instruction>
+
+
+
+I want you to adjust app/chat/page.tsx 
+so that we start the mock loop with a real composer, it should be very similar to all other harnesses (like in the image bwlo) just iwhtout all the fance stuff.
+
+
+In there we have a "+" button where you can select from the mock list of instances. This simply firs opens a popover with just two option for now "select incident" and "select file", file does nothing, incident opens a dialogue (default size) with a list of all incidents, when I selcted a incident it should be tagged to my cursor and should look like the image I uploaded
+
+Then and only then should the deterministic flow start. Right now in the dropdown I can only select the instance where our flow is defined in. All others are disabled. .context/attachments/rqgdda/image.png .context/attachments/ETA31v/image.png
+
+---
+
+Stop. First of all stope verify yourself. That's what I will do here now.
+
+Secondly you can actually remove the chat UI. Instead i just learned that we don't initiate these chats via chat but instead via clicking a link in our ERP. So instead what we do since this is just a UI prototype, I want you to first of all create a list of mock sessions in our sidebar. When I click those, we should always see the same content, but as long as we have those in the sidebar, that's already better just for visualization purposes. Instead of having this chat, we should still have a messaging system. The default screen should be gone, but we should still be able to send messages. You can also add the composer at the bottom. As I pasted in the image above or before, the incident that I linked should be in line in the chat, just looks better.
+
+So, three things:
+
+1. Remove the chat UI
+2. Add the incident UI to the chat message
+3. Add these mock sessions to the sidebar as well.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/Hry2ZD/image.png (12.6 KB)
+- .context/attachments/tvOC9B/image.png (28.0 KB)
+</system_instruction>
+
+
+
+Okay, good. In our sidebar, mark the selected chat using the accent background.
+
+Also, HChat should just have the main and title, and shouldn't have an icon. Also, sidebar, both sidebars should be resizable. The right sidebar should be max half the width of the page, and the left sidebar should be max 15% of the page and minimum 5%. The right sidebar should be minimum 10% of the same.
+
+Also, the incident linking should be in line in the text, just as my image I paste it now in this chat. Of course, introduce the primary color, not the fill color..context/attachments/Hry2ZD/image.png .context/attachments/tvOC9B/image.png 
+
+Right now, it looks like what you see in the second image I've made. Also, the composer should be slightly darker, and it should have an outline that's slightly lighter than the table. Separators should use a slightly lighter color.

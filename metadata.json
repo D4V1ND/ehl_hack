@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NQ49JAZNSWYWVSGE10TCPB",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/incident-composer-flow",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app/chat/page.tsx",
+    "app/globals.css",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/icons.tsx",
+    "components/ui/input-group.tsx",
+    "components/ui/resizable.tsx",
+    "components/ui/sidebar.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 565993,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 12698240,
+    "output_tokens": 82169,
+    "api_call_count": 120
+  }
+}

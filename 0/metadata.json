@@ -1,0 +1,99 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NQ49JAZNSWYWVSGE10TCPB",
+  "session_id": "01a02b3e-26c6-7573-b64e-dd56a0ecc210",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:48:19.10789Z",
+  "branch": "lorenzkrinner/incident-composer-flow",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "app/chat/page.tsx",
+    "app/globals.css",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/icons.tsx",
+    "components/ui/input-group.tsx",
+    "components/ui/resizable.tsx",
+    "components/ui/sidebar.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "aa1e99dcb218",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 565993,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 12698240,
+    "output_tokens": 82169,
+    "api_call_count": 120
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:48:18.999719Z",
+    "agent_lines": 6,
+    "agent_removed": 94,
+    "human_added": 0,
+    "human_modified": 7,
+    "human_removed": 80,
+    "total_committed": 6,
+    "total_lines_changed": 187,
+    "agent_percentage": 53.475935828877006,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 305,
+      "user_lines_removed": 76,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        "app/chat/page.tsx": 1,
+        "components/cockpit/cockpit-chat.tsx": 283,
+        "components/icons.tsx": 2,
+        "docs/PLAN.md": 3,
+        "docs/design.md": 5
+      },
+      "user_removed_per_file": {
+        "app/chat/page.tsx": 1,
+        "components/cockpit/cockpit-chat.tsx": 72,
+        "docs/PLAN.md": 1,
+        "docs/design.md": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 11,
+      "user_lines_removed": 0,
+      "agent_lines_added": 144,
+      "agent_lines_removed": 115,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 29,
+      "user_lines_removed": 3,
+      "agent_lines_added": 383,
+      "agent_lines_removed": 173,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        "components/cockpit/cockpit-chat.tsx": 3
+      },
+      "user_removed_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 3
+      }
+    }
+  ]
+}
