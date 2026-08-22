@@ -72,8 +72,8 @@ def build_calle_payload(
         recipients.append(
             {
                 "phones": [validate_e164(raw)],
-                "region": "DE",
-                "locale": "de-DE",
+                "region": settings.CALLE_REGION,
+                "locale": settings.CALLE_LOCALE,
             }
         )
 

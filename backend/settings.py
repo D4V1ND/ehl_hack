@@ -47,3 +47,10 @@ CALLE_POLL_TIMEOUT: float = float(os.environ.get("CALLE_POLL_TIMEOUT", "900"))
 # Where finished quotes are written. STORE only lives as long as the
 # process, so without this a completed call leaves nothing behind.
 QUOTES_DIR: Path = Path(os.environ.get("QUOTES_DIR", str(REPO_ROOT / "data" / "quotes")))
+
+# The language the agent speaks. This drives the call, not the script: a
+# de-DE locale produced a fully German call even though the task text was
+# written in English, so keep it in step with the prompt's language rule.
+CALLE_LOCALE: str = os.environ.get("CALLE_LOCALE", "en-US")
+# Where the number being dialled lives — a routing detail, not a language.
+CALLE_REGION: str = os.environ.get("CALLE_REGION", "DE")
