@@ -1,0 +1,13 @@
+Use the /$prototype skill to build multiply version of a no scroll, screen high, beta website. For that research the web online for such sites, I would like to use some kind of gradient as the background. One using [@background-1.png](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-1.png) and one using [@background-2.jpeg](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-2.jpeg) , both should have a mock inpout field, different wording, different structure for the text etc. But i just want a logo in the tob right, a title, a short descritpin (max 16 words), and then one of either background. For each background create two varaints for the other content
+
+---
+
+COntinue
+
+---
+
+Continue
+
+---
+
+Let's go with B, but make the header 3 lines max and shorten it slightly and use [@background-3.png](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-3.png) . For this final version create a new version E
