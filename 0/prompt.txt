@@ -1,0 +1,53 @@
+resume the session where we worked on fake endpoint for call_e
+
+---
+
+list the endpoints that has been build rn, and which one is for fake endpoint, which one for real
+
+---
+
+is the fake output in Quote structure?
+
+---
+
+give me curl to try it out
+
+---
+
+ohh so we dispatch outreach first and then case_id?
+
+---
+
+ohh so outreach doesnt give Quote structure?
+
+---
+
+ok so whats the endpoint flow?
+
+---
+
+I thought outreach make the call_e agent starts the call?
+
+---
+
+creates a python script for the fake endpoint test till I get the Quote
+
+---
+
+if I understand correctly, call outreach endpoint to get all the datas and quotes endpoint will print it out in Quote structure?
+
+---
+
+I dont understand, when is the call_e agent being called
+
+---
+
+yeah I was asking in real mode. outreach will make the call_e agent call and then quote output in structure
+
+---
+
+where is it saved then after outreach?
+
+---
+
+do task 5
