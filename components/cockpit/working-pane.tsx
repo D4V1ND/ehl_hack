@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckIcon, GitPullRequestIcon } from "lucide-react"
+import { CheckIcon, GitPullRequestIcon } from "@/components/icons"
 
 import { CallResult } from "@/components/cockpit/call-result"
 import { Badge } from "@/components/ui/badge"

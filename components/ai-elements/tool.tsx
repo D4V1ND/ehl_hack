@@ -15,7 +15,7 @@ import {
   ClockIcon,
   WrenchIcon,
   XCircleIcon,
-} from "lucide-react";
+} from "@/components/icons";
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
 

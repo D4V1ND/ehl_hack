@@ -15,10 +15,11 @@ How the approved Cockpit looks and behaves. Product name on this surface is **St
 7. Rehearsal is the default. Phone numbers are masked. Claims remain distinct from trusted Supplier Records.
 8. SQLite is the intended operational datastore. This implementation remains fixture-driven. Supabase is explicitly ignored.
 9. Colours come only from `app/globals.css`. Dark mode is the app default. Build in Next.js; do not use Paper and do not add a route.
+10. Use Tabler icons through `components/icons.tsx`. Product and primitive components do not import an icon library directly.
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — a full-height frame with no top navigation bar. Case context and run progress stay in the Cockpit content.
+Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Both sidebars use the muted surface; the conversation and its light top header use the background surface. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The Candidate sidebar spans the full viewport height. The navigation sidebar has no horizontal separators and keeps mock New session and Open incidents controls until SQLite and ERP wiring exist.
 
 | Route | File | What you see |
 |---|---|---|
@@ -27,7 +28,8 @@ Chrome: `CockpitShell` — a full-height frame with no top navigation bar. Case 
 
 The target `/chat` composition is:
 
-- **Main conversation** — Incident context, status rail, concise agent turns, parallel Outreach Tasks, checks, and the final Decision bar.
+- **Main conversation** — top replay controls, status rail, concise agent turns, parallel Outreach Tasks, checks, and the final Decision bar.
+- **Incident header** — compact case context by default; expands to show plant, part, shortfall, line-stop, cost, and inventory properties with Tabler icons.
 - **Candidate panel** — one fixed panel with stable multi-expand Candidate rows, Claim versus Supplier Record fields, evidence, and Landed Cost. It does not become a file browser or general result switcher.
 - **Call modal** — a large transcript and Claim view addressed by `?call=<id>`. Closing it returns to the same thread state.
 - **Decision bar** — compact at the thread end and expandable for Strategy, Landed Cost, policy checks, runner-ups, and rationale. Human approval happens here; approved is final.

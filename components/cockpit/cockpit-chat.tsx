@@ -5,9 +5,16 @@ import {
   CheckIcon,
   ChevronDownIcon,
   CircleIcon,
+  CostIcon,
+  FactoryIcon,
+  type IconComponent,
+  LineStopIcon,
+  PartIcon,
   PlayIcon,
+  QuantityIcon,
   RotateCcwIcon,
-} from "lucide-react"
+  WarehouseIcon,
+} from "@/components/icons"
 
 import {
   Conversation,
@@ -43,19 +50,13 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { CallDetailDialog } from "@/components/cockpit/call-detail-dialog"
 import { CandidatePanel } from "@/components/cockpit/candidate-panel"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
@@ -72,10 +73,7 @@ import {
 
 type Phase = "idle" | "running" | "done"
 type DecisionStatus =
-  | "evaluating"
-  | "on hold"
-  | "needs human review"
-  | "approved"
+  "evaluating" | "on hold" | "needs human review" | "approved"
 
 type RunStage = {
   label: "Incident" | "Candidates" | "Outreach Tasks" | "Claims" | "Decision"
@@ -160,16 +158,10 @@ export function CockpitChat() {
 
   return (
     <CockpitShell>
-      <div className="flex h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4">
-        <div className="flex items-center gap-4 text-sm">
-          <span className="font-mono">{INCIDENT.caseId}</span>
-          <span className="text-muted-foreground">{INCIDENT.partId}</span>
-          <span>{INCIDENT.lineStopDays} days to line stop</span>
-        </div>
-        <span className="text-muted-foreground text-sm">Devin session</span>
-      </div>
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_26rem]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <div className="flex min-h-0 min-w-0 flex-col">
+          <IncidentHeader />
+          <Composer phase={phase} onLaunch={launch} onReset={reset} />
           <Conversation className="min-h-0">
             <ConversationContent className="gap-4">
               <SourcingRunRail
@@ -177,7 +169,6 @@ export function CockpitChat() {
                 started={started}
                 approved={approved}
               />
-              <IncidentChip />
 
               {SCRIPT.slice(0, visible).map((step, index) => (
                 <AssistantTurn
@@ -188,7 +179,7 @@ export function CockpitChat() {
               ))}
 
               {phase === "running" ? (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DotLoader />
                   <span>{currentStep}</span>
                 </div>
@@ -203,9 +194,8 @@ export function CockpitChat() {
               onApprove={() => setApproved(true)}
             />
           ) : null}
-          <Composer phase={phase} onLaunch={launch} onReset={reset} />
         </div>
-        <div className="min-h-0 min-w-0">
+        <div className="hidden min-h-0 min-w-0 xl:block">
           <CandidatePanel visible={visible} />
         </div>
       </div>
@@ -213,6 +203,93 @@ export function CockpitChat() {
         <CallDetailDialog />
       </Suspense>
     </CockpitShell>
+  )
+}
+
+function IncidentHeader() {
+  return (
+    <Collapsible className="shrink-0">
+      <header className="group/incident-header flex h-11 items-center gap-2 border-b border-border/70 bg-background px-3">
+        <SidebarTrigger />
+        <CollapsibleTrigger
+          className="group/incident-trigger flex min-w-0 flex-1 items-center gap-4 rounded-md px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          aria-label="Toggle Incident details"
+        >
+          <span className="font-mono text-sm">{INCIDENT.caseId}</span>
+          <span className="hidden text-sm text-muted-foreground sm:inline">
+            {INCIDENT.partId}
+          </span>
+          <span className="hidden text-sm md:inline">
+            {INCIDENT.lineStopDays} days to line stop
+          </span>
+          <ChevronDownIcon
+            aria-hidden="true"
+            className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover/incident-header:opacity-100 group-focus-visible/incident-trigger:opacity-100 group-data-[state=open]/incident-trigger:rotate-180 group-data-[state=open]/incident-trigger:opacity-100 motion-reduce:transition-none"
+          />
+        </CollapsibleTrigger>
+        <h1 className="ml-auto shrink-0 text-sm font-medium">Stockout</h1>
+      </header>
+      <CollapsibleContent className="border-b border-border/70 bg-muted/20">
+        <dl className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
+          <IncidentProperty
+            icon={FactoryIcon}
+            label="Plants"
+            value={INCIDENT.plant}
+          />
+          <IncidentProperty
+            icon={PartIcon}
+            label="Part"
+            value={`${INCIDENT.partId} · ${INCIDENT.description}`}
+          />
+          <IncidentProperty
+            icon={QuantityIcon}
+            label="Quantity short"
+            value={groupThousands(INCIDENT.shortfall)}
+          />
+          <IncidentProperty
+            icon={LineStopIcon}
+            label="To line-stop"
+            value={`${INCIDENT.lineStopDays} d · ${hoursToLineStop} h`}
+          />
+          <IncidentProperty
+            icon={CostIcon}
+            label="Standing still"
+            value={standingStill}
+          />
+          <IncidentProperty
+            icon={WarehouseIcon}
+            label="Inventory"
+            value={`${groupThousands(INCIDENT.qtyOnHand)} on hand · ${groupThousands(INCIDENT.qtyRequired)} required`}
+          />
+        </dl>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+function IncidentProperty({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: IconComponent
+  label: string
+  value: string
+}) {
+  return (
+    <div className="grid min-w-0 grid-cols-[1.25rem_minmax(0,1fr)] gap-x-2.5">
+      <Icon
+        aria-hidden="true"
+        className="mt-0.5 size-4 text-muted-foreground"
+        stroke={1.75}
+      />
+      <div className="min-w-0">
+        <dt className="text-xs text-muted-foreground">{label}</dt>
+        <dd className="text-sm font-medium break-words tabular-nums">
+          {value}
+        </dd>
+      </div>
+    </div>
   )
 }
 
@@ -232,7 +309,8 @@ function SourcingRunRail({
       : isStepVisible(stage.afterId, visible)
   })
   const firstIncomplete = completed.findIndex((stageComplete) => !stageComplete)
-  const activeIndex = firstIncomplete === -1 ? RUN_STAGES.length - 1 : firstIncomplete
+  const activeIndex =
+    firstIncomplete === -1 ? RUN_STAGES.length - 1 : firstIncomplete
 
   return (
     <nav
@@ -299,7 +377,7 @@ function DecisionBar({
               className="group flex min-w-0 flex-1 items-center gap-3 text-left"
               aria-label="Toggle Decision details"
             >
-              <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none group-data-[state=open]:rotate-180" />
+              <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Decision</span>
@@ -386,47 +464,6 @@ function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
   return <Badge variant="outline">evaluating</Badge>
 }
 
-function IncidentChip() {
-  return (
-    <Card size="sm" className="w-full" aria-label="Incident from ERP">
-      <CardHeader>
-        <CardTitle>
-          Incident · {INCIDENT.plant} plant
-        </CardTitle>
-        <CardDescription>
-          {INCIDENT.partId} {INCIDENT.description}
-        </CardDescription>
-        <CardAction>
-          <Badge variant="outline">from ERP</Badge>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <dl className="grid grid-cols-3 gap-3 tabular-nums">
-          <div>
-            <dt className="text-muted-foreground text-xs">Qty short</dt>
-            <dd className="font-medium">{groupThousands(INCIDENT.shortfall)}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground text-xs">To line-stop</dt>
-            <dd className="font-medium">
-              {INCIDENT.lineStopDays} d / {hoursToLineStop} h
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground text-xs">Standing still</dt>
-            <dd className="font-medium">{standingStill}</dd>
-          </div>
-        </dl>
-        <p className="text-muted-foreground text-sm">
-          {groupThousands(INCIDENT.qtyOnHand)} on hand vs{" "}
-          {groupThousands(INCIDENT.qtyRequired)} required. ERP already showed
-          the shortage.
-        </p>
-      </CardContent>
-    </Card>
-  )
-}
-
 function AssistantTurn({
   step,
   latest,
@@ -506,7 +543,7 @@ function StepExtras({ step }: { step: ScriptStep }) {
 
   if (step.kind === "deltas") {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Munich Motion Claim is{" "}
         <Badge variant="destructive">in_stock_allocated</Badge> — that stock is
         not ours.
@@ -516,7 +553,7 @@ function StepExtras({ step }: { step: ScriptStep }) {
 
   if (step.kind === "decision") {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Winning Strategy: split 20% SKF air + 80% FAG sea. Required checks
         passed.
       </p>
@@ -539,7 +576,7 @@ function Composer({
   const done = phase === "done"
 
   return (
-    <div className="shrink-0 bg-background px-4 py-3">
+    <div className="shrink-0 border-b border-border/70 bg-background px-4 py-3">
       <PromptInput
         className="w-full"
         onSubmit={() => {
@@ -575,11 +612,7 @@ function Composer({
             size="sm"
             status={running ? "submitted" : "ready"}
           >
-            {running ? (
-              <DotLoader />
-            ) : (
-              <PlayIcon data-icon="inline-start" />
-            )}
+            {running ? <DotLoader /> : <PlayIcon data-icon="inline-start" />}
             {done ? "Replay" : "Launch sourcing agent"}
           </PromptInputSubmit>
         </PromptInputFooter>

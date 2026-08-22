@@ -12,7 +12,7 @@ import {
   Phone,
   Search,
   ShieldCheck,
-} from "lucide-react"
+} from "@/components/icons"
 
 const steps = [
   { label: "Shortage", color: "bg-chart-1", icon: Search },

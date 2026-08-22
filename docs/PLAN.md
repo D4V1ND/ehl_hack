@@ -249,7 +249,7 @@ The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`
 
 | # | Deliverable |
 |---|---|
-| A0 | **Direct entry** — `/` links to `/chat`; Cockpit chrome has no Dashboard link |
+| A0 | **Direct entry** — `/` links to `/chat`; full-height sidebar chrome has mock New session and Open incidents controls, with no Dashboard link or stored sessions until SQLite is wired |
 | A1 | **Incident context** — compact Munich and Stuttgart plant context for the 6204-2RS bearing shortage and a launch control |
 | A2 | **Status rail** — stages and Devin session state live in the main conversation |
 | A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
