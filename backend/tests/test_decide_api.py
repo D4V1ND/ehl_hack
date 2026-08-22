@@ -8,11 +8,14 @@ must never write into the repo's `cases/` during a test run.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.api.deps import store
+from backend.api.deps import settings, store
 from backend.api.main import app
+from backend.api.settings import get_settings
 from backend.casestore.case_store import CaseStore
 from packages.contracts.models import Candidate, Decision
 
@@ -20,10 +23,15 @@ from packages.contracts.models import Candidate, Decision
 @pytest.fixture
 def client(tmp_path):
     cases = CaseStore(tmp_path / "cases")
+    # A machine that has a GITHUB_TOKEN exported must not push a branch because
+    # someone ran the test suite, so the publish credentials are cleared here too.
+    rehearsal = replace(get_settings(), github_token=None, github_repo=None)
     app.dependency_overrides[store] = lambda: cases
+    app.dependency_overrides[settings] = lambda: rehearsal
     with TestClient(app) as test_client:
         yield test_client, cases
     app.dependency_overrides.pop(store)
+    app.dependency_overrides.pop(settings)
 
 
 def test_screen_returns_three_rejections_with_their_rules(client):
@@ -66,6 +74,22 @@ def test_single_source_blockers_names_the_lead_time_rule(client):
     test_client, _ = client
     body = test_client.get("/tools/single_source_blockers", params={"case_id": "CASE-001"}).json()
     assert body["SUP-RUL"] == ["lead_time_after_line_stop"]
+
+
+def test_publish_is_a_rehearsal_until_a_token_is_configured(client):
+    """No GITHUB_TOKEN in a test run, so this must describe rather than push."""
+    test_client, _ = client
+    test_client.post("/tools/decide", params={"case_id": "CASE-001"})
+    body = test_client.post("/tools/publish_pr", params={"case_id": "CASE-001"}).json()
+    assert body["dry_run"] is True
+    assert body["pr_url"] is None
+    assert body["branch"] == "procurement/case-001-2026-08-22"
+    assert "procurement/CASE-001/decision.md" in body["files"]
+
+
+def test_publishing_before_deciding_is_a_409(client):
+    test_client, _ = client
+    assert test_client.post("/tools/publish_pr", params={"case_id": "CASE-001"}).status_code == 409
 
 
 def test_an_unknown_case_is_a_404_not_a_500(client):

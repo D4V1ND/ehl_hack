@@ -16,10 +16,12 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from backend.api.deps import erp, store
+from backend.api.deps import erp, settings, store
+from backend.api.settings import Settings
 from backend.casestore.case_store import CaseStore
 from backend.decide.run import run, single_source_blockers
 from backend.policy.screen import screen
+from backend.publish.github_pr import publish
 from backend.record.ports import SystemOfRecord
 from packages.contracts.models import Candidate, Decision
 
@@ -103,3 +105,38 @@ def post_decide(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return outcome.decision
+
+
+@router.post("/publish_pr", summary="File the decided case as a pull request")
+def post_publish_pr(
+    case_id: str,
+    today: date = Query(default=TODAY),
+    cases: CaseStore = Depends(store),
+    config: Settings = Depends(settings),
+) -> dict[str, object]:
+    """The last step of the flow, and the only human gate: merging is approving.
+
+    With `GITHUB_TOKEN`/`GITHUB_REPO` unset this is a rehearsal and returns the
+    branch, file list and body it would have pushed, with `pr_url: null`.
+    """
+    try:
+        result = publish(
+            case_id=case_id,
+            cases=cases,
+            token=config.github_token,
+            repo=config.github_repo,
+            base=config.github_base_branch,
+            today=today,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {
+        "case_id": result.case_id,
+        "pr_url": result.pr_url,
+        "branch": result.branch,
+        "files": result.files,
+        "title": result.title,
+        "dry_run": result.dry_run,
+        "reason": result.reason,
+        "warnings": result.warnings,
+    }
