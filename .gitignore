@@ -55,3 +55,6 @@ __pycache__/
 
 # SQL system of record — a build artifact, rebuilt by `./run.sh db`
 backend/record/*.db
+
+# run.py writes background logs here
+.logs/

@@ -32,23 +32,36 @@ docs/                 plans and specs
 
 ## Commands
 
+Works the same on Windows, macOS and Linux:
+
 ```bash
-./run.sh setup   # once per machine: venv deps, npm install, build the database
-./run.sh         # the whole stack — API + cockpit. Ctrl-C stops both.
-./run.sh ui      # cockpit only. Runs offline; this is the demo path.
-./run.sh test    # 87 backend tests + UI typecheck. Never touches the network.
+python run.py setup   # once per machine: venv, npm install, build the database
+python run.py         # the whole stack — API + cockpit. Ctrl-C stops both.
+python run.py ui      # cockpit only. Runs offline; this is the demo path.
+python run.py test    # 116 tests + UI typecheck. Never touches the network.
 ```
 
-`./run.sh` picks free ports (API from 8010, cockpit from 3000), sources `nvm`
-against `ui/.nvmrc`, and builds the database if it is missing.
+| | |
+|---|---|
+| macOS / Linux | `python3 run.py …` — or `./run.sh …`, a thin wrapper |
+| Windows | `python run.py …` — or `run …`, which uses the `py` launcher |
 
-The same pieces are available individually: `make api`, `make ui`, `make db`,
-`make fixtures`, `make detect`, `make build`.
+`run.py` bootstraps from a clean clone: it creates the virtualenv, installs
+dependencies, builds the database if missing, and picks free ports (API from
+8010, cockpit from 3000). Node >= 20.9 is the one thing it cannot install for
+you; if you use nvm it will tell you which version you already have.
+
+It is Python rather than a shell script because Python 3.11+ is already required
+by the backend, so every machine has it — whereas Windows has no `bash` and
+macOS ships bash 3.2.
+
+Other commands: `db`, `db-export`, `fixtures`, `build`. The `Makefile` mirrors
+them on Unix.
 
 The cockpit defaults to `NEXT_PUBLIC_DATA_SOURCE=fixtures` and runs entirely
 offline. `./run.sh` points it at the live API instead.
 
-**Opening the database in a GUI on Windows:** run `./run.sh db-export`. DB
+**Opening the database in a GUI on Windows:** run `python run.py db-export`. DB
 Browser for SQLite cannot open the file in place — the repo is on ext4 inside
 WSL, and Windows reaches that over `\\wsl.localhost`, which has no POSIX file
 locking, so SQLite reports *"database is locked"* regardless of what is running.
@@ -67,7 +80,7 @@ demonstrable rather than a claim:
 | `SqliteERP` | `backend/record/supplyguard.db`, ERPNext-shaped tables | default |
 | `MockERP` | `backend/record/demo_data/*.yaml` | reference implementation, and the seed source |
 
-The YAML is what a human edits; `./run.sh db` compiles it into SQLite. The
+The YAML is what a human edits; `python run.py db` compiles it into SQLite. The
 database is a build artifact and is gitignored. Switch with `RECORD_BACKEND=yaml`
 or `RECORD_BACKEND=sqlite`.
 
