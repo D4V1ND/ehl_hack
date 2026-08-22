@@ -44,13 +44,10 @@ export function CandidatePanel({
   return (
     <aside
       aria-label="Candidates"
-      className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-muted text-foreground"
+      className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-sidebar text-foreground"
     >
       <header className="flex min-h-11 shrink-0 items-center justify-between border-b border-border px-3">
-        <div>
           <h2 className="text-sm font-medium">Candidates</h2>
-          <p className="text-xs text-muted-foreground">Stable match order</p>
-        </div>
         <Button
           type="button"
           size="icon-sm"

@@ -106,7 +106,7 @@ export function CockpitChat() {
             ))}
             {running ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <DotLoader />
+                <DotLoader className="size-4" />
                 <span>{currentStep}</span>
               </div>
             ) : null}
