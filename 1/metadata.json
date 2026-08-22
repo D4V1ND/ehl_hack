@@ -1,0 +1,80 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0N7ZJNA7C4F83WTSAGNENZ6",
+  "session_id": "fd3e5dd3-bd7e-4a65-962f-6c917cae3918",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T17:23:38.463462Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/layout.tsx",
+    "components/theme-provider.tsx"
+  ],
+  "agent": "Cursor",
+  "model": "composer-2.5",
+  "turn_id": "62ed82f5bd38",
+  "compact_transcript_start": 0,
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T17:23:38.460445Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 2,
+    "human_removed": 2,
+    "total_committed": 0,
+    "total_lines_changed": 4,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 16358,
+      "user_lines_removed": 165,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".env.example": 4,
+        ".gemini/settings.json": 9,
+        ".mcp.json": 11,
+        "CLAUDE.md": 1,
+        "app/globals.css": 157,
+        "app/layout.tsx": 1,
+        "components.json": 4,
+        "components/ai-elements/code-block.tsx": 562,
+        "components/ai-elements/conversation.tsx": 168,
+        "components/ai-elements/message.tsx": 360,
+        "components/ai-elements/prompt-input.tsx": 1459,
+        "components/ai-elements/task.tsx": 87,
+        "components/ai-elements/tool.tsx": 173,
+        "components/dotmatrix-loader.css": 1228,
+        "components/theme-provider.tsx": 1,
+        "components/ui/button-group.tsx": 87,
+        "components/ui/command.tsx": 196,
+        "components/ui/dialog.tsx": 160,
+        "components/ui/dotm-square-9.tsx": 136,
+        "components/ui/dropdown-menu.tsx": 268,
+        "components/ui/hover-card.tsx": 51,
+        "components/ui/select.tsx": 201,
+        "components/ui/tooltip.tsx": 66,
+        "docs/agents/devin-mcp.md": 49,
+        "lib/dotmatrix-core.tsx": 1650,
+        "lib/dotmatrix-hooks.ts": 224,
+        "package.json": 11,
+        "pnpm-lock.yaml": 9017,
+        "pnpm-workspace.yaml": 3
+      },
+      "user_removed_per_file": {
+        "CLAUDE.md": 34,
+        "app/globals.css": 113,
+        "app/layout.tsx": 1,
+        "components.json": 1,
+        "components/theme-provider.tsx": 1,
+        "docs/agents/tech-stack.md": 14,
+        "package.json": 1
+      }
+    }
+  ]
+}

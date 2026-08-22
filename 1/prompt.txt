@@ -1,0 +1,9 @@
+Make the dark mode default on this website
+
+---
+
+Make the dark mode default on this website
+
+---
+
+Commit & push only that small change
