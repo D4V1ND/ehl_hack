@@ -150,7 +150,9 @@ function CockpitSidebar({
   onResizeEnd: (event: PointerEvent<HTMLButtonElement>) => void
   onResizeKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
 }) {
-  const [activeSession, setActiveSession] = useState(INCIDENTS[0].caseId)
+  const [activeSession, setActiveSession] = useState<string>(
+    INCIDENTS[0].caseId
+  )
 
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">

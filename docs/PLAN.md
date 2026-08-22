@@ -247,7 +247,7 @@ The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`
 
 The prototype enters an existing Session, matching an external ERP link. The sidebar lists fixture Sessions; every selection opens the same CASE-001 rehearsal. The linked Incident appears inline in the first user message, and a bottom composer accepts local follow-up messages.
 
-`/chat` has the main conversation and one resizable **Candidate** panel. Its navigation and Candidate sidebars have bounded viewport-relative widths. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
+`/chat` has the main conversation and one resizable **Candidate** panel. Its navigation and Candidate sidebars have bounded viewport-relative widths. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal, while `?mock=true` opens its first fixture directly for UI review. The modal uses equal resizable History, voice, and Transcript panels. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
 
 | # | Deliverable |
 |---|---|
@@ -255,7 +255,7 @@ The prototype enters an existing Session, matching an external ERP link. The sid
 | A1 | **Incident context** — the first user message contains an inline primary-colour CASE-001 mention, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
 | A2 | **Status rail** — stages and Devin session state live in the main conversation |
 | A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
-| A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows transcript, masked number, and structured Claim progress |
+| A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows timestamped call activity, a System-first transcript with bubbles only for Candidate turns, masked call state, animated voice activity, and an expandable Claim with Evidence. `?mock=true` opens the first fixture directly |
 | A5 | **Claim versus Supplier Record** — Candidate detail keeps the separation explicit, then shows Landed Cost and the selected split Strategy |
 | A6 | **Decision bar** — compact at the thread end, expandable for rationale, runner-ups, and checks. A human marks the Decision approved in Stockout; approved is final. No PR card or merge approval |
 

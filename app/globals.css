@@ -128,3 +128,9 @@
     @apply font-sans;
     }
 }
+
+@layer components {
+  .call-sidebar {
+    @apply bg-transparent text-muted-foreground;
+  }
+}
