@@ -9,7 +9,7 @@ How the approved Cockpit looks and behaves. Product name on every surface is **S
 1. The product has one Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard` route or Dashboard navigation.
 2. `/chat` has the main conversation and one closable **Candidate** panel. It has no file tree and no **Files | Results** tabs.
 3. Candidate rows in the fixed panel are compact and stable. More than one row can stay expanded.
-4. Outreach Tasks run in parallel. Call details open as a large modal through `?call=<id>`.
+4. Outreach Tasks run in parallel. Call details open as a large modal through `?call=<id>`. `?mock=true` opens the first fixture call directly for UI review.
 5. One fixed conversation header holds Incident context, run status, Replay, and the Candidate-panel restore control. A fixed bottom dock holds the expandable **Decision** bar and composer. Only the conversation between them scrolls.
 6. The agent recommends. A human marks the Decision approved in SupplyOS. **Approved** is the final state. There is no PR card or merge approval.
 7. Rehearsal is the default. Phone numbers are masked. Claims remain distinct from trusted Supplier Records.
@@ -38,7 +38,7 @@ The target `/chat` composition is:
 - **Messaging** — the linked Incident is an inline primary-colour mention in the first user message; the fixed bottom composer appends local prototype messages.
 - **Incident header** — compact case context by default; expands to show plant, part, shortfall, line-stop, cost, and inventory properties with Tabler icons.
 - **Candidate panel** — one closable panel with stable multi-expand Candidate rows, Claim versus Supplier Record fields, evidence, and Landed Cost. An icon at the right end of the conversation header restores it. It does not become a file browser or general result switcher.
-- **Call modal** — a large transcript and Claim view addressed by `?call=<id>`. Closing it returns to the same thread state.
+- **Call modal** — a near-full-screen, three-panel call view addressed by `?call=<id>`. History, voice state, and Transcript use equal resizable widths by default. Both sidebars use the shared transparent `call-sidebar` class with muted foreground. History is a connected, timestamped activity timeline for the Outreach Task, call start, call completion, and filed Claim. The Claim confidence badge sits beside its title, and the Claim expands with Evidence inside it. The first transcript item is a plain System prompt combining the Outreach Task and mandatory disclosure. Its label matches other speaker labels without a separator. Agent turns remain plain text without an avatar. Candidate turns use message bubbles and show the Candidate name. The Transcript header does not repeat the phone number. The compact header toggles History and Transcript around the centred Candidate name. Below `lg`, one panel appears at a time and the header toggles return to the call stage. `?mock=true` opens the first fixture call without waiting for the rehearsal. Closing it returns to the same thread state.
 - **Decision bar** — borderless and fixed above the composer, with details that expand upward for Strategy, Landed Cost, policy checks, runner-ups, and rationale. Human approval happens here; approved is final.
 
 Rehearsal data is scripted CASE-001. No backend is required for this implementation. SQLite remains the intended operational datastore when persistence is added.
