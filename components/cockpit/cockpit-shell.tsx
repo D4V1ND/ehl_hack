@@ -31,8 +31,8 @@ import {
 import { LogoIcon } from "@/components/logo"
 import { INCIDENTS } from "@/lib/case-001"
 
-const LEFT_SIDEBAR_MIN = 5
-const LEFT_SIDEBAR_MAX = 15
+const LEFT_SIDEBAR_MIN = 10
+const LEFT_SIDEBAR_MAX = 20
 
 export function CockpitShell({
   children,
@@ -110,30 +110,37 @@ function WorkspacePanels({
   children: ReactNode
   rightSidebar?: ReactNode
 }) {
-  const [isWide, setIsWide] = useState(false)
+  const [showsCandidatePanel, setShowsCandidatePanel] = useState(false)
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 80rem)")
-    const update = () => setIsWide(media.matches)
+    const media = window.matchMedia("(min-width: 48rem)")
+    const update = () => setShowsCandidatePanel(media.matches)
 
     update()
     media.addEventListener("change", update)
     return () => media.removeEventListener("change", update)
   }, [])
 
-  if (!isWide || !rightSidebar) return children
+  if (!showsCandidatePanel) return children
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel minSize="35vw">{children}</ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel
-        defaultSize="26rem"
-        minSize="10vw"
-        maxSize="50vw"
-      >
-        {rightSidebar}
+      <ResizablePanel id="conversation" minSize="30vw">
+        {children}
       </ResizablePanel>
+      {rightSidebar ? (
+        <>
+          <ResizableHandle withHandle />
+          <ResizablePanel
+            id="candidates"
+            defaultSize="30vw"
+            minSize="20vw"
+            maxSize="50vw"
+          >
+            {rightSidebar}
+          </ResizablePanel>
+        </>
+      ) : null}
     </ResizablePanelGroup>
   )
 }
@@ -151,9 +158,8 @@ function CockpitSidebar({
   onResizeEnd: (event: PointerEvent<HTMLButtonElement>) => void
   onResizeKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
 }) {
-  const [activeSession, setActiveSession] = useState<string>(
-    INCIDENTS[0].caseId
-  )
+  const [activeSession, setActiveSession] =
+    useState<(typeof INCIDENTS)[number]["caseId"]>(INCIDENTS[0].caseId)
 
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">

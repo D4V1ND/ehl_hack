@@ -128,3 +128,24 @@
     @apply font-sans;
     }
 }
+
+.chat-scrollbar {
+  scrollbar-color: var(--muted) transparent;
+  scrollbar-gutter: stable !important;
+  scrollbar-width: thin;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: var(--muted);
+  background-clip: content-box;
+}
