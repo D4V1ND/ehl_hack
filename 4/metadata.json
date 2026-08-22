@@ -1,0 +1,176 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NKACG7V9BC4D7PP00PEVF1",
+  "session_id": "01a02b28-520b-7ba1-8cb2-feea7a91992b",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T20:43:38.47539Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    "app/globals.css",
+    "app/page.tsx",
+    "components/ai-elements/code-block.tsx",
+    "components/ai-elements/conversation.tsx",
+    "components/ai-elements/message.tsx",
+    "components/ai-elements/prompt-input.tsx",
+    "components/ai-elements/task.tsx",
+    "components/ai-elements/tool.tsx",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/cockpit/working-pane.tsx",
+    "components/ui/command.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/message-scroller.tsx",
+    "components/ui/select.tsx",
+    "components/ui/spinner.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "package-lock.json",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-terra",
+  "turn_id": "ae21e51a151b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 32332,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 327680,
+    "output_tokens": 2593,
+    "api_call_count": 12
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T20:43:38.463245Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 116,
+    "human_removed": 34,
+    "total_committed": 0,
+    "total_lines_changed": 150,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 5535,
+      "user_lines_removed": 70,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/globals.css": 3,
+        "app/page.tsx": 1,
+        "app/prototype/README.md": 22,
+        "app/prototype/website/page.tsx": 23,
+        "components/ai-elements/code-block.tsx": 1,
+        "components/ai-elements/conversation.tsx": 1,
+        "components/ai-elements/message.tsx": 1,
+        "components/ai-elements/prompt-input.tsx": 1,
+        "components/ai-elements/task.tsx": 1,
+        "components/ai-elements/tool.tsx": 1,
+        "components/cockpit/candidate-panel.tsx": 2,
+        "components/cockpit/cockpit-chat.tsx": 17,
+        "components/cockpit/cockpit-shell.tsx": 71,
+        "components/cockpit/working-pane.tsx": 1,
+        "components/icons.tsx": 48,
+        "components/prototype/prototype-switcher.tsx": 44,
+        "components/prototype/website-prototype.tsx": 280,
+        "components/ui/command.tsx": 1,
+        "components/ui/dialog.tsx": 1,
+        "components/ui/dropdown-menu.tsx": 1,
+        "components/ui/message-scroller.tsx": 1,
+        "components/ui/select.tsx": 1,
+        "components/ui/sheet.tsx": 138,
+        "components/ui/sidebar.tsx": 723,
+        "components/ui/skeleton.tsx": 13,
+        "components/ui/spinner.tsx": 1,
+        "docs/PLAN.md": 1,
+        "docs/design.md": 1,
+        "hooks/use-mobile.ts": 19,
+        "package-lock.json": 4097,
+        "package.json": 1,
+        "pnpm-lock.yaml": 18
+      },
+      "user_removed_per_file": {
+        "app/globals.css": 3,
+        "app/page.tsx": 1,
+        "app/prototype/README.md": 3,
+        "components/ai-elements/code-block.tsx": 1,
+        "components/ai-elements/conversation.tsx": 1,
+        "components/ai-elements/message.tsx": 1,
+        "components/ai-elements/prompt-input.tsx": 1,
+        "components/ai-elements/task.tsx": 1,
+        "components/ai-elements/tool.tsx": 1,
+        "components/cockpit/candidate-panel.tsx": 2,
+        "components/cockpit/cockpit-chat.tsx": 11,
+        "components/cockpit/cockpit-shell.tsx": 4,
+        "components/cockpit/working-pane.tsx": 1,
+        "components/ui/command.tsx": 1,
+        "components/ui/dialog.tsx": 1,
+        "components/ui/dropdown-menu.tsx": 1,
+        "components/ui/message-scroller.tsx": 1,
+        "components/ui/select.tsx": 1,
+        "components/ui/spinner.tsx": 1,
+        "docs/PLAN.md": 1,
+        "docs/design.md": 1,
+        "package-lock.json": 18,
+        "package.json": 1,
+        "pnpm-lock.yaml": 12
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 113,
+      "user_lines_removed": 82,
+      "agent_lines_added": 5535,
+      "agent_lines_removed": 70,
+      "user_added_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 104,
+        "components/cockpit/cockpit-shell.tsx": 5,
+        "docs/design.md": 4
+      },
+      "user_removed_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 79,
+        "components/cockpit/cockpit-shell.tsx": 1,
+        "docs/design.md": 2
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 3,
+      "user_lines_removed": 1,
+      "agent_lines_added": 5633,
+      "agent_lines_removed": 137,
+      "user_added_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 3
+      },
+      "user_removed_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 1
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 407,
+      "user_lines_removed": 3,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/prototype/README.md": 23,
+        "app/prototype/website/page.tsx": 23,
+        "components/prototype/prototype-switcher.tsx": 44,
+        "components/prototype/website-prototype.tsx": 317
+      },
+      "user_removed_per_file": {
+        "app/prototype/README.md": 3
+      }
+    }
+  ]
+}

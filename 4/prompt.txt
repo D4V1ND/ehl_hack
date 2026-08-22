@@ -1,0 +1,9 @@
+how should we use entire checkpoints in this repo? when should we create them?
+
+---
+
+my agents do this automatically right? What even are checkpoints?
+
+---
+
+why do we then only have 1 checkpoint in 37 commits?
