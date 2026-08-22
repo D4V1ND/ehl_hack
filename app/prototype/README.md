@@ -14,7 +14,7 @@ npm run dev
 
 Use the floating arrows or the left and right arrow keys to compare variants A–E.
 
-The question: which single-screen beta layout best fits Stockout?
+The question: which single-screen beta layout best fits SupplyOS?
 
 - A and B use `public/website/background-1.png`.
 - C and D use `public/website/background-2.jpeg`.
@@ -37,4 +37,4 @@ Open the HTML file directly. No build step.
 5. **Claim vs record** — right: Claim | Supplier Record + Landed Cost.
 6. **Decision + files** — right: artifacts + PR card. No Approve button.
 
-IA: ERP owns Incident. Stockout owns the sourcing run.
+IA: ERP owns Incident. SupplyOS owns the sourcing run.

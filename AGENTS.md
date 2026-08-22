@@ -1,8 +1,8 @@
-# Stockout
+# SupplyOS
 
-An EHL Game Jam sourcing demo for a German automotive manufacturer. A bearing shortage launches an agent that gathers structured CALL-E Claims, checks policy and landed cost, and presents a human-approved Decision in Stockout.
+An EHL Game Jam sourcing demo for a German automotive manufacturer. A bearing shortage launches an agent that gathers structured CALL-E Claims, checks policy and landed cost, and presents a human-approved Decision in SupplyOS.
 
-Planning documents still use the working name **SupplyGuard**. The product UI currently uses **Stockout**. Keep the name of the surface you are changing unless the developer asks for a rename.
+Planning documents still use the working name **SupplyGuard**. The product UI uses **SupplyOS**.
 
 ## A note from the maintainers
 
@@ -12,27 +12,27 @@ Channel both "measure twice, cut once" and YAGNI. Fight scope creep. Honor the d
 
 These instructions are good defaults. The developer's explicit request can override them.
 
-## What makes Stockout special
+## What makes SupplyOS special
 
 We will not trade these away as we iterate.
 
 1. **Auditable sourcing.** Cases, Claims, checks, costs, and Decisions remain traceable.
 2. **Claims are not facts.** What a supplier says stays separate from the factory's trusted records.
 3. **Self-checking decisions.** Compliance and landed-cost logic are executable and tested before a recommendation ships.
-4. **Human approval.** The agent recommends. A human marks the Decision approved in Stockout; approved is final.
+4. **Human approval.** The agent recommends. A human marks the Decision approved in SupplyOS; approved is final.
 
 ## Who is who
 
-- **you** — the agent reading this file and changing Stockout.
+- **you** — the agent reading this file and changing SupplyOS.
 - **we, us** — the maintainers and developers you are talking to.
-- **user** — the person resolving a factory shortage with Stockout.
+- **user** — the person resolving a factory shortage with SupplyOS.
 - **supplier** — the party contacted for availability, price, stock status, and certification.
 
 Use the domain words from `docs/PLAN.md` and `docs/specs/supplyguard-plan-1-foundation-spec.md`: Incident, Supplier Record, Claim, Candidate, Outreach Task, Landed Cost, Strategy, and Decision. Do not invent synonyms for these concepts.
 
 ## How it works
 
-The planned path is shortage trigger → Devin Session → system-of-record lookup → parallel supplier outreach → structured Claims → compliance and landed-cost checks → Decision → human approval in Stockout. The Cockpit renders progress and the approved final state.
+The planned path is shortage trigger → Devin Session → system-of-record lookup → parallel supplier outreach → structured Claims → compliance and landed-cost checks → Decision → human approval in SupplyOS. The Cockpit renders progress and the approved final state.
 
 The repository is still a walking skeleton. It currently contains the Next.js landing page, the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. The implementation remains fixture-driven. Confirm that a planned module exists before extending it.
 

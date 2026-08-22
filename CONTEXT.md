@@ -1,6 +1,6 @@
-# Stockout
+# SupplyOS
 
-A bearing shortage at a German automotive manufacturer launches an agent that gathers supplier Claims, checks them against trusted records, and prepares a Decision for human approval in Stockout.
+A bearing shortage at a German automotive manufacturer launches an agent that gathers supplier Claims, checks them against trusted records, and prepares a Decision for human approval in SupplyOS.
 
 ## Language
 
@@ -33,7 +33,7 @@ One way to cover the shortfall: one or more order lines, possibly a split across
 _Avoid_: plan, scenario, option pack
 
 **Decision**:
-The ranked Strategies plus the recommended purchase and its policy and cost checks. A human marks the Decision approved in Stockout; approved is the final state.
+The ranked Strategies plus the recommended purchase and its policy and cost checks. A human marks the Decision approved in SupplyOS; approved is the final state.
 _Avoid_: recommendation blob, verdict, pull request, merge approval
 
 **Cockpit**:
