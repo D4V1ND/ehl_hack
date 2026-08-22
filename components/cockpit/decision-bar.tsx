@@ -42,7 +42,6 @@ export function DecisionBar({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Decision</span>
-                  <DecisionStatusBadge status={status} />
                 </div>
                 <p className="truncate text-xs text-muted-foreground">
                   {recommended.name}
@@ -110,11 +109,4 @@ function DecisionDetails({ checksPassed }: { checksPassed: boolean }) {
       </div>
     </div>
   )
-}
-
-function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
-  if (status === "approved") return <Badge variant="secondary">approved</Badge>
-  if (status === "on hold") return <Badge variant="destructive">on hold</Badge>
-  if (status === "needs human review") return null
-  return <Badge variant="outline">evaluating</Badge>
 }

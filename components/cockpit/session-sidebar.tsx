@@ -54,6 +54,7 @@ export function SessionSidebar({
                     size="lg"
                     isActive={incident.caseId === activeSession}
                     onClick={() => setActiveSession(incident.caseId)}
+                    className="mb-px hover:bg-accent/30"
                   >
                     <span className="min-w-0">
                       <span className="block font-mono text-xs">
