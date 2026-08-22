@@ -39,3 +39,9 @@ yarn-error.log*
 /outputs/
 /work/
 /.herenow/
+# production
+/build
+pnpm-debug.log*
+# typescript
+*.tsbuildinfo
+next-env.d.ts
