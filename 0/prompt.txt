@@ -109,3 +109,25 @@ why it comes after my script ends? should I wait longer?
 ---
 
 how to create a PR to merge from branch call_e to branch main
+
+---
+
+check the PR, there are conflicts here This branch has conflicts that must be resolved
+Use the command line to resolve conflicts before continuing.
+
+.gitignore
+backend/__pycache__/main.cpython-313.pyc
+backend/__pycache__/settings.cpython-313.pyc
+backend/fixtures/supplier_phones.json
+backend/outreach/__pycache__/calle.cpython-313.pyc
+backend/outreach/__pycache__/normalize.cpython-313.pyc
+backend/outreach/__pycache__/prompts.cpython-313.pyc
+backend/outreach/__pycache__/router.cpython-313.pyc
+packages/contracts/__pycache__/__init__.cpython-313.pyc
+packages/contracts/__pycache__/models.cpython-313.pyc
+packages/contracts/__pycache__/schemas.cpython-313.pyc
+test/__pycache__/test_calle_provider.cpython-313-pytest-9.0.3.pyc
+test/__pycache__/test_normalize.cpython-313-pytest-9.0.3.pyc
+test/__pycache__/test_prompts.cpython-313-pytest-9.0.3.pyc
+test/__pycache__/test_router.cpython-313-pytest-9.0.3.pyc
+test/__pycache__/test_schemas.cpython-313-pytest-9.0.3.pyc. due to that, I cant merge in
