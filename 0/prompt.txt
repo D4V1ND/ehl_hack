@@ -92,3 +92,7 @@ Checklist + passing tests + diff. That is procurement-as-code: policy suite gree
 
 A4 call chrome only — Grok Voice
 Green “Call connected 0:22” + End Call. Take the status bar. Skip the empty canvas.
+
+---
+
+commit only that change
