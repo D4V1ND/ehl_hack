@@ -1,0 +1,94 @@
+space://1787423609051-9lo7kff9r/Devin%20Codex%20ACP%20Connection%20Failure
+<context ref="space://1787423609051-9lo7kff9r/Devin%20Codex%20ACP%20Connection%20Failure">
+<project_context name="Devin Codex ACP Connection Failure">
+The following are summaries of other sessions in this project. Each <session> block has a "title" attribute (the session's name) and contains a <summary> of the work done in that session. Use this as background context — it is not necessarily related to your current task.
+
+<session title="Devin Codex ACP Connection Failure">
+The user was trying to set up **Codex ACP** as a custom agent in Devin Desktop but encountered an error: `"codex-acp" failed to activate: ACP connection closed`.
+
+**Root cause identified:** Devin Desktop's built-in `codex-acp` agent spawns `npx -y @agentclientprotocol/codex-acp@1.6.2`, but the user's npm config had `minimum-release-age=4320` (3 days). Version 1.6.2 was published on 2026-08-20, within the 3-day window, so npm blocked the installation. The process exited with code 1 before the ACP handshake could complete.
+
+**Initial attempted fix:** Added a local registry override at `~/.windsurf/acp/registry.json` pinning to version 1.6.0, but this didn't work because the local registry doesn't override built-in ACP agents in Devin Desktop.
+
+**Final solution:**
+1. Remove `minimum-release-age=4320` and `min-release-age=3` lines from `~/.npmrc` using: `sed -i.bak '/^min-release-age=/d; /^minimum-release-age=/d' ~/.npmrc`
+2. Install globally: `npm install -g @agentclientprotocol/codex-acp@1.6.2`
+3. Set `OPENAI_API_KEY` if Codex CLI isn't already authenticated via browser login
+4. Restart Devin Desktop from terminal to inherit Codex CLI auth
+5. Enable Codex via: Cmd+Shift+P → Devin User Settings → Agents tab → toggle on Codex
+6. Start new conversation and select Codex as the **agent** (bottom-right selector), not just the model
+
+**Additional notes:**
+- Devin Desktop uses `~/.windsurf` config directory despite being a different app
+- Codex CLI authentication (ChatGPT login) is sufficient; API key is optional if already authenticated
+- The agent selector (bottom right) controls which agent runs; the model picker shows models available to that agent
+- ACP agents require Pro, Max, or Teams plans and only appear in new conversations
+</session>
+
+<session title="Finalize Stockout Cockpit Visual Design">
+**Updated Summary: Stockout Cockpit Design Implementation Phase**
+
+**Context**
+After completing the design grilling phase with 24 settled questions, you confirmed the shared understanding and requested direct implementation in the existing Next.js UI rather than using Paper. You specified: German automotive manufacturer wording (Munich and Stuttgart plants), ignore Supabase, fixture-driven implementation.
+
+**Implementation Phase**
+I invoked shadcn, Vercel React best practices, and interface polish skills, then dispatched 5 parallel subagents with non-overlapping file ownership:
+
+**Subagent Status:**
+- **Fixture Model Builder** (lib/case-001.ts): Running - extending CASE-001 rehearsal model with richer Claim fields, German automotive context, parallel Outreach Tasks
+- **Candidate Panel Builder** (candidate-panel.tsx): Running - building Devin-dense shadcn panel with multi-expand cards, field-diff rows, stable order
+- **Call Dialog Builder** (call-detail-dialog.tsx): **Completed** - URL-persistent large modal, two-column layout, Lindy/Grok/Vapi patterns, foundation Claim fields
+- **Conversation Builder** (cockpit-chat.tsx): Running - status rail, compact beats, parallel Outreach Task block, expandable Decision bar
+- **Routes Docs Builder** (routes, docs): **Completed** - deleted dashboard navigation, updated landing CTA to `/chat`, German automotive wording, updated architecture docs
+
+**Key Architectural Changes Implemented:**
+- `/dashboard` route removed from navigation (file deletion pending parent agent)
+- Landing CTA opens `/chat` directly
+- SQLite as intended operational datastore (fixture-driven for now)
+- Human approval in Stockout (no GitHub PR merge approval)
+- Fixed-width Candidate panel (26rem) beside flexible conversation
+- Status rail in main conversation
+- Decision bar at thread end with `approved` final state
+- Call details via `?call=<id>` URL parameter
+
+**User Action**
+You manually created `components/cockpit/candidate-panel.tsx` with the Candidate panel implementation.
+
+**Outstanding Work**
+- Fixture Model Builder and Conversation Builder still running
+- Parent agent needs to delete `app/dashboard/page.tsx` (permission denied for subagent)
+- Final integration testing and visual correction pass required
+</session>
+</project_context>
+
+
+</context>These are the links to the mobbin design references:
+
+Update [@design.md](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/docs/design.md) with those. Only add those mentioned in design md as a list of links
+
+Base the product on these five
+WRITER — Chat left, deliverables right. The agent writes a file, then shows it as the object to review. Closest match to cases/<id>/ plus decision.md. Use this for A5–A6.
+
+Lindy — Transcript on the left with a live checklist. Computer / browser on the right. The user watches work, they do not drive it. Use this for A2–A3.
+
+incident.io — Incident as a first-class object: stage stepper, severity badge, “Ongoing for 24m 47s”, timeline of system events. Map that 1:1 onto the Shortage turn (hours-to-line-stop, Launch sourcing agent). Use this for A1–A2.
+
+Microsoft Copilot — Deep Research — Progress lives inside the chat as a card (“I’m browsing… / I’ll write the report / Est. ~10 min”). That is the A1–A6 rule: turns and inline blocks, not extra routes.
+
+Devin — Worklog + PR + file diff as the finish line. Approval is merge, not an in-app button. Use this for A6 and the pitch.
+
+Steal one pattern per beat
+A4 live calls — Vapi
+Call metadata, dual-track recording, tabs for Transcript / Structured Outputs / Cost. Mask numbers. Keep the density.
+
+A4 transcript in a case — Lightfield
+Timestamped turns + “Ask …” on the same record. Good for CALL-E evidence without a call-center chrome.
+
+A6 artifacts — Manus
+“All files in this task” with type chips. Map to sourcing_case.yaml, claims/*.json, policy_report.md, po_draft.md.
+
+A3 / A6 engineering case — Cursor
+Checklist + passing tests + diff. That is procurement-as-code: policy suite green before the PR.
+
+A4 call chrome only — Grok Voice
+Green “Call connected 0:22” + End Call. Take the status bar. Skip the empty canvas.
