@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NNZ2KMZCTKA3P9SC25EJ43",
+  "session_id": "01a02b18-7f36-7b73-b4e5-664823ca2add",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:29:58.061435Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "public/website/background-4.png"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "3ec853eed369",
+  "compact_transcript_start": 0,
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:29:58.053405Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 0,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1341,
+      "user_lines_removed": 21,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/globals.css": 3,
+        "app/prototype/README.md": 22,
+        "app/prototype/website/page.tsx": 21,
+        "components/cockpit/candidate-panel.tsx": 1,
+        "components/cockpit/cockpit-chat.tsx": 14,
+        "components/cockpit/cockpit-shell.tsx": 74,
+        "components/prototype/prototype-switcher.tsx": 46,
+        "components/prototype/website-prototype.tsx": 265,
+        "components/ui/sheet.tsx": 138,
+        "components/ui/sidebar.tsx": 723,
+        "components/ui/skeleton.tsx": 13,
+        "docs/PLAN.md": 1,
+        "docs/design.md": 1,
+        "hooks/use-mobile.ts": 19
+      },
+      "user_removed_per_file": {
+        "app/globals.css": 3,
+        "app/prototype/README.md": 3,
+        "components/cockpit/candidate-panel.tsx": 1,
+        "components/cockpit/cockpit-chat.tsx": 8,
+        "components/cockpit/cockpit-shell.tsx": 4,
+        "docs/PLAN.md": 1,
+        "docs/design.md": 1
+      }
+    }
+  ]
+}
