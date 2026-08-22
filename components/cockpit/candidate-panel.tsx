@@ -43,7 +43,7 @@ export function CandidatePanel({ visible }: { visible: number }) {
   return (
     <aside
       aria-label="Candidates"
-      className="flex h-full w-full min-w-0 flex-col overflow-hidden border-l border-border bg-muted text-foreground"
+      className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-muted text-foreground"
     >
       <header className="flex min-h-11 shrink-0 items-center justify-between border-b border-border px-3">
         <div>

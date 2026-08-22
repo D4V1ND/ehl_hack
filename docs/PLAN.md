@@ -245,12 +245,14 @@ One product route: `/chat`. The landing CTA opens it directly. There is no `/das
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
 
-`/chat` has the main conversation and one fixed **Candidate** panel. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
+The prototype enters an existing Session, matching an external ERP link. The sidebar lists fixture Sessions; every selection opens the same CASE-001 rehearsal. The linked Incident appears inline in the first user message, and a bottom composer accepts local follow-up messages.
+
+`/chat` has the main conversation and one resizable **Candidate** panel. Its navigation and Candidate sidebars have bounded viewport-relative widths. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
 
 | # | Deliverable |
 |---|---|
-| A0 | **Direct entry** — `/` links to `/chat`; full-height sidebar chrome has mock New session and Open incidents controls, with no Dashboard link or stored sessions until SQLite is wired |
-| A1 | **Incident context** — compact Munich and Stuttgart plant context for the 6204-2RS bearing shortage and a launch control |
+| A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists icon-free fixture Sessions that all render the same CASE-001 rehearsal |
+| A1 | **Incident context** — the first user message contains an inline primary-colour CASE-001 mention, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
 | A2 | **Status rail** — stages and Devin session state live in the main conversation |
 | A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
 | A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows transcript, masked number, and structured Claim progress |

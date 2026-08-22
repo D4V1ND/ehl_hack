@@ -19,16 +19,20 @@ How the approved Cockpit looks and behaves. Product name on this surface is **St
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Both sidebars use the muted surface; the conversation and its light top header use the background surface. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The Candidate sidebar spans the full viewport height. The navigation sidebar has no horizontal separators and keeps mock New session and Open incidents controls until SQLite and ERP wiring exist.
+Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Stockout opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
+
+Both sidebars use the muted surface; the conversation and its light top header use the background surface. The left Session sidebar resizes between 5% and 15% of the viewport. The Candidate sidebar resizes between 10% and 50% of the viewport. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The linked Incident is a compact primary-colour mention inside the first user message. A darker composer with a stronger input outline stays at the bottom. Separators remain quiet but visible.
 
 | Route | File | What you see |
 |---|---|---|
 | `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. CTA goes to `/chat` |
-| `/chat` | `components/cockpit/cockpit-chat.tsx` | One CASE-001 rehearsal thread and one fixed Candidate panel |
+| `/chat` | `components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one fixed Candidate panel |
 
 The target `/chat` composition is:
 
+- **Sessions** — compact two-line mock Session links have no icon; the selected Session uses the accent background. Every selection opens the same fixture thread.
 - **Main conversation** — top replay controls, status rail, concise agent turns, parallel Outreach Tasks, checks, and the final Decision bar.
+- **Messaging** — the linked Incident is an inline primary-colour mention in the first user message; a bottom composer appends local prototype messages.
 - **Incident header** — compact case context by default; expands to show plant, part, shortfall, line-stop, cost, and inventory properties with Tabler icons.
 - **Candidate panel** — one fixed panel with stable multi-expand Candidate rows, Claim versus Supplier Record fields, evidence, and Landed Cost. It does not become a file browser or general result switcher.
 - **Call modal** — a large transcript and Claim view addressed by `?call=<id>`. Closing it returns to the same thread state.
