@@ -1,32 +1,52 @@
 """JSON Schema export for CALL-E's `recipient_result_schema`.
 
-One source of truth: the Quote model in models.py. We strip the fields
-that belong to us rather than to the supplier, so the voice agent is only
-ever asked for things a person on a phone could actually answer.
+Field list is kept in sync with the Quote model by hand rather than by
+calling Quote.model_json_schema() directly: CALL-E's schema validator only
+supports a restricted JSON Schema subset and rejects `anyOf` outright
+(confirmed against the real API — see docs/superpowers/plans/2026-08-22-
+slice-c-calle-outreach.md Task 7 notes). Pydantic renders every `X | None`
+field and every Decimal field as `anyOf`, so that output can't be reused
+as-is. Optional fields are simply omitted from `required`; a supplier who
+doesn't know an answer leaves the key out rather than sending null, which
+normalize_result already treats as unknown.
 """
 
 from __future__ import annotations
 
-from packages.contracts.models import Quote
-
-# Fields we own. The supplier is never asked for these.
-_OURS = {"task_id", "case_id", "supplier_ref", "raw", "confidence",
-         "transcript_url", "recording_url", "notes"}
-
 
 def quote_result_schema() -> dict:
-    schema = Quote.model_json_schema()
-
-    properties = {
-        name: spec
-        for name, spec in schema["properties"].items()
-        if name not in _OURS
-    }
-
     return {
         "type": "object",
-        "properties": properties,
+        "properties": {
+            "available": {"type": "boolean"},
+            "qty_offered": {"type": "integer"},
+            "unit_price": {"type": "number"},
+            "price_breaks": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "min_qty": {"type": "integer"},
+                        "unit_price": {"type": "number"},
+                    },
+                    "required": ["min_qty", "unit_price"],
+                },
+            },
+            "currency": {"type": "string", "enum": ["EUR", "USD", "GBP", "unknown"]},
+            "moq": {"type": "integer"},
+            "lead_time_days": {"type": "integer"},
+            "expedite_option": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer"},
+                    "surcharge": {"type": "number"},
+                },
+                "required": ["days", "surcharge"],
+            },
+            "incoterm": {"type": "string"},
+            "certs_claimed": {"type": "array", "items": {"type": "string"}},
+            "payment_terms": {"type": "string"},
+        },
         "required": ["available", "qty_offered", "lead_time_days"],
         "additionalProperties": False,
-        "$defs": schema.get("$defs", {}),
     }
