@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0NMG5JBMRVGZMH8TJ064F3B",
   "strategy": "manual-commit",
   "branch": "slice-b/calls-from-cockpit",
-  "checkpoints_count": 9,
+  "checkpoints_count": 11,
   "files_touched": [
     "backend/api/routers/cases.py",
     "backend/api/routers/tools.py",
@@ -23,13 +23,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 750,
-    "cache_creation_tokens": 653028,
-    "cache_read_tokens": 157765675,
-    "output_tokens": 477683,
-    "api_call_count": 376
+    "input_tokens": 928,
+    "cache_creation_tokens": 815249,
+    "cache_read_tokens": 168755322,
+    "output_tokens": 549149,
+    "api_call_count": 465
   }
 }
