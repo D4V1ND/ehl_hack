@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NMG5JBMRVGZMH8TJ064F3B",
+  "session_id": "8944487a-e971-48a3-b87e-e0500ca26093",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:02:22.169720847Z",
+  "branch": "slice-b/calls-from-cockpit",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [
+    "cases/CASE-001/sourcing_case.yaml",
+    "cases/CASE-002/events.jsonl",
+    "cases/CASE-002/sourcing_case.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "851b3a5b637b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 590,
+    "cache_creation_tokens": 553399,
+    "cache_read_tokens": 107354154,
+    "output_tokens": 404095,
+    "api_call_count": 296
+  },
+  "session_metrics": {
+    "turn_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:02:21.965114794Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 619,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 619,
+    "total_lines_changed": 639,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NMG5JBMRVGZMH8TJ064F3B",
+  "strategy": "manual-commit",
+  "branch": "slice-b/calls-from-cockpit",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "cases/CASE-001/sourcing_case.yaml",
+    "cases/CASE-002/events.jsonl",
+    "cases/CASE-002/sourcing_case.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 590,
+    "cache_creation_tokens": 553399,
+    "cache_read_tokens": 107354154,
+    "output_tokens": 404095,
+    "api_call_count": 296
+  }
+}
