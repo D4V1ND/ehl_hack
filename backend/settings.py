@@ -56,3 +56,8 @@ BUYER_NAME: str = os.environ.get("BUYER_NAME", "Meridian Motors")
 # consumers are forced to build against the async shape a real call has.
 FAKE_MIN_DELAY: float = float(os.environ.get("FAKE_MIN_DELAY", "0.4"))
 FAKE_MAX_DELAY: float = float(os.environ.get("FAKE_MAX_DELAY", "2.5"))
+
+# Seconds. A real call sits queued and then runs for a few minutes, so the
+# live provider polls CALL-E for the result rather than waiting on a webhook.
+CALLE_POLL_INTERVAL: float = float(os.environ.get("CALLE_POLL_INTERVAL", "10"))
+CALLE_POLL_TIMEOUT: float = float(os.environ.get("CALLE_POLL_TIMEOUT", "900"))

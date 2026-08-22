@@ -13,7 +13,7 @@ while a phone rings.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 LIVE_CALLS_CONFIRMATION = "yes-place-real-calls"  # legacy; FAKE_CALLS is authoritative
@@ -48,6 +48,11 @@ class Settings:
     # is reached on localhost, on 127.0.0.1, and -- under WSL -- on the VM's own
     # IP, and the port drifts when one is already taken.
     cors_origin_regex: str = r"http://(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+):\d+"
+    # Publishing the decision as a pull request. Unset means rehearsal: the
+    # publish endpoint reports the branch and files it would have pushed.
+    github_token: str | None = None
+    github_repo: str | None = None
+    github_base_branch: str = "main"
 
     @property
     def call_mode(self) -> str:
@@ -66,4 +71,7 @@ def get_settings() -> Settings:
         # so live requires deliberately setting it to "0".
         live_calls_enabled=os.environ.get("FAKE_CALLS", "1").strip() == "0",
         record_backend=backend,
+        github_token=os.environ.get("GITHUB_TOKEN", "").strip() or None,
+        github_repo=os.environ.get("GITHUB_REPO", "").strip() or None,
+        github_base_branch=os.environ.get("GITHUB_BASE_BRANCH", "main").strip() or "main",
     )

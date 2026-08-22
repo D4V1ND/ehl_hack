@@ -26,9 +26,11 @@ Two deliberate shapes:
   Decimal-ise from a value that has already lost precision; a decimal written
   as text does not. `normalize.py` and `safe.py` parse it, and an empty string
   or "unknown" becomes `None` rather than a wrong number.
-* **Only `available` and `qty_offered` are required.** Every other field may be
-  omitted, which is how "unknown" stays a first-class answer instead of being
-  forced into a 0 that reads like "ships today".
+* **Nothing is required. Not one field.** Learned on a real call and merged from
+  main: when CALL-E cannot satisfy `required` it returns no `structured_result`
+  at all, throwing away every answer it *did* capture. An omitted key is how
+  "unknown" stays a first-class answer, and `normalize.py` already reads a
+  missing field as unknown rather than as a 0 that would say "ships today".
 """
 
 from __future__ import annotations
@@ -153,6 +155,6 @@ def quote_result_schema() -> dict:
                 "description": "did they read the exact part number back to us",
             },
         },
-        "required": ["available", "qty_offered"],
+        "required": [],
         "additionalProperties": False,
     }

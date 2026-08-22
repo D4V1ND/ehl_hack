@@ -81,13 +81,16 @@ def test_unknown_is_always_an_available_answer():
     assert "unknown" in properties["currency"]["enum"]
 
 
-def test_only_what_a_supplier_always_knows_is_required():
-    """Everything else may be omitted, which is how "unknown" stays first-class.
+def test_nothing_is_required_so_a_partial_call_still_returns_something():
+    """CALL-E returns no structured_result AT ALL when it cannot fill a
+    required field, discarding everything it did capture. Confirmed live:
+    a call that got price and MOQ but never heard availability came back
+    with structured_result: null.
 
-    A required integer would force a lead time of 0 out of a supplier who never
-    named one, and 0 reads as "ships today".
+    So an omitted key, not a required one: a lead time nobody stated stays
+    absent rather than becoming a 0 that reads as "ships today".
     """
-    assert quote_result_schema()["required"] == ["available", "qty_offered"]
+    assert quote_result_schema()["required"] == []
 
 
 def test_money_survives_the_round_trip_as_decimal():
@@ -125,3 +128,31 @@ def test_a_supplier_who_answered_nothing_still_produces_a_quote():
     assert quote.available is False
     assert quote.unit_price is None
     assert quote.lead_time_days is None
+
+
+def test_schema_forbids_unexpected_fields():
+    schema = quote_result_schema()
+    assert schema["additionalProperties"] is False
+
+
+def test_schema_describes_the_fields_the_call_must_collect():
+    props = quote_result_schema()["properties"]
+    for field in (
+        "available",
+        "qty_offered",
+        "unit_price",
+        "price_breaks",
+        "currency",
+        "moq",
+        "lead_time_days",
+        "incoterm",
+        "certs_claimed",
+    ):
+        assert field in props, f"{field} missing from the answer sheet"
+
+
+def test_schema_omits_fields_the_supplier_cannot_know():
+    """task_id/case_id are ours, not theirs. Never ask the phone for them."""
+    props = quote_result_schema()["properties"]
+    for field in ("task_id", "case_id", "supplier_ref", "raw", "confidence"):
+        assert field not in props

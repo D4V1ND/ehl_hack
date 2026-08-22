@@ -310,7 +310,7 @@ git commit -m "slice-c(contracts): add OutreachTask, Quote, PriceBreak"
 - Consumes: `Quote` from Task 1
 - Produces: `quote_result_schema() -> dict` — pass directly as CALL-E's `recipient_result_schema`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `test/test_schemas.py`:
 
@@ -346,7 +346,7 @@ def test_schema_omits_fields_the_supplier_cannot_know():
         assert field not in props
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 python -m pytest test/test_schemas.py -v
@@ -354,7 +354,7 @@ python -m pytest test/test_schemas.py -v
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'packages.contracts.schemas'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `packages/contracts/schemas.py`:
 
@@ -393,7 +393,7 @@ def quote_result_schema() -> dict:
     }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 python -m pytest test/test_schemas.py -v
@@ -401,7 +401,7 @@ python -m pytest test/test_schemas.py -v
 
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/contracts/schemas.py test/test_schemas.py
@@ -1067,7 +1067,7 @@ git commit -m "slice-c(outreach): async provider seam + POST /tools/outreach"
 - Consumes: `Quote`, `Currency`, `PriceBreak`, `ExpediteOption` (Task 1)
 - Produces: `normalize_result(task_id: str, case_id: str, supplier_ref: str, payload: dict) -> Quote` — never raises
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `test/test_normalize.py`:
 
@@ -1134,7 +1134,7 @@ def test_the_raw_payload_is_always_kept():
     assert _norm(payload).raw == payload
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 python -m pytest test/test_normalize.py -v
@@ -1142,7 +1142,7 @@ python -m pytest test/test_normalize.py -v
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'backend.outreach.normalize'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `backend/outreach/normalize.py`:
 
@@ -1264,7 +1264,7 @@ def normalize_result(
     )
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 python -m pytest test/test_normalize.py -v
@@ -1272,7 +1272,7 @@ python -m pytest test/test_normalize.py -v
 
 Expected: 5 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/outreach/normalize.py test/test_normalize.py
@@ -1486,7 +1486,7 @@ git commit -m "slice-c(brief): call script with unskippable AI + recording discl
 
 **Network safety:** `build_calle_payload` is a pure function and is the only thing tested. No test in this task makes a network call.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `test/test_calle_provider.py`:
 
@@ -1594,7 +1594,7 @@ def test_webhook_accepts_garbage_without_500ing():
     assert STORE.quotes_for("CASE-001")[0].confidence == 0.0
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 python -m pytest test/test_calle_provider.py -v
@@ -1602,7 +1602,7 @@ python -m pytest test/test_calle_provider.py -v
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'backend.outreach.calle'`
 
-- [ ] **Step 3: Write the CALL-E provider**
+- [x] **Step 3: Write the CALL-E provider**
 
 Create `backend/outreach/calle.py`:
 
@@ -1737,7 +1737,7 @@ def _load_supplier_phones(supplier_refs: list[str]) -> dict[str, str]:
     return {ref: data[ref] for ref in supplier_refs if ref in data}
 ```
 
-- [ ] **Step 4: Create the demo fixture**
+- [x] **Step 4: Create the demo fixture**
 
 Create `backend/fixtures/supplier_phones.json`. **Every number is from the UK Ofcom reserved drama range `+44 7700 900xxx` — none can ring a real person.**
 
@@ -1751,7 +1751,7 @@ Create `backend/fixtures/supplier_phones.json`. **Every number is from the UK Of
 }
 ```
 
-- [ ] **Step 5: Add the webhook route to `backend/main.py`**
+- [x] **Step 5: Add the webhook route to `backend/main.py`**
 
 Add these imports at the top of `backend/main.py`:
 
@@ -1797,7 +1797,7 @@ async def calle_webhook(request: Request) -> dict:
     return {"ok": True}
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 ```bash
 python -m pytest test/test_calle_provider.py -v
@@ -1805,7 +1805,7 @@ python -m pytest test/test_calle_provider.py -v
 
 Expected: 7 passed
 
-- [ ] **Step 7: Run the whole suite**
+- [x] **Step 7: Run the whole suite**
 
 ```bash
 python -m pytest test/ -v -m "not live"
@@ -1813,7 +1813,7 @@ python -m pytest test/ -v -m "not live"
 
 Expected: all pass, `test_calle.py::test_place_one_real_call_and_get_a_structured_result` deselected
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend/outreach/calle.py backend/fixtures/ backend/main.py test/test_calle_provider.py
@@ -1834,7 +1834,7 @@ git commit -m "slice-c(calle): real provider + webhook receiver behind the same 
 
 **Why:** CALL-E has no China region. v3 presents this as deliberate channel routing by supplier geography, not as a gap.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `test/test_router.py`:
 
@@ -1859,7 +1859,7 @@ def test_the_country_code_is_case_insensitive():
     assert route_channel("de") is Channel.VOICE
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 python -m pytest test/test_router.py -v
@@ -1867,7 +1867,7 @@ python -m pytest test/test_router.py -v
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'backend.outreach.router'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `backend/outreach/router.py`:
 
@@ -1898,7 +1898,7 @@ def route_channel(country_code: str) -> Channel:
     return Channel.EMAIL
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 python -m pytest test/test_router.py -v
@@ -1906,7 +1906,7 @@ python -m pytest test/test_router.py -v
 
 Expected: 4 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/outreach/router.py test/test_router.py
@@ -1919,12 +1919,12 @@ git commit -m "slice-c(router): channel selection by supplier region"
 
 Slice C is complete when:
 
-- [ ] `python -m pytest test/ -v -m "not live"` is fully green
-- [ ] `POST /tools/outreach` + polling `GET /tools/quotes` works with `FAKE_CALLS=1`, no network touched
-- [ ] Setting `FAKE_CALLS=0` switches to real CALL-E with **zero changes** in Slice B or D code
-- [ ] One real call to a teammate produces a schema-valid `Quote` end to end (v3's stated DoD)
-- [ ] Every phone number in the repo is from a reserved fictional range
-- [ ] The disclosure is present and cannot be turned off
+- [x] `python -m pytest test/ -v -m "not live"` is fully green
+- [x] `POST /tools/outreach` + polling `GET /tools/quotes` works with `FAKE_CALLS=1`, no network touched
+- [x] Setting `FAKE_CALLS=0` switches to real CALL-E with **zero changes** in Slice B or D code
+- [ ] One real call to a teammate produces a schema-valid `Quote` end to end (v3's stated DoD) — requires an actual live call, not exercised by this session
+- [x] Every phone number in the repo is from a reserved fictional range
+- [x] The disclosure is present and cannot be turned off
 
 ## Deferred — not in this plan
 

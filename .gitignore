@@ -64,3 +64,6 @@ backend/record/*.db
 
 # Stray API log from an early run; the real ones live in .logs/
 .logs-api.txt
+
+# a real supplier number for a live call never belongs in git
+backend/fixtures/supplier_phones.local.json

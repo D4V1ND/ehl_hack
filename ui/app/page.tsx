@@ -262,7 +262,7 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-ink">Product</h3>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-body">
                 <li><a href="#features" className="hover:text-ink">Features</a></li>
-                <li><Link href="/cockpit" className="hover:text-ink">Cockpit</Link></li>
+                <li><Link href="/cases/CASE-001" className="hover:text-ink">Cockpit</Link></li>
                 <li><a href="#" className="hover:text-ink">Pricing</a></li>
               </ul>
             </div>

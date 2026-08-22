@@ -69,6 +69,9 @@ def _expedite(value: Any) -> ExpediteOption | None:
 
 
 def _confidence(value: Any) -> float:
+    # CALL-E sends {"score": 0.82, "label": "high"}, not a bare float.
+    if isinstance(value, dict):
+        value = value.get("score")
     try:
         return max(0.0, min(1.0, float(value)))
     except (ValueError, TypeError):
@@ -89,6 +92,12 @@ def normalize_result(
     if not isinstance(certs, list):
         certs = []
 
+    # CALL-E's prose summary is often the only place a partial call's findings
+    # survive, so keep it rather than dropping it on the floor.
+    notes = payload.get("summary") if isinstance(payload, dict) else None
+    if not isinstance(notes, str):
+        notes = ""
+
     return Quote(
         task_id=task_id,
         case_id=case_id,
@@ -108,6 +117,7 @@ def normalize_result(
             if isinstance(result.get("payment_terms"), str)
             else None
         ),
+        notes=notes,
         transcript_url=payload.get("transcript_url") if isinstance(payload, dict) else None,
         recording_url=payload.get("recording_url") if isinstance(payload, dict) else None,
         confidence=_confidence(payload.get("completion_confidence") if isinstance(payload, dict) else 0.0),

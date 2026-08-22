@@ -113,7 +113,7 @@ def get_case(case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseSt
 
     profile = records.get_company_profile()
     candidates = cases.read_candidates(case_id)
-    supplier_ids = {c.supplier_id for c in candidates} or {
+    supplier_ids = {c.supplier_ref for c in candidates} or {
         s.supplier_id for s in records.get_suppliers_for_part(incident.part_id)
     }
     decision = cases.read_decision(case_id)
