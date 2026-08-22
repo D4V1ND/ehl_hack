@@ -70,3 +70,6 @@ cases/*/decision.json
 cases/*/outreach.json
 cases/*/incident.json
 cases/*/*.md
+
+# Saved call results: real phone numbers and call transcripts, never committed.
+/data/quotes/

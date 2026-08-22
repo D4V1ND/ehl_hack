@@ -90,6 +90,19 @@ class OutreachTask(BaseModel):
     brief: OutreachBrief
 
 
+class TranscriptTurn(BaseModel):
+    """One thing said on the call, in order.
+
+    `speaker` is CALL-E's label — "bot", "user", or "unknown" — kept as a
+    plain string rather than an enum so an unfamiliar label is recorded
+    rather than rejected.
+    """
+
+    offset_seconds: int = 0
+    speaker: str = "unknown"
+    text: str = ""
+
+
 class Quote(BaseModel):
     """What one supplier said. Every judgement field may be unknown.
 
@@ -113,6 +126,12 @@ class Quote(BaseModel):
     certs_claimed: list[str] = Field(default_factory=list)
     payment_terms: str | None = None
     notes: str = ""
+
+    # What was actually said, in order. The typed fields above are an
+    # extraction model's reading of this, so it is the evidence behind them
+    # — surfaced here rather than left buried inside `raw`.
+    transcript: list[TranscriptTurn] = Field(default_factory=list)
+    summary: str = ""
 
     transcript_url: str | None = None
     recording_url: str | None = None

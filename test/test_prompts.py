@@ -30,6 +30,19 @@ def test_disclosure_is_the_first_thing_said():
     assert "Meridian Motors" in first
 
 
+def test_the_call_is_conducted_in_english():
+    text = build_task_text(_task(), buyer_name="Meridian Motors")
+    assert "English" in text
+    # A supplier answering in their own language must not switch the call.
+    assert "even if" in text.lower()
+
+
+def test_the_part_number_is_said_slowly():
+    text = build_task_text(_task(), buyer_name="Meridian Motors").lower()
+    assert "slowly" in text
+    assert "part number" in text
+
+
 def test_recording_is_disclosed():
     text = build_task_text(_task(), buyer_name="Meridian Motors")
     assert "recorded" in text.lower()

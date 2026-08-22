@@ -24,6 +24,14 @@ _DISCLOSURE = (
     "every decision."
 )
 
+_LANGUAGE = (
+    "Speak English for the whole call, and keep speaking English even if "
+    "the other person answers in another language. Say the part name and "
+    "part number slowly and clearly, spelling out letters and reading "
+    "digits one at a time, and repeat it once so they can confirm they "
+    "heard it correctly."
+)
+
 _MUST_ASK = (
     "Ask for all of the following, and confirm the numbers back to them "
     "before you hang up:\n"
@@ -45,6 +53,8 @@ def build_task_text(task: OutreachTask, buyer_name: str) -> str:
 
     lines = [
         _DISCLOSURE.format(buyer_name=buyer_name),
+        "",
+        _LANGUAGE,
         "",
         f"You are sourcing: {brief.part_spec}.",
         f"Quantity required: {brief.qty} units.",
