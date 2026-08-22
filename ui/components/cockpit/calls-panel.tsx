@@ -42,10 +42,25 @@ export function CallsPanel({
   const [error, setError] = React.useState<string | null>(null)
   const [confirming, setConfirming] = React.useState(false)
   const [inFlight, setInFlight] = React.useState<string[]>([])
+  // Nothing is selected by default. Calling a supplier has to be a decision
+  // someone made, not the result of pressing the obvious button.
+  const [selected, setSelected] = React.useState<Set<string>>(new Set())
+  const [target, setTarget] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    getHealth().then((h) => setMode(h?.call_mode ?? null))
+    getHealth().then((h) => {
+      setMode(h?.call_mode ?? null)
+      setTarget(h?.call_target ?? null)
+    })
   }, [])
+
+  function toggle(ref: string) {
+    setSelected((prior) => {
+      const next = new Set(prior)
+      next.has(ref) ? next.delete(ref) : next.add(ref)
+      return next
+    })
+  }
 
   // Poll while answers are outstanding. Stops as soon as everyone has replied,
   // so an idle cockpit is not hammering the API.
@@ -66,7 +81,7 @@ export function CallsPanel({
     setError(null)
     setConfirming(false)
     setDispatching(true)
-    const refs = callable.map((s) => s.supplier_id)
+    const refs = callable.filter((s) => selected.has(s.supplier_id)).map((s) => s.supplier_id)
     try {
       await dispatchOutreach(caseId, refs, qty)
       setInFlight(refs)
@@ -84,24 +99,51 @@ export function CallsPanel({
           <div>
             <Kicker>Outreach</Kicker>
             <p className="mt-1.5 max-w-xl text-[14px] leading-[1.5] text-body">
-              Briefs {callable.length} supplier{callable.length === 1 ? "" : "s"} with the part
-              spec, {fmtQty(qty)} pieces and the need-by date, then asks for price breaks, MOQ,
-              lead time, incoterm, certification and whether stock is free or already promised.
+              Pick who to call. Each one is briefed with the part spec, {fmtQty(qty)} pieces and
+              the need-by date, then asked for price breaks, MOQ, lead time, incoterm,
+              certification and whether stock is free or already promised.
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-[13px]">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelected(
+                    selected.size === callable.length
+                      ? new Set()
+                      : new Set(callable.map((s) => s.supplier_id)),
+                  )
+                }
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {selected.size === callable.length ? "Clear selection" : "Select all"}
+              </button>
+              <span className="text-muted-ink">
+                {selected.size} of {callable.length} selected
+              </span>
+              {mode === "live" && target ? (
+                <span className="tnum text-semantic-error">
+                </span>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex flex-col items-end gap-2">
             <ModeBadge mode={mode} offline={offline} />
             {confirming ? (
-              <ConfirmLive onConfirm={place} onCancel={() => setConfirming(false)} />
+              <ConfirmLive
+                count={selected.size}
+                target={target}
+                onConfirm={place}
+                onCancel={() => setConfirming(false)}
+              />
             ) : (
               <button
                 type="button"
-                disabled={offline || dispatching || !callable.length}
+                disabled={offline || dispatching || selected.size === 0}
                 onClick={() => (mode === "live" ? setConfirming(true) : place())}
                 className={cn(
                   "inline-flex h-10 items-center gap-2 rounded-md px-[18px] text-[14px] font-medium transition-colors",
-                  offline || dispatching || !callable.length
+                  offline || dispatching || selected.size === 0
                     ? "cursor-not-allowed bg-hairline-soft text-muted-ink"
                     : mode === "live"
                       ? "bg-semantic-error text-on-primary hover:brightness-95"
@@ -110,10 +152,12 @@ export function CallsPanel({
               >
                 <Phone className="size-4" />
                 {dispatching
-                  ? "Dispatching…"
-                  : mode === "live"
-                    ? "Place real calls"
-                    : "Call the suppliers"}
+                  ? "Connecting…"
+                  : selected.size === 0
+                    ? "Select a supplier"
+                    : mode === "live"
+                      ? `Call ${selected.size}`
+                      : `Call ${selected.size} supplier${selected.size === 1 ? "" : "s"}`}
               </button>
             )}
           </div>
@@ -121,8 +165,8 @@ export function CallsPanel({
 
         {offline ? (
           <p className="mt-3 border-t border-hairline pt-3 text-[13px] text-muted-ink">
-            Reading committed fixtures, so there is nothing to dispatch through. Start the API and
-            run the cockpit with <Mono>NEXT_PUBLIC_DATA_SOURCE=live</Mono> to place calls.
+            Showing a recorded case. Connect to the sourcing service to contact suppliers from
+            here.
           </p>
         ) : null}
 
@@ -141,6 +185,9 @@ export function CallsPanel({
             supplier={supplier}
             quote={quotes.find((q) => q.supplier_ref === supplier.supplier_id)}
             calling={inFlight.includes(supplier.supplier_id)}
+            selected={selected.has(supplier.supplier_id)}
+            onToggle={() => toggle(supplier.supplier_id)}
+            disabled={offline}
           />
         ))}
       </div>
@@ -152,7 +199,7 @@ function ModeBadge({ mode, offline }: { mode: CallMode | null; offline: boolean 
   if (offline) {
     return (
       <span className="rounded-pill border border-hairline-strong bg-canvas-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted-ink">
-        fixtures
+        offline
       </span>
     )
   }
@@ -168,7 +215,7 @@ function ModeBadge({ mode, offline }: { mode: CallMode | null; offline: boolean 
           : "border border-hairline-strong bg-canvas-soft text-muted-ink",
       )}
     >
-      {mode === "live" ? "live — real calls" : "rehearsal"}
+      {mode === "live" ? "live calling" : "test mode"}
     </span>
   )
 }
@@ -177,11 +224,27 @@ function ModeBadge({ mode, offline }: { mode: CallMode | null; offline: boolean 
  * Live mode asks twice. A phone call to a real supplier cannot be taken back,
  * and a mis-click is otherwise indistinguishable from an intention.
  */
-function ConfirmLive({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+function ConfirmLive({
+  count,
+  target,
+  onConfirm,
+  onCancel,
+}: {
+  count: number
+  target: string | null
+  onConfirm: () => void
+  onCancel: () => void
+}) {
   return (
     <div className="rounded-lg border border-semantic-error/40 bg-semantic-error/5 px-4 py-3 text-right">
-      <p className="text-[13px] text-ink">
-        This dials real phone numbers. Continue?
+      <p className="text-[13px] textate-ink text-ink">
+        This places {count} real call{count === 1 ? "" : "s"}
+        {target ? (
+          <>
+            {" "}to <span className="tnum">{target}</span>
+          </>
+        ) : null}
+        . Continue?
       </p>
       <div className="mt-2 flex justify-end gap-2">
         <button
@@ -207,20 +270,42 @@ function CallCard({
   supplier,
   quote,
   calling,
+  selected,
+  onToggle,
+  disabled,
 }: {
   supplier: SupplierRecord
   quote?: Quote
   calling: boolean
+  selected: boolean
+  onToggle: () => void
+  disabled: boolean
 }) {
   const waiting = calling && !quote
   return (
-    <Card className="px-4 py-3.5">
+    <Card
+      className={cn(
+        "px-4 py-3.5 transition-colors",
+        selected ? "border-primary" : "",
+        disabled ? "opacity-60" : "",
+      )}
+    >
       <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <input
+            type="checkbox"
+            checked={selected}
+            disabled={disabled}
+            onChange={onToggle}
+            aria-label={`Call ${supplier.supplier_name}`}
+            className="mt-1 size-4 shrink-0 accent-[var(--color-primary)]"
+          />
         <div className="min-w-0">
           <div className="truncate text-[15px] font-medium text-ink">{supplier.supplier_name}</div>
           <div className="tnum mt-1 text-[12px] text-muted-ink">
             {maskPhone(supplier.phone_masked)} · {supplier.country}
           </div>
+        </div>
         </div>
         <Status waiting={waiting} quote={quote} />
       </div>
@@ -254,14 +339,14 @@ function Status({ waiting, quote }: { waiting: boolean; quote?: Quote }) {
     return (
       <span className="flex shrink-0 items-center gap-1.5 rounded-pill border border-timeline-read bg-timeline-read/25 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-ink">
         <PhoneCall className="size-3 animate-pulse" />
-        calling
+        on the line
       </span>
     )
   }
   if (!quote) {
     return (
       <span className="shrink-0 rounded-pill border border-hairline-strong px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted-soft">
-        not called
+        not contacted
       </span>
     )
   }

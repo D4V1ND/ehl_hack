@@ -235,14 +235,9 @@ export default function CockpitPage() {
           </Section>
 
           <footer className="border-t border-hairline py-6 text-[12px] text-muted-ink">
-            Data source <Mono>{DATA_SOURCE}</Mono>
-            {DATA_SOURCE === "fixtures" ? (
-              <>
-                {" "}— a recording of the live endpoints, exported by{" "}
-                <Mono>python -m packages.contracts.export</Mono>. Set{" "}
-                <Mono>NEXT_PUBLIC_DATA_SOURCE=live</Mono> to read the running API instead.
-              </>
-            ) : null}
+            {DATA_SOURCE === "fixtures"
+              ? "Viewing a recorded case. Connect to the sourcing service for live data and supplier contact."
+              : "Connected to the sourcing service."}
           </footer>
         </main>
 

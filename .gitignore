@@ -58,3 +58,9 @@ backend/record/*.db
 
 # run.py writes background logs here
 .logs/
+
+# Downloaded once, per machine: the cloudflared binary that fronts the webhook.
+.tools/
+
+# Stray API log from an early run; the real ones live in .logs/
+.logs-api.txt

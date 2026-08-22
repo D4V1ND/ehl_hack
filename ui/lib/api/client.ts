@@ -124,7 +124,7 @@ export function initialCase(caseId: string): CaseSnapshot | null {
 // fixtures mode there is no backend to dispatch through, and pretending
 // otherwise would put a button on screen that looks like it places calls.
 
-export type CallMode = "rehearsal" | "live"
+export type CallMode = "test" | "live"
 
 export interface OutreachDispatch {
   case_id: string
@@ -136,6 +136,8 @@ export interface OutreachDispatch {
 export interface Health {
   ok: boolean
   call_mode: CallMode
+  /** Masked. Null when no demo number is configured — live dispatch refuses then. */
+  call_target: string | null
   parts: number
   suppliers: number
   incidents: number
@@ -157,8 +159,8 @@ export async function dispatchOutreach(
 ): Promise<OutreachDispatch> {
   if (DATA_SOURCE === "fixtures") {
     throw new Error(
-      "The cockpit is reading committed fixtures. Start the API and set " +
-        "NEXT_PUBLIC_DATA_SOURCE=live to place calls.",
+      "Not connected to the sourcing service — supplier contact is unavailable " +
+        "while viewing a recorded case.",
     )
   }
   const params = new URLSearchParams({ case_id: caseId, qty: String(qty) })
@@ -168,7 +170,18 @@ export async function dispatchOutreach(
     body: JSON.stringify(supplierRefs),
     cache: "no-store",
   })
-  if (!response.ok) throw new Error(`outreach failed: ${response.status}`)
+  if (!response.ok) {
+    // The server sends a sentence an operator can act on; a bare status code is
+    // the least useful thing we could show instead.
+    let reason = `request failed (${response.status})`
+    try {
+      const body = (await response.json()) as { detail?: string }
+      if (body?.detail) reason = body.detail
+    } catch {
+      /* non-JSON error body; keep the status */
+    }
+    throw new Error(reason)
+  }
   return (await response.json()) as OutreachDispatch
 }
 

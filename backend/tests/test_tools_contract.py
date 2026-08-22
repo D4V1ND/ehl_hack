@@ -25,11 +25,11 @@ def client():
     return TestClient(app)
 
 
-def test_healthz_reports_rehearsal_by_default(client):
+def test_healthz_reports_test_mode_by_default(client):
     """Live calling is never the default and never a fallback."""
     body = client.get("/healthz").json()
     assert body["ok"] is True
-    assert body["call_mode"] == "rehearsal"
+    assert body["call_mode"] == "test"
 
 
 @pytest.mark.parametrize(

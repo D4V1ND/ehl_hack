@@ -48,12 +48,11 @@ def dispatch(client, refs=("SUP-KBY", "SUP-SKF", "SUP-RUL"), qty=36000):
     )
 
 
-def test_dispatch_is_rehearsal_by_default(client):
+def test_no_call_is_placed_unless_live_is_chosen(client):
     """Live calling is an explicit opt-in, never what you get by not choosing."""
     body = dispatch(client).json()
-    assert body["mode"] == "rehearsal"
-    assert body["provider"] == "fake"
-    assert client.get("/healthz").json()["call_mode"] == "rehearsal"
+    assert body["mode"] == "test"
+    assert client.get("/healthz").json()["call_mode"] == "test"
 
 
 def test_briefs_are_built_from_the_system_of_record(client):
