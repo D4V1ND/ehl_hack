@@ -1,0 +1,5 @@
+Update app/chat to use https://elements.ai-sdk.dev/ for the components and for the loading elements: https://dotmatrix.zzzzshawn.cloud/
+
+---
+
+Update app/chat to use https://elements.ai-sdk.dev/ for the components and for the loading elements: https://dotmatrix.zzzzshawn.cloud/

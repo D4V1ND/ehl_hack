@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0N7ZJNA7C4F83WTSAGNENZ6",
+  "session_id": "8101ea23-76de-456f-a0d7-dd5ec4eff5ed",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T17:23:38.428155Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/layout.tsx",
+    "components/theme-provider.tsx"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high-fast",
+  "turn_id": "dd0a5cdbba77",
+  "compact_transcript_start": 0,
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T17:23:38.424406Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 2,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 6212,
+      "user_lines_removed": 48,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".env.example": 4,
+        ".gemini/settings.json": 9,
+        ".mcp.json": 11,
+        "CLAUDE.md": 1,
+        "docs/agents/devin-mcp.md": 49,
+        "pnpm-lock.yaml": 6121,
+        "pnpm-workspace.yaml": 3
+      },
+      "user_removed_per_file": {
+        "CLAUDE.md": 34,
+        "docs/agents/tech-stack.md": 14
+      }
+    }
+  ]
+}
