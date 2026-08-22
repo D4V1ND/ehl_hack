@@ -7,3 +7,7 @@ my agents do this automatically right? What even are checkpoints?
 ---
 
 why do we then only have 1 checkpoint in 37 commits?
+
+---
+
+is everything correctly set up? so bascially a checkpoint is a commit right? and the problem was just that entire was setup wrong before or what?
