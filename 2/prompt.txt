@@ -35,3 +35,7 @@ Q8  - Honestly, remoev that doc, instead just use the colors only defined in glo
 ---
 
 Yeah build that it should live  under /chat , use shadcn components (download if needed) and the prvided design skills
+
+---
+
+Execute the selected diff-tab commit-and-push action.
