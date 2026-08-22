@@ -1,0 +1,15 @@
+Set up Call-E in our repo for our calling agent
+
+---
+
+build the pipeline:
+
+Upload STEP → machining time model → cost → compare against ERP purchase history for that material group.
+
+---
+
+run the app
+
+---
+
+what would increase the wow factor by 10x and have a good 3d visualisation
