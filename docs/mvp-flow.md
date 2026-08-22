@@ -25,11 +25,11 @@ sequenceDiagram
     autonumber
     actor Human
     participant CLI as CLI launch
-    participant API as Core API (B)
+    participant API as Core API plus stubs (B)
     participant Devin as Devin session (D)
-    participant SOR as System of record (B1, ERP adapter)
+    participant Web as Supplier sites shortlist
     participant CE as CALL-E (C)
-    participant Sup as Suppliers
+    participant Demo as Demo company our phone
     participant UI as Cockpit (A)
     participant GH as GitHub
 
@@ -39,21 +39,26 @@ sequenceDiagram
     Note over Devin: no human input from here on
     Note over Human,CLI: Later alternate: shortage detector (B4) calls the same create-case + session launch
 
-    Devin->>SOR: part spec · stock · BOM · approved suppliers · price history
-    SOR-->>Devin: Part + Incident + SupplierRecord[]
-    Devin->>Devin: web research → Candidate[] (why_matched, channel)
+    Devin->>API: GET /tools/part /tools/stock /tools/suppliers
+    Note right of API: stub fixture — part number, size, qty, allowed countries, SupplierRecord[]
+    API-->>Devin: Part + Incident context + SupplierRecord[]
+
+    Devin->>Web: search seeded sites / shortlist for exact part
+    Web-->>Devin: pages → Candidate[] (why_matched, channel)
+    Note over Devin,Web: Candidates are who to ask, not Claims
     Devin->>Devin: policy rules (D3) → reject by name + rule
-    Devin->>API: POST /tools/outreach  (surviving candidates)
+    Devin->>API: POST /tools/outreach (surviving candidates · demo company preferred)
 
     API->>CE: POST /v1/calls  recipients[] + Claim as recipient_result_schema
-    CE->>Sup: parallel calls · AI disclosure first · ask tiers, MOQ, lead time, stock status · negotiate in [target, floor]
-    Sup-->>CE: answers
+    Note over API,CE: AI disclosure first · ask tiers, MOQ, lead time, stock status
+    CE->>Demo: call teammate number (rehearsal-override / pitch)
+    Demo-->>CE: answers
     CE-->>API: POST /calle/webhook  structured_result + transcript + confidence
     API->>API: → Claim, never raises · Event log
-    Note over API,CE: China / unreachable → email RFQ, same Claim out
+    Note over API,CE: China / unreachable → email RFQ later, same Claim out
 
     API-->>Devin: Claim[]
-    Devin->>SOR: verify claims vs our records (D6)
+    Devin->>API: GET /tools/* verify claims vs records (D6)
     Note right of Devin: claimed price vs contract · lead time vs standard<br/>qty vs known_allocations · cert vs expiry
     Devin->>Devin: cost_model.py → landed cost per option<br/>breaks · MOQ · freight · duty · carrying · expedite
     Devin->>Devin: strategy search → split order beats single source
@@ -101,7 +106,7 @@ sequenceDiagram
     actor Human
     participant CLI as CLI launch
     participant UI as Cockpit (A)
-    participant API as Core API (B)
+    participant API as Core API plus stubs (B)
     participant Devin as Devin session (D)
     participant Fake as Outreach fake (C)
     participant GH as GitHub
@@ -155,6 +160,14 @@ The point of M0 is not correctness — every number in it is wrong. It is that *
 - Cockpit: shortage dashboard, case timeline, supplier board, live calls, claim-vs-record comparison, decision view. Fully demoable with the backend off.
 
 **Out, deliberately:** database, auth, in-app approval workflow, email and marketplace channels, real ERPNext, free web search, multiple part classes, PO PDF, purchase execution, an Entire adapter for Devin ([ADR-0007](adr/0007-no-entire-adapter-for-devin-during-the-jam.md)).
+
+## Mock vs later
+
+| Step | Now | Later |
+| --- | --- | --- |
+| SoR tools | Fixture JSON behind `/tools/*` | SQLite or real adapter, same URLs |
+| Web research | Seeded shortlist + optional browse | Richer site list |
+| CALL-E | Demo company → our phone / saved claim | Supplier outreach behind the same boundary |
 
 ## Stage beats
 
