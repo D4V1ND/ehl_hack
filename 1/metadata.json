@@ -1,0 +1,142 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NA9DMF52J00SZM5SR0PJ0S",
+  "session_id": "8101ea23-76de-456f-a0d7-dd5ec4eff5ed",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T18:03:53.238644Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 6,
+  "save_step_count": 6,
+  "files_touched": [
+    ".env.example",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "app/globals.css",
+    "app/layout.tsx",
+    "components.json",
+    "components/ai-elements/code-block.tsx",
+    "components/ai-elements/conversation.tsx",
+    "components/ai-elements/message.tsx",
+    "components/ai-elements/prompt-input.tsx",
+    "components/ai-elements/task.tsx",
+    "components/ai-elements/tool.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/dot-loader.tsx",
+    "components/ui/button-group.tsx",
+    "components/ui/command.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/hover-card.tsx",
+    "components/ui/select.tsx",
+    "components/ui/tooltip.tsx",
+    "docs/PLAN.md",
+    "docs/agents/tech-stack.md",
+    "eslint.config.mjs",
+    "package.json"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high-fast",
+  "turn_id": "f63b0917c889",
+  "checkpoint_transcript_start": 2,
+  "transcript_lines_at_start": 2,
+  "compact_transcript_start": 1,
+  "token_usage": {
+    "input_tokens": 344600,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9045376,
+    "output_tokens": 36474,
+    "api_call_count": 6
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T18:03:53.202319Z",
+    "agent_lines": 4042,
+    "agent_removed": 276,
+    "human_added": 9989,
+    "human_modified": 16,
+    "human_removed": 0,
+    "total_committed": 14047,
+    "total_lines_changed": 14323,
+    "agent_percentage": 30.14731550652796,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 23,
+      "user_lines_removed": 0,
+      "agent_lines_added": 16365,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 23,
+      "user_lines_removed": 0,
+      "agent_lines_added": 16364,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 23,
+      "user_lines_removed": 0,
+      "agent_lines_added": 16419,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 24,
+      "user_lines_removed": 1,
+      "agent_lines_added": 17308,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9,
+        "components/cockpit/cockpit-chat.tsx": 1
+      },
+      "user_removed_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 1
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 31,
+      "user_lines_removed": 5,
+      "agent_lines_added": 14028,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9,
+        "docs/PLAN.md": 8
+      },
+      "user_removed_per_file": {
+        "docs/PLAN.md": 5
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+have you actually installed the components or just recreated them? For exampel the dot loaders right now look like this... they are duplicated, fix that realy quick
+
+---
+
+Still two, just use the exact original component, just use this for now: import { DotmSquare11 } from "@/components/ui/dotm-square-11";
+
+export function Example() {
+  return <DotmSquare11 />;
+}
+
+---
+
+Good, but make it the correct height, it should be ~24px
+
+---
+
+both 24px in height and weight. honestly this doens't work really well, just build your own dot loader, remove this dependency
+
+---
+
+make it a 3x3 dot grid with 24x24px
