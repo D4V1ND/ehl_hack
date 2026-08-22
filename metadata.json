@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0NKACG7V9BC4D7PP00PEVF1",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/mvp-ui",
-  "checkpoints_count": 1,
+  "checkpoints_count": 4,
   "files_touched": [
     "app/globals.css",
     "app/page.tsx",
@@ -26,6 +26,7 @@
     "components/ui/spinner.tsx",
     "docs/PLAN.md",
     "docs/design.md",
+    "hooks/use-mobile.ts",
     "package-lock.json",
     "package.json",
     "pnpm-lock.yaml"
@@ -37,13 +38,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 249997,
+    "input_tokens": 417982,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 9135744,
-    "output_tokens": 31436,
-    "api_call_count": 82
+    "cache_read_tokens": 15135872,
+    "output_tokens": 57455,
+    "api_call_count": 141
   }
 }
