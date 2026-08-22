@@ -1,0 +1,88 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NQQFJVJPFM2DDGJE5BG17Y",
+  "session_id": "fe73d815-51d0-4b6b-9e0c-1cab18ef63d5",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:58:50.0772043Z",
+  "branch": "call_e",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    "backend/outreach/calle.py",
+    "backend/outreach/normalize.py",
+    "packages/contracts/models.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "c864469196e6",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 538,
+    "cache_creation_tokens": 728322,
+    "cache_read_tokens": 42362447,
+    "output_tokens": 132349,
+    "api_call_count": 269
+  },
+  "session_metrics": {
+    "turn_count": 37
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:58:49.8174273Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 88,
+    "human_modified": 533,
+    "human_removed": 0,
+    "total_committed": 621,
+    "total_lines_changed": 621,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 2011,
+      "user_lines_removed": 1968,
+      "agent_lines_added": 25,
+      "agent_lines_removed": 25,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 43,
+        ".claude/skills/address-findings/SKILL.md": 155,
+        ".claude/skills/explain/SKILL.md": 34,
+        ".claude/skills/recall/SKILL.md": 123,
+        ".claude/skills/replay/SKILL.md": 141,
+        ".claude/skills/review/SKILL.md": 220,
+        ".claude/skills/review/references/review-rules.md": 87,
+        ".claude/skills/search/SKILL.md": 105,
+        ".claude/skills/session-crosslink/SKILL.md": 141,
+        ".claude/skills/session-handoff/SKILL.md": 137,
+        ".claude/skills/session-to-skill/SKILL.md": 210,
+        ".claude/skills/teach/SKILL.md": 130,
+        ".claude/skills/using-entire/SKILL.md": 152,
+        ".claude/skills/what-happened/SKILL.md": 333
+      },
+      "user_removed_per_file": {
+        ".claude/skills/address-findings/SKILL.md": 155,
+        ".claude/skills/explain/SKILL.md": 34,
+        ".claude/skills/recall/SKILL.md": 123,
+        ".claude/skills/replay/SKILL.md": 141,
+        ".claude/skills/review/SKILL.md": 220,
+        ".claude/skills/review/references/review-rules.md": 87,
+        ".claude/skills/search/SKILL.md": 105,
+        ".claude/skills/session-crosslink/SKILL.md": 141,
+        ".claude/skills/session-handoff/SKILL.md": 137,
+        ".claude/skills/session-to-skill/SKILL.md": 210,
+        ".claude/skills/teach/SKILL.md": 130,
+        ".claude/skills/using-entire/SKILL.md": 152,
+        ".claude/skills/what-happened/SKILL.md": 333
+      }
+    }
+  ]
+}
