@@ -239,14 +239,17 @@ Four decisions Devin then makes on top of the model — each a genuine trade-off
 Each is a demoable strip through the whole stack, not a layer. Each ships **its fake before its real**. Ownership TBD.
 
 ### SLICE A — Cockpit UI
+
+One chat screen at `/chat`. A1–A6 are turns and inline blocks in that transcript, not separate routes. Until Slice B fixtures land, the page runs a hardcoded CASE-001 rehearsal.
+
 | # | Deliverable |
 |---|---|
-| A1 | **Shortage dashboard** — parts at risk, hours-to-line-stop, stock vs. reorder point, cost-of-standing-still, "Launch sourcing agent" button |
+| A1 | **Shortage turn** — the Incident (hours-to-line-stop, stock vs. reorder point, cost-of-standing-still) and a "Launch sourcing agent" control |
 | A2 | **Case timeline** — stages live from the event feed, with the Devin session link |
-| A3 | **Supplier board** — candidate cards: matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
-| A4 | **Live calls panel** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.** |
+| A3 | **Candidates in the thread** — matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
+| A4 | **Live calls** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.** |
 | A5 | **Claim vs. record comparison** — side by side: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
-| A6 | **Decision view** — rationale, runner-ups, link to the GitHub PR |
+| A6 | **Decision turn** — rationale, runner-ups, link to the GitHub PR |
 
 **Unblock:** build 100% against contract fixtures + `make replay`; the UI must be fully demoable with the backend switched off. **DoD:** the demo command tells the whole story with no backend running.
 

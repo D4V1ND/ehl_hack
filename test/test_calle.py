@@ -135,11 +135,11 @@ RESULT_SCHEMA: dict = {
         "stock_status": {
             "type": "string",
             "enum": [
-                "on_hand_unallocated",
-                "on_hand_allocated",
-                "in_production",
-                "not_available",
-                "unknown",
+                "free_in_stock",
+                "in_stock_allocated",
+                "to_be_made",
+                "unavailable",
+                "unclear",
             ],
         },
     },
@@ -208,6 +208,13 @@ def test_request_payload_is_shaped_correctly():
     assert payload["recipients"][0]["phones"] == ["+12125550199"]
     assert payload["recipients"][0]["region"] == SUPPLIER_REGION
     assert payload["result_schema"]["additionalProperties"] is False
+    assert payload["result_schema"]["properties"]["stock_status"]["enum"] == [
+        "free_in_stock",
+        "in_stock_allocated",
+        "to_be_made",
+        "unavailable",
+        "unclear",
+    ]
     assert set(payload["result_schema"]["required"]) == {
         "available_quantity",
         "earliest_availability",
