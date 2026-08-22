@@ -1,12 +1,19 @@
 "use client"
 
-import type { CSSProperties, ReactNode } from "react"
 import {
-  ArrowUpRightIcon,
-  PlusIcon,
-  TriangleAlertIcon,
-} from "@/components/icons"
+  useEffect,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from "react"
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 import {
   Sidebar,
   SidebarContent,
@@ -21,60 +28,173 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { INCIDENTS } from "@/lib/case-001"
 
-export function CockpitShell({ children }: { children: ReactNode }) {
+const LEFT_SIDEBAR_MIN = 5
+const LEFT_SIDEBAR_MAX = 15
+
+export function CockpitShell({
+  children,
+  rightSidebar,
+}: {
+  children: ReactNode
+  rightSidebar?: ReactNode
+}) {
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(LEFT_SIDEBAR_MAX)
+
+  function resizeLeftSidebar(clientX: number) {
+    const viewportPercentage = (clientX / window.innerWidth) * 100
+    setLeftSidebarWidth(
+      Math.min(
+        LEFT_SIDEBAR_MAX,
+        Math.max(LEFT_SIDEBAR_MIN, viewportPercentage)
+      )
+    )
+  }
+
+  function startLeftResize(event: PointerEvent<HTMLButtonElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    resizeLeftSidebar(event.clientX)
+  }
+
+  function continueLeftResize(event: PointerEvent<HTMLButtonElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      resizeLeftSidebar(event.clientX)
+    }
+  }
+
+  function stopLeftResize(event: PointerEvent<HTMLButtonElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  function resizeLeftWithKeyboard(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+
+    event.preventDefault()
+    const direction = event.key === "ArrowRight" ? 1 : -1
+    setLeftSidebarWidth((width) =>
+      Math.min(LEFT_SIDEBAR_MAX, Math.max(LEFT_SIDEBAR_MIN, width + direction))
+    )
+  }
+
   return (
     <SidebarProvider
+      open
+      onOpenChange={() => undefined}
       className="h-dvh min-h-0 overflow-hidden"
-      style={{ "--sidebar-width": "15rem" } as CSSProperties}
+      style={
+        { "--sidebar-width": `${leftSidebarWidth}vw` } as CSSProperties
+      }
     >
-      <CockpitSidebar />
+      <CockpitSidebar
+        width={leftSidebarWidth}
+        onResizeStart={startLeftResize}
+        onResize={continueLeftResize}
+        onResizeEnd={stopLeftResize}
+        onResizeKeyDown={resizeLeftWithKeyboard}
+      />
       <SidebarInset className="h-dvh min-h-0 min-w-0 overflow-hidden">
-        {children}
+        <WorkspacePanels rightSidebar={rightSidebar}>{children}</WorkspacePanels>
       </SidebarInset>
     </SidebarProvider>
   )
 }
 
-function CockpitSidebar() {
+function WorkspacePanels({
+  children,
+  rightSidebar,
+}: {
+  children: ReactNode
+  rightSidebar?: ReactNode
+}) {
+  const [isWide, setIsWide] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 80rem)")
+    const update = () => setIsWide(media.matches)
+
+    update()
+    media.addEventListener("change", update)
+    return () => media.removeEventListener("change", update)
+  }, [])
+
+  if (!isWide || !rightSidebar) return children
+
+  return (
+    <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
+      <ResizablePanel minSize="35vw">{children}</ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel
+        defaultSize="26rem"
+        minSize="10vw"
+        maxSize="50vw"
+      >
+        {rightSidebar}
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  )
+}
+
+function CockpitSidebar({
+  width,
+  onResizeStart,
+  onResize,
+  onResizeEnd,
+  onResizeKeyDown,
+}: {
+  width: number
+  onResizeStart: (event: PointerEvent<HTMLButtonElement>) => void
+  onResize: (event: PointerEvent<HTMLButtonElement>) => void
+  onResizeEnd: (event: PointerEvent<HTMLButtonElement>) => void
+  onResizeKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
+}) {
+  const [activeSession, setActiveSession] = useState(INCIDENTS[0].caseId)
+
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">
       <SidebarHeader className="h-11 justify-center px-4 py-0">
         <span className="text-sm font-medium">Stockout</span>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="py-3">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton type="button">
-                  <PlusIcon aria-hidden="true" />
-                  <span>New session</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton type="button">
-                  <TriangleAlertIcon aria-hidden="true" />
-                  <span>Open incidents</span>
-                  <ArrowUpRightIcon
-                    aria-hidden="true"
-                    className="ml-auto opacity-0 transition-opacity group-hover/menu-button:opacity-100 group-focus-visible/menu-button:opacity-100"
-                  />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
         <SidebarGroup className="flex-1 py-3">
           <SidebarGroupLabel>Sessions</SidebarGroupLabel>
           <SidebarGroupContent>
-            <p className="px-2 py-1 text-xs leading-relaxed text-sidebar-foreground/60">
-              Session history will appear here after SQLite is connected.
-            </p>
+            <SidebarMenu>
+              {INCIDENTS.map((incident) => (
+                <SidebarMenuItem key={incident.caseId}>
+                  <SidebarMenuButton
+                    size="lg"
+                    isActive={incident.caseId === activeSession}
+                    onClick={() => setActiveSession(incident.caseId)}
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-mono text-xs">
+                        {incident.caseId}
+                      </span>
+                      <span className="block truncate text-xs text-sidebar-foreground/60">
+                        {incident.partLabel}
+                      </span>
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarRail />
+      <SidebarRail
+        resizable
+        aria-valuemin={LEFT_SIDEBAR_MIN}
+        aria-valuemax={LEFT_SIDEBAR_MAX}
+        aria-valuenow={Math.round(width)}
+        onPointerDown={onResizeStart}
+        onPointerMove={onResize}
+        onPointerUp={onResizeEnd}
+        onPointerCancel={onResizeEnd}
+        onKeyDown={onResizeKeyDown}
+      />
     </Sidebar>
   )
 }

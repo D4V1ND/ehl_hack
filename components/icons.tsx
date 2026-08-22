@@ -42,6 +42,7 @@ export {
   IconShieldCheck as ShieldCheck,
   IconSquare as SquareIcon,
   IconTool as WrenchIcon,
+  IconArrowUp as ArrowUpIcon,
   IconX as XIcon,
 } from "@tabler/icons-react"
 

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import {
+  ArrowUpIcon,
   CheckIcon,
   ChevronDownIcon,
   CircleIcon,
@@ -10,7 +11,6 @@ import {
   type IconComponent,
   LineStopIcon,
   PartIcon,
-  PlayIcon,
   QuantityIcon,
   RotateCcwIcon,
   WarehouseIcon,
@@ -29,7 +29,6 @@ import {
 import {
   PromptInput,
   PromptInputBody,
-  PromptInputButton,
   PromptInputFooter,
   PromptInputSubmit,
   PromptInputTextarea,
@@ -67,11 +66,10 @@ import {
   SCRIPT,
   STRATEGIES,
   TICK_MS,
-  USER_PROMPT,
   type ScriptStep,
 } from "@/lib/case-001"
 
-type Phase = "idle" | "running" | "done"
+type Phase = "running" | "done"
 type DecisionStatus =
   "evaluating" | "on hold" | "needs human review" | "approved"
 
@@ -101,19 +99,13 @@ function isStepVisible(stepId: string, visible: number): boolean {
 }
 
 export function CockpitChat() {
-  const [started, setStarted] = useState(false)
   const [visible, setVisible] = useState(0)
   const [approved, setApproved] = useState(false)
-  const phase: Phase = !started
-    ? "idle"
-    : visible >= SCRIPT.length
-      ? "done"
-      : "running"
+  const [draft, setDraft] = useState("")
+  const [messages, setMessages] = useState<string[]>([])
+  const phase: Phase = visible >= SCRIPT.length ? "done" : "running"
 
   useEffect(() => {
-    if (!started) {
-      return
-    }
     if (visible >= SCRIPT.length) {
       return
     }
@@ -121,16 +113,14 @@ export function CockpitChat() {
       setVisible((count) => Math.min(count + 1, SCRIPT.length))
     }, TICK_MS)
     return () => window.clearInterval(id)
-  }, [started, visible])
+  }, [visible])
 
   const currentStep =
-    phase === "idle"
-      ? "Awaiting launch"
-      : visible === 0
-        ? "Launching"
-        : SCRIPT[Math.min(visible, SCRIPT.length) - 1].kind === "decision"
-          ? "Decision ready"
-          : SCRIPT[Math.min(visible, SCRIPT.length) - 1].stepName
+    visible === 0
+      ? "Launching"
+      : SCRIPT[Math.min(visible, SCRIPT.length) - 1].kind === "decision"
+        ? "Decision ready"
+        : SCRIPT[Math.min(visible, SCRIPT.length) - 1].stepName
   const checksPassed = isStepVisible("tests", visible)
   const decisionExists = isStepVisible("strategy", visible)
   const decisionStatus: DecisionStatus = approved
@@ -141,63 +131,70 @@ export function CockpitChat() {
         ? "needs human review"
         : "evaluating"
 
-  function launch() {
+  function replay() {
     const skipTicks = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches
-    setStarted(true)
     setVisible(skipTicks ? SCRIPT.length : 0)
     setApproved(false)
   }
 
-  function reset() {
-    setStarted(false)
-    setVisible(0)
-    setApproved(false)
+  function sendMessage(message: string) {
+    const text = message.trim()
+    if (!text) return
+
+    setMessages((current) => [...current, text])
+    setDraft("")
   }
 
   return (
-    <CockpitShell>
-      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_26rem]">
-        <div className="flex min-h-0 min-w-0 flex-col">
-          <IncidentHeader />
-          <Composer phase={phase} onLaunch={launch} onReset={reset} />
-          <Conversation className="min-h-0">
-            <ConversationContent className="gap-4">
-              <SourcingRunRail
-                visible={visible}
-                started={started}
-                approved={approved}
+    <CockpitShell rightSidebar={<CandidatePanel visible={visible} />}>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <IncidentHeader />
+        <RunControls phase={phase} onReplay={replay} />
+        <Conversation className="min-h-0">
+          <ConversationContent className="gap-4">
+            <IncidentRequestMessage />
+
+            <SourcingRunRail visible={visible} approved={approved} />
+
+            {SCRIPT.slice(0, visible).map((step, index) => (
+              <AssistantTurn
+                key={step.id}
+                step={step}
+                latest={index === visible - 1 && phase === "running"}
               />
+            ))}
 
-              {SCRIPT.slice(0, visible).map((step, index) => (
-                <AssistantTurn
-                  key={step.id}
-                  step={step}
-                  latest={index === visible - 1 && phase === "running"}
-                />
-              ))}
+            {phase === "running" ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <DotLoader />
+                <span>{currentStep}</span>
+              </div>
+            ) : null}
 
-              {phase === "running" ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <DotLoader />
-                  <span>{currentStep}</span>
-                </div>
-              ) : null}
-            </ConversationContent>
-            <ConversationScrollButton />
-          </Conversation>
-          {decisionExists ? (
-            <DecisionBar
-              checksPassed={checksPassed}
-              status={decisionStatus}
-              onApprove={() => setApproved(true)}
-            />
-          ) : null}
-        </div>
-        <div className="hidden min-h-0 min-w-0 xl:block">
-          <CandidatePanel visible={visible} />
-        </div>
+            {messages.map((message, index) => (
+              <Message key={`${index}-${message}`} from="user">
+                <MessageContent>
+                  <p>{message}</p>
+                </MessageContent>
+              </Message>
+            ))}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+        {decisionExists ? (
+          <DecisionBar
+            checksPassed={checksPassed}
+            status={decisionStatus}
+            onApprove={() => setApproved(true)}
+          />
+        ) : null}
+        <MessageComposer
+          value={draft}
+          onChange={setDraft}
+          onSend={sendMessage}
+        />
       </div>
       <Suspense fallback={null}>
         <CallDetailDialog />
@@ -206,11 +203,28 @@ export function CockpitChat() {
   )
 }
 
+function IncidentRequestMessage() {
+  return (
+    <Message from="user">
+      <MessageContent>
+        <p className="leading-6">
+          Resolve{" "}
+          <span className="inline-flex items-center gap-1 text-xs py-[1px] rounded-md bg-primary/30 px-1 align-baseline font-medium text-primary">
+            @
+            <span className="text-foreground">{INCIDENT.caseId} · {INCIDENT.partId}</span>
+          </span>{" "}
+          by finding Candidates, gathering Claims, and recommending a Decision.
+        </p>
+      </MessageContent>
+    </Message>
+  )
+}
+
 function IncidentHeader() {
   return (
     <Collapsible className="shrink-0">
       <header className="group/incident-header flex h-11 items-center gap-2 border-b border-border/70 bg-background px-3">
-        <SidebarTrigger />
+        <SidebarTrigger className="md:hidden" />
         <CollapsibleTrigger
           className="group/incident-trigger flex min-w-0 flex-1 items-center gap-4 rounded-md px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           aria-label="Toggle Incident details"
@@ -227,7 +241,6 @@ function IncidentHeader() {
             className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover/incident-header:opacity-100 group-focus-visible/incident-trigger:opacity-100 group-data-[state=open]/incident-trigger:rotate-180 group-data-[state=open]/incident-trigger:opacity-100 motion-reduce:transition-none"
           />
         </CollapsibleTrigger>
-        <h1 className="ml-auto shrink-0 text-sm font-medium">Stockout</h1>
       </header>
       <CollapsibleContent className="border-b border-border/70 bg-muted/20">
         <dl className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -295,18 +308,14 @@ function IncidentProperty({
 
 function SourcingRunRail({
   visible,
-  started,
   approved,
 }: {
   visible: number
-  started: boolean
   approved: boolean
 }) {
   const completed = RUN_STAGES.map((stage) => {
     if (stage.label === "Decision") return approved
-    return stage.afterId === null
-      ? started
-      : isStepVisible(stage.afterId, visible)
+    return stage.afterId === null || isStepVisible(stage.afterId, visible)
   })
   const firstIncomplete = completed.findIndex((stageComplete) => !stageComplete)
   const activeIndex =
@@ -563,60 +572,58 @@ function StepExtras({ step }: { step: ScriptStep }) {
   return null
 }
 
-function Composer({
-  phase,
-  onLaunch,
-  onReset,
+function MessageComposer({
+  value,
+  onChange,
+  onSend,
 }: {
-  phase: Phase
-  onLaunch: () => void
-  onReset: () => void
+  value: string
+  onChange: (value: string) => void
+  onSend: (value: string) => void
 }) {
-  const running = phase === "running"
-  const done = phase === "done"
-
   return (
-    <div className="shrink-0 border-b border-border/70 bg-background px-4 py-3">
+    <div className="shrink-0 border-t border-border bg-background px-4 py-3">
       <PromptInput
-        className="w-full"
-        onSubmit={() => {
-          if (running) {
-            return
-          }
-          if (done) {
-            onReset()
-            onLaunch()
-            return
-          }
-          onLaunch()
-        }}
+        className="mx-auto w-full max-w-2xl bg-card"
+        onSubmit={({ text }) => onSend(text)}
       >
         <PromptInputBody>
           <PromptInputTextarea
-            readOnly
-            value={USER_PROMPT}
-            placeholder="Sourcing prompt"
+            aria-label="Message Stockout"
+            placeholder="Message Stockout"
+            value={value}
+            onChange={(event) => onChange(event.currentTarget.value)}
           />
         </PromptInputBody>
         <PromptInputFooter>
-          <PromptInputTools>
-            {phase !== "idle" ? (
-              <PromptInputButton type="button" onClick={onReset}>
-                <RotateCcwIcon data-icon="inline-start" />
-                Reset
-              </PromptInputButton>
-            ) : null}
-          </PromptInputTools>
-          <PromptInputSubmit
-            disabled={running}
-            size="sm"
-            status={running ? "submitted" : "ready"}
-          >
-            {running ? <DotLoader /> : <PlayIcon data-icon="inline-start" />}
-            {done ? "Replay" : "Launch sourcing agent"}
+          <PromptInputTools />
+          <PromptInputSubmit disabled={!value.trim()} status="ready">
+            <ArrowUpIcon aria-hidden="true" />
           </PromptInputSubmit>
         </PromptInputFooter>
       </PromptInput>
+    </div>
+  )
+}
+
+function RunControls({
+  phase,
+  onReplay,
+}: {
+  phase: Phase
+  onReplay: () => void
+}) {
+  const running = phase === "running"
+
+  return (
+    <div className="flex min-h-11 shrink-0 items-center justify-between gap-3 border-b border-border/70 bg-background px-4 py-2">
+      <span className="text-xs text-muted-foreground">
+        Rehearsal · deterministic fixture
+      </span>
+      <Button type="button" size="sm" disabled={running} onClick={onReplay}>
+        {running ? <DotLoader /> : <RotateCcwIcon data-icon="inline-start" />}
+        {running ? "Running" : "Replay"}
+      </Button>
     </div>
   )
 }
