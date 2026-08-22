@@ -2,14 +2,29 @@
 
 Target end-to-end loop for the Cognition submission (Plan 2), plus the mock-first cut of it that we actually build first. Live CALL-E and the automatic trigger stay opt-in; **real Devin sessions do not** — see [ADR-0004](adr/0004-devin-sessions-are-real-from-the-first-skeleton.md).
 
+**Trigger (for now):** human over CLI — e.g. `python -m orchestrator.run --case CASE-001`. The shortage detector (B4) is the same handoff later; do not build it first.
+
 Related: [`PLAN.md`](PLAN.md), [`../CONTEXT.md`](../CONTEXT.md), [`adr/`](adr/), [`specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md).
+
+## Input
+
+CLI starts a case from a seeded **Incident** (fixture), not a live ERP write:
+
+| Field | Example role |
+| --- | --- |
+| `case_id` | `CASE-001` — folder + event log key |
+| `part_id` | Part that is short |
+| `qty_required` / `qty_on_hand` | Shortfall = required − on hand (floor 0) |
+| `line_stop_at` | Deadline (~12 days in the pitch) |
+| `line_stop_cost_per_hour`, `expedite_fee`, `currency` | Cost context for later |
 
 ## Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Det as Shortage detector (B4)
+    actor Human
+    participant CLI as CLI launch
     participant API as Core API (B)
     participant Devin as Devin session (D)
     participant SOR as System of record (B1, ERP adapter)
@@ -18,9 +33,11 @@ sequenceDiagram
     participant UI as Cockpit (A)
     participant GH as GitHub
 
-    Det->>API: reorder point breached · 12d to line stop
+    Human->>CLI: python -m orchestrator.run --case CASE-001
+    CLI->>API: create case from Incident fixture · Event(stage="created")
     API->>Devin: POST /v1/sessions {case_id}
     Note over Devin: no human input from here on
+    Note over Human,CLI: Later alternate: shortage detector (B4) calls the same create-case + session launch
 
     Devin->>SOR: part spec · stock · BOM · approved suppliers · price history
     SOR-->>Devin: Part + Incident + SupplierRecord[]
@@ -57,7 +74,7 @@ Three stages. **Nothing moves to the next column until the whole loop is green i
 
 | Hop | M0 — mock loop (h3) | M1 — real decision (h8–14) | M2 — stretch |
 |---|---|---|---|
-| Trigger → session | button in the cockpit | button | **detector fires on its own** |
+| Trigger → session | **CLI**, one command | CLI + button in the cockpit | **detector fires on its own** |
 | Devin session | **real** | real | real, possibly fan-out per candidate |
 | System of record | mock, 1 hardcoded part | mock, full seed (~40 parts, 15 suppliers) | real `ERPNextAdapter` |
 | Web research → candidates | fixture list of 5 | curated real distributors | free web search |
@@ -82,18 +99,19 @@ This is the first implementable thing and the one on `mvp-stub`. Two stubs, no n
 sequenceDiagram
     autonumber
     actor Human
+    participant CLI as CLI launch
     participant UI as Cockpit (A)
     participant API as Core API (B)
     participant Devin as Devin session (D)
     participant Fake as Outreach fake (C)
     participant GH as GitHub
 
-    Human->>UI: click "Launch sourcing agent"
-    UI->>API: POST /cases {part_id, qty_required}
+    Human->>CLI: python -m orchestrator.run --case CASE-001
+    CLI->>API: create case from Incident fixture
     API->>API: mkdir cases/CASE-001/ · Event(created)
     API->>Devin: POST /v1/sessions {case_id}
     Devin-->>API: session_id · session_url
-    API-->>UI: 202 {case_id, session_url}
+    API-->>CLI: {case_id, session_url}
 
     Devin->>API: GET /tools/part/BRG-6204-2RS
     Note right of API: STUB 1 — system of record<br/>hardcoded, ERPNext field names
@@ -147,6 +165,8 @@ Keep these three visible on stage:
 3. The **split order** beating every single-source option
 
 ## Open
+
+Settled since this list was written: the trigger is the human CLI above, mock vs live is the table above, and the first slice to implement is M0.
 
 - **Demo scale.** The foundation spec's fixture is a shortfall of 8 units, at which there are no price breaks, no freight trade-off and no split order — the cost model has nothing to compute. Proposal: same 4-supplier fixture shape, scaled to ~40 000 pcs against a 12-day line stop, with price-break tiers per supplier. **Blocks the seed data**, so it needs deciding before B1 starts.
 - Whether M2's session fan-out is worth the ACUs. Decide at hour 14, not now.
