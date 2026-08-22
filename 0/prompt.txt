@@ -15,3 +15,7 @@ Replace all other existing icons using the tabler icons. I would create one cent
 ---
 
 Continue, make sure all lucide is replaces with the new icon component so that my dev server works
+
+---
+
+Commit
