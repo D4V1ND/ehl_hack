@@ -241,7 +241,7 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
-One product route: `/chat`. The landing CTA opens it directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
+One Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
 
