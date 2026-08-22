@@ -45,7 +45,7 @@ class ExpediteOption(BaseModel):
 
 
 class OutreachBrief(BaseModel):
-    part_spec: str
+    part_spec: str 
     qty: int
     needed_by: date
     target_price: Decimal | None = None
