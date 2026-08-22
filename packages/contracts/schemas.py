@@ -47,6 +47,12 @@ def quote_result_schema() -> dict:
             "certs_claimed": {"type": "array", "items": {"type": "string"}},
             "payment_terms": {"type": "string"},
         },
-        "required": ["available", "qty_offered", "lead_time_days"],
+        # Nothing is required. A supplier who never states availability or a
+        # lead time is normal, and CALL-E returns NO structured_result at all
+        # when it cannot satisfy `required` — losing every field it did
+        # capture. "Unknown is a first-class answer" (CLAUDE.md), and
+        # normalize_result already defaults missing fields to unknown/zero
+        # with confidence 0, so a partial answer is worth more than nothing.
+        "required": [],
         "additionalProperties": False,
     }

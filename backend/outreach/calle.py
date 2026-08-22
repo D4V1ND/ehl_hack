@@ -8,15 +8,21 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+import time
 
 import httpx
 
 from backend import settings
+from backend.outreach.normalize import normalize_result
 from backend.outreach.prompts import build_task_text
 from backend.outreach.protocol import DispatchReceipt
 from backend.store import STORE
 from packages.contracts.models import OutreachTask
 from packages.contracts.schemas import quote_result_schema
+
+# CALL-E states that mean the call will not progress any further.
+_TERMINAL = {"completed", "failed", "cancelled", "canceled", "expired"}
 
 _E164 = re.compile(r"^\+[1-9]\d{1,14}$")
 
@@ -122,13 +128,136 @@ class CalleOutreachProvider:
                 json=payload,
                 timeout=60.0,
             )
-            response.raise_for_status()
+            if response.is_error:
+                # CALL-E puts the reason in the body; raise_for_status alone
+                # reports only the status code, which is not enough to fix
+                # a rejected payload.
+                STORE.append_event(
+                    case_id,
+                    actor="calle",
+                    stage="outreach_failed",
+                    level="error",
+                    message=f"CALL-E rejected the call: {response.status_code}",
+                    payload={"task_id": task.task_id, "body": response.text[:2000]},
+                )
+                raise RuntimeError(
+                    f"CALL-E returned {response.status_code} for {task.task_id}: "
+                    f"{response.text[:2000]}"
+                )
+
+            # Keep what CALL-E gives back: without the call id there is no way
+            # to chase a call that never fires its webhook.
+            try:
+                accepted = response.json()
+            except ValueError:
+                accepted = {"unparseable_body": response.text[:2000]}
+
+            call_id = accepted.get("id") if isinstance(accepted, dict) else None
+            STORE.append_event(
+                case_id,
+                actor="calle",
+                stage="call_accepted",
+                message=f"CALL-E accepted the call for {task.supplier_ref}",
+                payload={"task_id": task.task_id, "call_id": call_id},
+            )
+
+            if call_id:
+                # CALL-E does not appear to honour webhook_url (no callback ever
+                # arrives, and the field is not echoed back), so pull the result
+                # instead of waiting to be pushed. The webhook route stays in
+                # place in case delivery starts working.
+                watcher = threading.Thread(
+                    target=_watch_call,
+                    args=(call_id, task),
+                    daemon=True,
+                )
+                watcher.start()
 
         return DispatchReceipt(
             case_id=case_id,
             task_ids=[t.task_id for t in tasks],
             provider=self.name,
         )
+
+
+def _watch_call(call_id: str, task: OutreachTask) -> None:
+    """Poll one call to its end, then store the Quote. Never raises: this
+    runs on a daemon thread where an exception would vanish silently and
+    leave the case with no quote and no explanation."""
+    deadline = time.monotonic() + settings.CALLE_POLL_TIMEOUT
+    record: dict = {}
+
+    try:
+        while time.monotonic() < deadline:
+            time.sleep(settings.CALLE_POLL_INTERVAL)
+            try:
+                response = httpx.get(
+                    f"{settings.CALLE_BASE_URL}/v1/calls/{call_id}",
+                    headers={"Authorization": f"Bearer {settings.CALLE_API_KEY}"},
+                    timeout=30.0,
+                )
+            except httpx.HTTPError:
+                continue  # transient; try again until the deadline
+            if response.is_error:
+                continue
+            record = response.json()
+            if str(record.get("status", "")).lower() in _TERMINAL:
+                break
+        else:
+            STORE.append_event(
+                task.case_id,
+                actor="calle",
+                stage="call_timeout",
+                level="error",
+                message=f"{task.supplier_ref}: gave up waiting for the call result",
+                payload={"task_id": task.task_id, "call_id": call_id},
+            )
+
+        quote = normalize_result(
+            task.task_id, task.case_id, task.supplier_ref, _flatten(record)
+        )
+        STORE.add_quote(quote)
+        STORE.append_event(
+            task.case_id,
+            actor="calle",
+            stage="quote_received",
+            message=f"{task.supplier_ref}: "
+            + ("quoted" if quote.available else "no quote"),
+            payload={"task_id": task.task_id, "confidence": quote.confidence},
+        )
+    except Exception as exc:  # noqa: BLE001 - a dead thread must still say why
+        STORE.append_event(
+            task.case_id,
+            actor="calle",
+            stage="call_watch_failed",
+            level="error",
+            message=f"{task.supplier_ref}: watching the call failed: {exc}",
+            payload={"task_id": task.task_id, "call_id": call_id},
+        )
+
+
+def _flatten(record: dict) -> dict:
+    """Shape a CALL-E call record into what normalize_result reads.
+
+    The typed answers can land on the recipient rather than the call, and
+    the prose summary is often the only surviving trace of a partial call,
+    so prefer the recipient's copy of each and fall back to the call's.
+    """
+    if not isinstance(record, dict):
+        return {}
+
+    recipients = record.get("recipients")
+    recipient = recipients[0] if isinstance(recipients, list) and recipients else {}
+    if not isinstance(recipient, dict):
+        recipient = {}
+
+    return {
+        **record,
+        "structured_result": (
+            recipient.get("structured_result") or record.get("structured_result")
+        ),
+        "summary": recipient.get("summary") or record.get("summary"),
+    }
 
 
 def _load_supplier_phones(supplier_refs: list[str]) -> dict[str, str]:
