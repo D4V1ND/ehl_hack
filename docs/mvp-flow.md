@@ -1,8 +1,10 @@
 # MVP flow — target sequence
 
-Target end-to-end loop for the Cognition submission (Plan 2). Refine this diagram next so the same flow runs with **mock inputs**: system of record, web research, CALL-E calls, and claims. Live CALL-E and real Devin sessions stay opt-in.
+Target end-to-end loop for the Cognition submission (Plan 2). The same flow runs with **mock inputs** first: system of record via stubbed tool endpoints, web research as Candidates, CALL-E as the demo-company / teammate phone path. Live CALL-E and real Devin sessions stay opt-in.
 
 **Trigger (for now):** human over CLI — e.g. `python -m orchestrator.run --case CASE-001`. The shortage detector (B4) is the same handoff later; do not build it first.
+
+Devin never talks to SQLite or the system of record directly. It only calls `GET /tools/...` on the Core API. Those tools return fixture JSON now; later they can sit on SQLite or a real adapter behind the same URLs.
 
 Related: [`PLAN.md`](PLAN.md), [`specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md).
 
@@ -25,11 +27,11 @@ sequenceDiagram
     autonumber
     actor Human
     participant CLI as CLI launch
-    participant API as Core API (B)
+    participant API as Core API plus stubs (B)
     participant Devin as Devin session (D)
-    participant SOR as System of record (B1, ERP adapter)
+    participant Web as Supplier sites shortlist
     participant CE as CALL-E (C)
-    participant Sup as Suppliers
+    participant Demo as Demo company our phone
     participant UI as Cockpit (A)
     participant GH as GitHub
 
@@ -39,21 +41,27 @@ sequenceDiagram
     Note over Devin: no human input from here on
     Note over Human,CLI: Later alternate: shortage detector (B4) calls the same create-case + session launch
 
-    Devin->>SOR: part spec · stock · BOM · approved suppliers · price history
-    SOR-->>Devin: Part + Incident + SupplierRecord[]
-    Devin->>Devin: web research → Candidate[] (why_matched, channel)
+    Devin->>API: GET /tools/part /tools/stock /tools/suppliers
+    Note right of API: stub fixture — part number, size, qty, allowed countries, SupplierRecord[]
+    API-->>Devin: Part + Incident context + SupplierRecord[]
+
+    Devin->>Web: search seeded sites / shortlist for exact part
+    Web-->>Devin: pages → Candidate[] (why_matched, channel)
+    Note over Devin,Web: Candidates are who to ask, not Claims
+
     Devin->>Devin: policy rules (D3) → reject by name + rule
-    Devin->>API: POST /tools/outreach  (surviving candidates)
+    Devin->>API: POST /tools/outreach (surviving candidates · demo company preferred)
 
     API->>CE: POST /v1/calls  recipients[] + Claim as recipient_result_schema
-    CE->>Sup: parallel calls · AI disclosure first · ask tiers, MOQ, lead time, stock status · negotiate in [target, floor]
-    Sup-->>CE: answers
+    Note over API,CE: AI disclosure first · ask tiers, MOQ, lead time, stock status
+    CE->>Demo: call teammate number (rehearsal-override / pitch)
+    Demo-->>CE: answers
     CE-->>API: POST /calle/webhook  structured_result + transcript + confidence
     API->>API: → Claim, never raises · Event log
-    Note over API,CE: China / unreachable → email RFQ, same Claim out
+    Note over API,CE: China / unreachable → email RFQ later, same Claim out
 
     API-->>Devin: Claim[]
-    Devin->>SOR: verify claims vs our records (D6)
+    Devin->>API: GET /tools/* verify claims vs records (D6)
     Note right of Devin: claimed price vs contract · lead time vs standard<br/>qty vs known_allocations · cert vs expiry
     Devin->>Devin: cost_model.py → landed cost per option<br/>breaks · MOQ · freight · duty · carrying · expedite
     Devin->>Devin: strategy search → split order beats single source
@@ -68,6 +76,14 @@ sequenceDiagram
     Note over UI,GH: human approves by merging the PR
 ```
 
+## Mock vs later
+
+| Step | Now | Later |
+| --- | --- | --- |
+| SoR tools | Fixture JSON behind `/tools/*` | SQLite or real adapter, same URLs |
+| Web research | Seeded shortlist + optional browse | Richer site list (Konrad-style DE stores, etc.) |
+| CALL-E | Demo company → our phone / saved claim | Still never cold-call real distributors in demo |
+
 ## Stage beats
 
 Keep these three visible on stage:
@@ -79,6 +95,6 @@ Keep these three visible on stage:
 ## Next (refine here)
 
 - [x] Trigger: human CLI (`orchestrator.run --case CASE-001`); detector later
-- [ ] Mark which arrows are mock vs live for the first implementable MVP slice
+- [x] Mark which arrows are mock vs live for the first implementable MVP slice
 - [ ] Pull a few slices out of this flow to implement first
 - [ ] Devin setup and the tool endpoints Devin calls — after the mock loop walks
