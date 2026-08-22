@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NKACG7V9BC4D7PP00PEVF1",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/globals.css",
+    "app/page.tsx",
+    "components/ai-elements/code-block.tsx",
+    "components/ai-elements/conversation.tsx",
+    "components/ai-elements/message.tsx",
+    "components/ai-elements/prompt-input.tsx",
+    "components/ai-elements/task.tsx",
+    "components/ai-elements/tool.tsx",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/cockpit/working-pane.tsx",
+    "components/icons.tsx",
+    "components/ui/command.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/message-scroller.tsx",
+    "components/ui/select.tsx",
+    "components/ui/spinner.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "package-lock.json",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 249997,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9135744,
+    "output_tokens": 31436,
+    "api_call_count": 82
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NKACG7V9BC4D7PP00PEVF1",
+  "session_id": "01a02af8-78ae-7d82-960b-60fae89ba4c7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T20:41:43.181599Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    "app/globals.css",
+    "app/page.tsx",
+    "components/ai-elements/code-block.tsx",
+    "components/ai-elements/conversation.tsx",
+    "components/ai-elements/message.tsx",
+    "components/ai-elements/prompt-input.tsx",
+    "components/ai-elements/task.tsx",
+    "components/ai-elements/tool.tsx",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/cockpit/working-pane.tsx",
+    "components/icons.tsx",
+    "components/ui/command.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/message-scroller.tsx",
+    "components/ui/select.tsx",
+    "components/ui/spinner.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "package-lock.json",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "ab7c4d932c25",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 249997,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9135744,
+    "output_tokens": 31436,
+    "api_call_count": 82
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T20:41:43.134427Z",
+    "agent_lines": 4373,
+    "agent_removed": 134,
+    "human_added": 892,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 5265,
+    "total_lines_changed": 5399,
+    "agent_percentage": 83.47842192998704,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 56,
+      "user_lines_removed": 56,
+      "agent_lines_added": 5471,
+      "agent_lines_removed": 54,
+      "user_added_per_file": {
+        "app/prototype/website/page.tsx": 3,
+        "components/prototype/prototype-switcher.tsx": 14,
+        "components/prototype/website-prototype.tsx": 39
+      },
+      "user_removed_per_file": {
+        "app/prototype/website/page.tsx": 1,
+        "components/prototype/prototype-switcher.tsx": 24,
+        "components/prototype/website-prototype.tsx": 31
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5635,
+      "agent_lines_removed": 137
+    }
+  ]
+}
