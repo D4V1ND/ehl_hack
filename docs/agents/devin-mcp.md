@@ -4,8 +4,6 @@ Use the authenticated Devin MCP for Devin's private-repository documentation and
 
 Official reference: [Devin MCP](https://docs.devin.ai/work-with-devin/devin-mcp).
 
-## Authenticate
-
 Create an organization-scoped service-user key in Devin under **Settings → Service users**. The key must start with `cog_`; legacy `apk_` keys do not work.
 
 Export the key before starting a coding agent:

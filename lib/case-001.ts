@@ -25,6 +25,8 @@ export type ScriptStep = {
   detail: string
 }
 
+export type IncidentStage = "open" | "calling" | "decided"
+
 export const INCIDENT = {
   caseId: "CASE-001",
   partId: "6204-2RS",
@@ -36,6 +38,134 @@ export const INCIDENT = {
   lineStopDays: "12",
   lineStopCostPerHour: "EUR 4000.00",
 } as const
+
+export const INCIDENTS = [
+  {
+    caseId: "CASE-001",
+    partLabel: "6204-2RS bearing",
+    lineStopDays: "12",
+    stage: "open" as IncidentStage,
+    plant: "Munich",
+    href: "/chat",
+  },
+  {
+    caseId: "CASE-002",
+    partLabel: "DIN 933 M8×40",
+    lineStopDays: "21",
+    stage: "calling" as IncidentStage,
+    plant: "Munich",
+    href: null,
+  },
+  {
+    caseId: "CASE-003",
+    partLabel: "6205-2RS bearing",
+    lineStopDays: null,
+    stage: "decided" as IncidentStage,
+    plant: "Munich",
+    href: null,
+  },
+  {
+    caseId: "CASE-004",
+    partLabel: "Hex bolt M10",
+    lineStopDays: "8",
+    stage: "open" as IncidentStage,
+    plant: "Stuttgart",
+    href: null,
+  },
+  {
+    caseId: "CASE-005",
+    partLabel: "6004-2Z bearing",
+    lineStopDays: null,
+    stage: "decided" as IncidentStage,
+    plant: "Munich",
+    href: null,
+  },
+] as const
+
+export const CASE_FILES = [
+  { name: "sourcing_case.yaml", ext: "yml", afterId: "part" },
+  { name: "candidates.json", ext: "json", afterId: "suppliers" },
+  { name: "claims/skf.json", ext: "json", afterId: "claims" },
+  { name: "claims/fag.json", ext: "json", afterId: "claims" },
+  { name: "cost_report.md", ext: "md", afterId: "deltas" },
+  { name: "policy_report.md", ext: "md", afterId: "tests" },
+  { name: "decision.md", ext: "md", afterId: "pr" },
+  { name: "po_draft.md", ext: "md", afterId: "pr" },
+] as const
+
+export const CALLS = [
+  {
+    id: "skf",
+    supplier: "SKF Nordic",
+    phone: "+46******0100",
+    afterId: "outreach",
+    connectedLabel: "Call connected 0:22",
+    claimStrip: { price: "unknown", stock: "unclear", cert: "unknown" },
+    turns: [
+      {
+        speaker: "Agent",
+        text: "I am an AI calling for Munich plant purchasing. This call is recorded. You may ask for a human at any time.",
+      },
+      {
+        speaker: "SKF",
+        text: "Understood. 6204-2RS, we have stock. What quantity?",
+      },
+    ],
+  },
+  {
+    id: "munich-motion",
+    supplier: "Munich Motion GmbH",
+    phone: "+49*******0210",
+    afterId: "claims",
+    connectedLabel: "Call connected 1:04",
+    claimStrip: { price: "EUR 3.80", stock: "in_stock_allocated", cert: "yes" },
+    turns: [
+      {
+        speaker: "Agent",
+        text: "Confirm stock_status: free for us, or already allocated to another customer?",
+      },
+      {
+        speaker: "Munich Motion",
+        text: "We have units, but they are allocated to another customer. I cannot promise them.",
+      },
+    ],
+  },
+] as const
+
+export const LANDED_LINES = [
+  {
+    supplier: "SKF Nordic",
+    mode: "air",
+    goods: "EUR 153600.00",
+    freight: "EUR 14800.00",
+    total: "EUR 168400.00",
+    usable: true,
+  },
+  {
+    supplier: "Schaeffler FAG",
+    mode: "sea",
+    goods: "EUR 67200.00",
+    freight: "EUR 4000.00",
+    total: "EUR 71200.00",
+    usable: true,
+  },
+  {
+    supplier: "NSK Europe",
+    mode: "road",
+    goods: "EUR 97600.00",
+    freight: "EUR 2100.00",
+    total: "EUR 99700.00",
+    usable: true,
+  },
+  {
+    supplier: "Munich Motion GmbH",
+    mode: "road",
+    goods: "EUR 121600.00",
+    freight: "EUR 400.00",
+    total: "EUR 122000.00",
+    usable: false,
+  },
+] as const
 
 export const CANDIDATES = [
   {

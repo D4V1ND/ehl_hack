@@ -34,7 +34,7 @@ Use the domain words from `docs/PLAN.md` and `docs/specs/supplyguard-plan-1-foun
 
 The planned path is shortage trigger → Devin Session → system-of-record lookup → supplier outreach → structured Claims → compliance and landed-cost checks → repository artifacts → pull request. The cockpit renders progress and the final recommendation.
 
-The repository is still a walking skeleton. It currently contains the Next.js landing page, the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. Slice A also plans `/dashboard` (Incident list). Confirm that a planned module exists before extending it.
+The repository is still a walking skeleton. It currently contains the Next.js landing page, `/dashboard` (Incident list), the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. Confirm that a planned module exists before extending it.
 
 ## Where code lives
 
@@ -108,18 +108,12 @@ For every implementation task:
 
 The task is incomplete until every affected document is updated or the no-change reason is recorded.
 
-## Read when
+## Docs 
 
 - `docs/PLAN.md` — before changing product scope, architecture, contracts, case artifacts, orchestration, or the demo flow.
-- `docs/specs/supplyguard-plan-1-foundation-spec.md` — before changing phone safety, Supplier Records, Claims, call scripts, rehearsal/live behavior, or claim conversion.
-- `app/globals.css` — before changing colours or theme tokens.
+- `docs/design.md` — before changing Cockpit layout, `/dashboard`, Files/Results, call UI, or design references.
 - `docs/agents/devin-mcp.md` — before using Devin MCP for repository research, Sessions, Knowledge, playbooks, schedules, or integrations.
 - `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` — when creating, reading, or labeling GitHub issues.
 - `docs/agents/domain.md` — when changing domain vocabulary or architectural decisions.
 
 Durable truth lives in the files above. GitHub issues hold work in flight.
-
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->

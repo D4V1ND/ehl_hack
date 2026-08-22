@@ -121,7 +121,7 @@ export default function Home() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
                 nativeButton={false}
-                render={<Link href="/chat" />}
+                render={<Link href="/dashboard" />}
               >
                 Launch a case
                 <ArrowRight data-icon="inline-end" />
@@ -262,7 +262,7 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-foreground">Product</h3>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground">Features</a></li>
-                <li><a href="/chat" className="hover:text-foreground">Cockpit</a></li>
+                <li><a href="/dashboard" className="hover:text-foreground">Cockpit</a></li>
                 <li><a href="#" className="hover:text-foreground">Pricing</a></li>
               </ul>
             </div>

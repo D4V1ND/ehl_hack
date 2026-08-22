@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import { GitPullRequestIcon, PlayIcon, RotateCcwIcon } from "lucide-react"
+import { PlayIcon, RotateCcwIcon } from "lucide-react"
 
 import {
   Conversation,
@@ -37,21 +36,24 @@ import {
 } from "@/components/ai-elements/tool"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { DotLoader } from "@/components/cockpit/dot-loader"
-import { Button } from "@/components/ui/button"
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { CockpitShell } from "@/components/cockpit/cockpit-shell"
+import { DotLoader } from "@/components/cockpit/dot-loader"
+import {
+  WorkingPane,
+  paneForVisible,
+  type WorkingTab,
+} from "@/components/cockpit/working-pane"
 import {
   CANDIDATES,
   INCIDENT,
-  PR_PATH,
   SCRIPT,
   STRATEGIES,
   TICK_MS,
@@ -61,6 +63,13 @@ import {
 } from "@/lib/case-001"
 
 type Phase = "idle" | "running" | "done"
+
+const hoursToLineStop = Number(INCIDENT.lineStopDays) * 24
+const standingStill = `${INCIDENT.lineStopCostPerHour.replace(/\.00$/, "")} / h`
+
+function groupThousands(qty: string): string {
+  return Number(qty).toLocaleString("en-US").replaceAll(",", "\u00a0")
+}
 
 function stockBadgeVariant(
   status: StockStatus
@@ -77,6 +86,7 @@ function stockBadgeVariant(
 export function CockpitChat() {
   const [started, setStarted] = useState(false)
   const [visible, setVisible] = useState(0)
+  const [pinnedTab, setPinnedTab] = useState<WorkingTab | null>(null)
   const phase: Phase = !started
     ? "idle"
     : visible >= SCRIPT.length
@@ -96,6 +106,8 @@ export function CockpitChat() {
     return () => window.clearInterval(id)
   }, [started, visible])
 
+  const tab = pinnedTab ?? paneForVisible(visible)
+
   const currentStep =
     phase === "idle"
       ? "Awaiting launch"
@@ -109,28 +121,21 @@ export function CockpitChat() {
     ).matches
     setStarted(true)
     setVisible(skipTicks ? SCRIPT.length : 0)
+    setPinnedTab(null)
   }
 
   function reset() {
     setStarted(false)
     setVisible(0)
+    setPinnedTab(null)
   }
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background">
-      <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5">
-        <Button
-          nativeButton={false}
-          variant="ghost"
-          size="sm"
-          render={<Link href="/" />}
-        >
-          stockout
-        </Button>
-        <Badge variant="outline">{INCIDENT.caseId}</Badge>
-        <Badge variant="secondary">rehearsal</Badge>
+    <CockpitShell
+      active="chat"
+      trailing={
         <p
-          className="ml-auto flex items-center gap-2 truncate text-sm text-muted-foreground tabular-nums"
+          className="flex items-center gap-2 truncate text-sm text-muted-foreground tabular-nums"
           aria-live="polite"
         >
           {phase === "running" ? <DotLoader /> : null}
@@ -140,60 +145,89 @@ export function CockpitChat() {
             · {visible} Event{visible === 1 ? "" : "s"}
           </span>
         </p>
-      </header>
+      }
+    >
+      <div className="flex h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4">
+        <div className="flex items-center gap-4 text-sm">
+          <span className="font-mono">{INCIDENT.caseId}</span>
+          <span className="text-muted-foreground">{INCIDENT.partId}</span>
+          <span>{INCIDENT.lineStopDays} days to line stop</span>
+        </div>
+        <span className="text-muted-foreground text-sm">Devin session</span>
+      </div>
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className="flex min-h-0 min-w-0 flex-col">
+          <Conversation className="min-h-0">
+            <ConversationContent>
+              <IncidentChip />
 
-      <Conversation className="min-h-0">
-        <ConversationContent className="mx-auto w-full max-w-2xl">
-          <UserIncident />
+              {SCRIPT.slice(0, visible).map((step, index) => (
+                <AssistantTurn
+                  key={step.id}
+                  step={step}
+                  latest={index === visible - 1 && phase === "running"}
+                />
+              ))}
 
-          {SCRIPT.slice(0, visible).map((step, index) => (
-            <AssistantTurn
-              key={step.id}
-              step={step}
-              latest={index === visible - 1 && phase === "running"}
-            />
-          ))}
-
-          {phase === "running" ? (
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <DotLoader />
-              <span>{currentStep}</span>
-            </div>
-          ) : null}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-
-      <Composer phase={phase} onLaunch={launch} onReset={reset} />
-    </div>
+              {phase === "running" ? (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <DotLoader />
+                  <span>{currentStep}</span>
+                </div>
+              ) : null}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+          <Composer phase={phase} onLaunch={launch} onReset={reset} />
+        </div>
+        <WorkingPane
+          visible={visible}
+          tab={tab}
+          onTabChange={setPinnedTab}
+        />
+      </div>
+    </CockpitShell>
   )
 }
 
-function UserIncident() {
+function IncidentChip() {
   return (
-    <Message from="user">
-      <MessageContent>
-        <MessageResponse>{USER_PROMPT}</MessageResponse>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs tabular-nums sm:grid-cols-4">
+    <Card size="sm" className="w-full" aria-label="Incident from ERP">
+      <CardHeader>
+        <CardTitle>
+          Incident · {INCIDENT.plant} plant
+        </CardTitle>
+        <CardDescription>
+          {INCIDENT.partId} {INCIDENT.description}
+        </CardDescription>
+        <CardAction>
+          <Badge variant="outline">from ERP</Badge>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <dl className="grid grid-cols-3 gap-3 tabular-nums">
           <div>
-            <dt className="text-muted-foreground">qty_required</dt>
-            <dd>{INCIDENT.qtyRequired}</dd>
+            <dt className="text-muted-foreground text-xs">Qty short</dt>
+            <dd className="font-medium">{groupThousands(INCIDENT.shortfall)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">qty_on_hand</dt>
-            <dd>{INCIDENT.qtyOnHand}</dd>
+            <dt className="text-muted-foreground text-xs">To line-stop</dt>
+            <dd className="font-medium">
+              {INCIDENT.lineStopDays} d / {hoursToLineStop} h
+            </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">shortfall</dt>
-            <dd>{INCIDENT.shortfall}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">line_stop</dt>
-            <dd>{INCIDENT.lineStopDays}d</dd>
+            <dt className="text-muted-foreground text-xs">Standing still</dt>
+            <dd className="font-medium">{standingStill}</dd>
           </div>
         </dl>
-      </MessageContent>
-    </Message>
+        <p className="text-muted-foreground text-sm">
+          {groupThousands(INCIDENT.qtyOnHand)} on hand vs{" "}
+          {groupThousands(INCIDENT.qtyRequired)} required. ERP already showed
+          the shortage.
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -266,7 +300,13 @@ function StepExtras({ step }: { step: ScriptStep }) {
   }
 
   if (step.kind === "deltas") {
-    return <ClaimRecordTable />
+    return (
+      <p className="text-muted-foreground text-sm">
+        Munich Motion Claim is{" "}
+        <Badge variant="destructive">in_stock_allocated</Badge> — that stock is
+        not ours.
+      </p>
+    )
   }
 
   if (step.kind === "strategy") {
@@ -293,56 +333,14 @@ function StepExtras({ step }: { step: ScriptStep }) {
 
   if (step.kind === "decision") {
     return (
-      <Alert>
-        <GitPullRequestIcon />
-        <AlertTitle>Decision ready for merge</AlertTitle>
-        <AlertDescription>
-          SPLIT 20% SKF air + 80% FAG sea. A human approves by merging{" "}
-          <span className="font-mono">{PR_PATH}</span>.
-        </AlertDescription>
-      </Alert>
+      <p className="text-muted-foreground text-sm">
+        Winning Strategy is split 20% SKF air + 80% FAG sea. A human approves
+        by merging.
+      </p>
     )
   }
 
   return null
-}
-
-function ClaimRecordTable() {
-  const rows = CANDIDATES.filter((candidate) => candidate.claimUnit)
-
-  return (
-    <Table>
-      <TableCaption>
-        Claim values sit next to the Supplier Record. Claims are not facts.
-      </TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Candidate</TableHead>
-          <TableHead>Record unit</TableHead>
-          <TableHead>Claim unit</TableHead>
-          <TableHead>stock_status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((candidate) => (
-          <TableRow key={candidate.name}>
-            <TableCell>{candidate.name}</TableCell>
-            <TableCell className="tabular-nums font-mono">
-              {candidate.recordUnit}
-            </TableCell>
-            <TableCell className="tabular-nums font-mono">
-              {candidate.claimUnit}
-            </TableCell>
-            <TableCell>
-              <Badge variant={stockBadgeVariant(candidate.stockStatus!)}>
-                {candidate.stockStatus}
-              </Badge>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
 }
 
 function Composer({
@@ -360,7 +358,7 @@ function Composer({
   return (
     <div className="shrink-0 bg-background px-4 py-3">
       <PromptInput
-        className="mx-auto w-full max-w-2xl"
+        className="w-full"
         onSubmit={() => {
           if (running) {
             return
@@ -384,7 +382,7 @@ function Composer({
           <PromptInputTools>
             {phase !== "idle" ? (
               <PromptInputButton type="button" onClick={onReset}>
-                <RotateCcwIcon />
+                <RotateCcwIcon data-icon="inline-start" />
                 Reset
               </PromptInputButton>
             ) : null}
@@ -397,7 +395,7 @@ function Composer({
             {running ? (
               <DotLoader />
             ) : (
-              <PlayIcon />
+              <PlayIcon data-icon="inline-start" />
             )}
             {done ? "Replay" : "Launch sourcing agent"}
           </PromptInputSubmit>
