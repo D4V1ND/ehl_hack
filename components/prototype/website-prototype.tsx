@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 
+import { Logo } from "@/components/logo"
 import { PrototypeSwitcher } from "@/components/prototype/prototype-switcher"
 
 // Five beta-homepage variants, switchable with ?variant=, on /prototype/website.
@@ -19,19 +20,13 @@ function isVariantKey(value: string | undefined): value is VariantKey {
   return variants.some((variant) => variant.key === value?.toUpperCase())
 }
 
-function StockoutLogo({ inverse = false }: { inverse?: boolean }) {
+function PrototypeLogo({ inverse = false }: { inverse?: boolean }) {
   return (
-    <div
-      aria-label="Stockout"
-      className={`absolute top-6 right-6 z-20 flex items-center gap-2 sm:top-8 sm:right-10 ${
+    <Logo
+      className={`absolute top-6 right-6 z-20 sm:top-8 sm:right-10 ${
         inverse ? "text-background" : "text-foreground"
       }`}
-    >
-      <span className="relative size-4 rounded-full border-[1.5px] border-current">
-        <span className="absolute top-1/2 left-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-current" />
-      </span>
-      <span className="text-sm font-semibold tracking-[-0.03em]">stockout</span>
-    </div>
+    />
   )
 }
 
@@ -97,7 +92,7 @@ function VariantA() {
       />
       <div className="absolute inset-0 bg-background/15" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,var(--background)_145%)]" />
-      <StockoutLogo inverse />
+      <PrototypeLogo inverse />
 
       <section className="relative z-10 flex h-full items-center justify-center px-6 pb-16 text-center">
         <div className="flex w-full max-w-4xl flex-col items-center">
@@ -105,7 +100,7 @@ function VariantA() {
             Sourcing, before the line stops.
           </h1>
           <p className="mt-6 max-w-lg text-base leading-relaxed text-background/70 sm:text-lg">
-            Stockout turns shortages into checked supplier options and one
+            SupplyOS turns shortages into checked supplier options and one
             approval-ready Decision.
           </p>
           <div className="mt-9 flex w-full justify-center text-foreground">
@@ -129,7 +124,7 @@ function VariantB() {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/20 to-background/5" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent" />
-      <StockoutLogo />
+      <PrototypeLogo />
 
       <section className="relative z-10 flex h-full items-end px-6 pt-28 pb-24 sm:px-12 sm:pb-18 lg:px-20">
         <div className="grid w-full items-end gap-9 md:grid-cols-[minmax(0,1fr)_24rem] md:gap-16">
@@ -162,12 +157,12 @@ function VariantC() {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-background/5" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/15 via-transparent to-background/45" />
-      <StockoutLogo />
+      <PrototypeLogo />
 
       <section className="relative z-10 flex h-full items-center px-6 pb-14 sm:px-12 lg:px-20">
         <div className="w-full max-w-2xl">
           <h1 className="text-5xl leading-[0.94] font-medium tracking-[-0.06em] text-balance sm:text-7xl lg:text-[6rem]">
-            When stock runs out, Stockout starts.
+            When stock runs out, SupplyOS starts.
           </h1>
           <p className="mt-6 max-w-md text-base leading-relaxed text-foreground/70 sm:text-lg">
             From Incident to approved Decision, every sourcing step stays
@@ -194,7 +189,7 @@ function VariantD() {
       />
       <div className="absolute inset-0 bg-gradient-to-l from-foreground/85 via-foreground/25 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-foreground/35 via-transparent to-transparent" />
-      <StockoutLogo inverse />
+      <PrototypeLogo inverse />
 
       <section className="relative z-10 flex h-full items-center justify-end px-6 pb-16 sm:px-12 lg:px-20">
         <div className="flex w-full max-w-xl flex-col items-end text-right">
@@ -226,7 +221,7 @@ function VariantE() {
         style={{ backgroundImage: "url('/website/background-4.png')" }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background/65 via-background/5 to-transparent" />
-      <StockoutLogo />
+      <PrototypeLogo />
 
       <section className="relative z-10 flex h-full items-end px-6 pt-28 pb-24 sm:px-12 sm:pb-18 lg:px-20">
         <div className="grid w-full items-end gap-9 md:grid-cols-[minmax(0,1fr)_24rem] md:gap-16">

@@ -29,6 +29,7 @@ export {
   IconGitPullRequest as GitPullRequestIcon,
   IconHistory as HistoryIcon,
   IconLayoutSidebarLeftCollapse as PanelLeftIcon,
+  IconLayoutSidebarRightExpand as PanelRightOpenIcon,
   IconLoader2 as Loader2Icon,
   IconPackage as PartIcon,
   IconPackages as QuantityIcon,

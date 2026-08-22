@@ -1,8 +1,13 @@
 "use client"
 
-import { ChevronDownIcon, ExternalLinkIcon } from "@/components/icons"
+import {
+  ChevronDownIcon,
+  ExternalLinkIcon,
+  XIcon,
+} from "@/components/icons"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,7 +34,13 @@ type CandidateState = {
   costsComplete: boolean
 }
 
-export function CandidatePanel({ visible }: { visible: number }) {
+export function CandidatePanel({
+  visible,
+  onClose,
+}: {
+  visible: number
+  onClose: () => void
+}) {
   const visibleIds = new Set(SCRIPT.slice(0, visible).map((step) => step.id))
   const state: CandidateState = {
     candidatesVisible: visibleIds.has("suppliers"),
@@ -50,7 +61,15 @@ export function CandidatePanel({ visible }: { visible: number }) {
           <h2 className="text-sm font-medium">Candidates</h2>
           <p className="text-xs text-muted-foreground">Stable match order</p>
         </div>
-        <Badge variant="outline">{candidates.length}</Badge>
+        <Button
+          type="button"
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Close Candidates sidebar"
+          onClick={onClose}
+        >
+          <XIcon aria-hidden="true" />
+        </Button>
       </header>
 
       {candidates.length === 0 ? (
@@ -130,7 +149,7 @@ function CandidateRow({
         <LifecycleBadge candidate={candidate} state={state} />
         <ChevronDownIcon
           aria-hidden
-          className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+          className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
         />
       </CollapsibleTrigger>
 

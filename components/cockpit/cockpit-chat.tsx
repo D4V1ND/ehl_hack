@@ -5,12 +5,12 @@ import {
   ArrowUpIcon,
   CheckIcon,
   ChevronDownIcon,
-  CircleIcon,
   CostIcon,
   FactoryIcon,
   type IconComponent,
   LineStopIcon,
   PartIcon,
+  PanelRightOpenIcon,
   QuantityIcon,
   RotateCcwIcon,
   WarehouseIcon,
@@ -56,6 +56,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { CallDetailDialog } from "@/components/cockpit/call-detail-dialog"
 import { CandidatePanel } from "@/components/cockpit/candidate-panel"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
@@ -68,6 +73,7 @@ import {
   TICK_MS,
   type ScriptStep,
 } from "@/lib/case-001"
+import { cn } from "@/lib/utils"
 
 type Phase = "running" | "done"
 type DecisionStatus =
@@ -78,6 +84,8 @@ type RunStage = {
   afterId: string | null
 }
 
+type RunStageState = "complete" | "active" | "pending"
+
 const RUN_STAGES: RunStage[] = [
   { label: "Incident", afterId: null },
   { label: "Candidates", afterId: "suppliers" },
@@ -85,6 +93,12 @@ const RUN_STAGES: RunStage[] = [
   { label: "Claims", afterId: "claims" },
   { label: "Decision", afterId: "strategy" },
 ]
+
+const RUN_STAGE_PEBBLE_CLASS: Record<RunStageState, string> = {
+  complete: "bg-primary",
+  active: "bg-foreground ring-1 ring-background/40",
+  pending: "bg-muted-foreground/40",
+}
 
 const hoursToLineStop = Number(INCIDENT.lineStopDays) * 24
 const standingStill = `${INCIDENT.lineStopCostPerHour.replace(/\.00$/, "")} / h`
@@ -98,9 +112,27 @@ function isStepVisible(stepId: string, visible: number): boolean {
   return index >= 0 && visible > index
 }
 
+function getRunStageStates(
+  visible: number,
+  approved: boolean
+): RunStageState[] {
+  const completed = RUN_STAGES.map((stage) => {
+    if (stage.label === "Decision") return approved
+    return stage.afterId === null || isStepVisible(stage.afterId, visible)
+  })
+  const activeIndex = completed.findIndex((complete) => !complete)
+
+  return completed.map((complete, index) => {
+    if (complete) return "complete"
+    if (index === activeIndex) return "active"
+    return "pending"
+  })
+}
+
 export function CockpitChat() {
   const [visible, setVisible] = useState(0)
   const [approved, setApproved] = useState(false)
+  const [candidatesOpen, setCandidatesOpen] = useState(true)
   const [draft, setDraft] = useState("")
   const [messages, setMessages] = useState<string[]>([])
   const phase: Phase = visible >= SCRIPT.length ? "done" : "running"
@@ -148,15 +180,31 @@ export function CockpitChat() {
   }
 
   return (
-    <CockpitShell rightSidebar={<CandidatePanel visible={visible} />}>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <IncidentHeader />
-        <RunControls phase={phase} onReplay={replay} />
+    <CockpitShell
+      rightSidebar={
+        candidatesOpen ? (
+          <CandidatePanel
+            visible={visible}
+            onClose={() => setCandidatesOpen(false)}
+          />
+        ) : undefined
+      }
+    >
+      <div className="grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+        <IncidentHeader
+          visible={visible}
+          approved={approved}
+          phase={phase}
+          onReplay={replay}
+          showOpenCandidates={!candidatesOpen}
+          onOpenCandidates={() => setCandidatesOpen(true)}
+        />
         <Conversation className="min-h-0">
-          <ConversationContent className="gap-4">
+          <ConversationContent
+            className="mx-auto w-full max-w-[50vw] gap-4 px-4 py-4"
+            scrollClassName="chat-scrollbar overflow-x-hidden overflow-y-auto"
+          >
             <IncidentRequestMessage />
-
-            <SourcingRunRail visible={visible} approved={approved} />
 
             {SCRIPT.slice(0, visible).map((step, index) => (
               <AssistantTurn
@@ -183,18 +231,20 @@ export function CockpitChat() {
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
-        {decisionExists ? (
-          <DecisionBar
-            checksPassed={checksPassed}
-            status={decisionStatus}
-            onApprove={() => setApproved(true)}
+        <div className="shrink-0 bg-background">
+          {decisionExists ? (
+            <DecisionBar
+              checksPassed={checksPassed}
+              status={decisionStatus}
+              onApprove={() => setApproved(true)}
+            />
+          ) : null}
+          <MessageComposer
+            value={draft}
+            onChange={setDraft}
+            onSend={sendMessage}
           />
-        ) : null}
-        <MessageComposer
-          value={draft}
-          onChange={setDraft}
-          onSend={sendMessage}
-        />
+        </div>
       </div>
       <Suspense fallback={null}>
         <CallDetailDialog />
@@ -220,7 +270,23 @@ function IncidentRequestMessage() {
   )
 }
 
-function IncidentHeader() {
+function IncidentHeader({
+  visible,
+  approved,
+  phase,
+  onReplay,
+  showOpenCandidates,
+  onOpenCandidates,
+}: {
+  visible: number
+  approved: boolean
+  phase: Phase
+  onReplay: () => void
+  showOpenCandidates: boolean
+  onOpenCandidates: () => void
+}) {
+  const running = phase === "running"
+
   return (
     <Collapsible className="shrink-0">
       <header className="group/incident-header flex h-11 items-center gap-2 border-b border-border/70 bg-background px-3">
@@ -238,9 +304,43 @@ function IncidentHeader() {
           </span>
           <ChevronDownIcon
             aria-hidden="true"
-            className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover/incident-header:opacity-100 group-focus-visible/incident-trigger:opacity-100 group-data-[state=open]/incident-trigger:rotate-180 group-data-[state=open]/incident-trigger:opacity-100 motion-reduce:transition-none"
+            className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover/incident-header:opacity-100 group-focus-visible/incident-trigger:opacity-100 group-data-[panel-open]/incident-trigger:rotate-180 group-data-[panel-open]/incident-trigger:opacity-100 motion-reduce:transition-none"
           />
         </CollapsibleTrigger>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <RunStatusButton visible={visible} approved={approved} />
+          <Button
+            type="button"
+            size="sm"
+            disabled={running}
+            onClick={onReplay}
+          >
+            {running ? (
+              <DotLoader />
+            ) : (
+              <RotateCcwIcon data-icon="inline-start" />
+            )}
+            {running ? "Running" : "Replay"}
+          </Button>
+          {showOpenCandidates ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Open Candidates sidebar"
+                    onClick={onOpenCandidates}
+                  >
+                    <PanelRightOpenIcon aria-hidden="true" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom">Open Candidates</TooltipContent>
+            </Tooltip>
+          ) : null}
+        </div>
       </header>
       <CollapsibleContent className="border-b border-border/70 bg-muted/20">
         <dl className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -306,62 +406,84 @@ function IncidentProperty({
   )
 }
 
-function SourcingRunRail({
+function RunStatusButton({
   visible,
   approved,
 }: {
   visible: number
   approved: boolean
 }) {
-  const completed = RUN_STAGES.map((stage) => {
-    if (stage.label === "Decision") return approved
-    return stage.afterId === null || isStepVisible(stage.afterId, visible)
-  })
-  const firstIncomplete = completed.findIndex((stageComplete) => !stageComplete)
-  const activeIndex =
-    firstIncomplete === -1 ? RUN_STAGES.length - 1 : firstIncomplete
+  const states = getRunStageStates(visible, approved)
+  const activeIndex = states.findIndex((state) => state === "active")
+  const currentIndex = activeIndex === -1 ? RUN_STAGES.length - 1 : activeIndex
+  const currentStage = RUN_STAGES[currentIndex]
+  const currentState = states[currentIndex]
 
   return (
-    <nav
-      aria-label="Sourcing run status"
-      className="overflow-x-auto rounded-lg border border-border bg-card px-3 py-2"
-    >
-      <ol className="flex min-w-max items-center">
-        {RUN_STAGES.map((stage, index) => {
-          const complete = completed[index]
-          const active = index === activeIndex && !complete
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="bg-transparent px-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted dark:hover:bg-muted"
+            aria-label={`Sourcing run status: ${currentStage.label}`}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "size-2 rounded-full",
+                RUN_STAGE_PEBBLE_CLASS[currentState]
+              )}
+            />
+            {currentStage.label}
+          </Button>
+        }
+      />
+      <TooltipContent
+        side="bottom"
+        align="end"
+        sideOffset={6}
+        className="min-w-44 flex-col items-stretch gap-0 px-3 py-3"
+      >
+        <ol aria-label="Sourcing run stages">
+          {RUN_STAGES.map((stage, index) => {
+            const state = states[index]
 
-          return (
-            <li key={stage.label} className="flex items-center">
-              {index > 0 ? (
+            return (
+              <li
+                key={stage.label}
+                aria-current={state === "active" ? "step" : undefined}
+                className="relative flex gap-3 pb-3 last:pb-0"
+              >
                 <span
                   aria-hidden="true"
-                  className="mx-2 w-5 border-t border-border"
+                  className={cn(
+                    "relative z-10 mt-0.5 size-2 shrink-0 rounded-full",
+                    RUN_STAGE_PEBBLE_CLASS[state]
+                  )}
                 />
-              ) : null}
-              <span
-                aria-current={active ? "step" : undefined}
-                className={
-                  active || complete
-                    ? "flex items-center gap-1.5 text-xs font-medium text-foreground"
-                    : "flex items-center gap-1.5 text-xs text-muted-foreground"
-                }
-              >
-                {complete ? (
-                  <CheckIcon className="size-3.5" aria-hidden="true" />
-                ) : (
-                  <CircleIcon
-                    className={active ? "size-3.5 fill-current" : "size-3.5"}
+                {index < RUN_STAGES.length - 1 ? (
+                  <span
                     aria-hidden="true"
+                    className="absolute top-2 bottom-0 left-[3.5px] w-px bg-border"
                   />
-                )}
-                {stage.label}
-              </span>
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
+                ) : null}
+                <span
+                  className={cn(
+                    "leading-none",
+                    state === "pending" && "text-muted-foreground"
+                  )}
+                >
+                  {stage.label}
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -378,40 +500,10 @@ function DecisionBar({
   const recommended = STRATEGIES.find((strategy) => strategy.recommended)!
 
   return (
-    <div className="shrink-0 border-t border-border bg-background px-4 pt-3">
+    <div className="mx-auto w-full max-w-[50vw] px-4 pt-3">
       <Collapsible>
-        <Card size="sm" className="gap-0 py-0">
-          <div className="flex min-w-0 items-center gap-3 px-3 py-2">
-            <CollapsibleTrigger
-              className="group flex min-w-0 flex-1 items-center gap-3 text-left"
-              aria-label="Toggle Decision details"
-            >
-              <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Decision</span>
-                  <DecisionStatusBadge status={status} />
-                </div>
-                <p className="truncate text-xs text-muted-foreground">
-                  {recommended.name}
-                </p>
-              </div>
-              <span className="shrink-0 text-sm font-medium tabular-nums">
-                {recommended.total}
-              </span>
-            </CollapsibleTrigger>
-            <Button
-              type="button"
-              size="sm"
-              variant={approved ? "secondary" : "default"}
-              disabled={!checksPassed || approved}
-              onClick={onApprove}
-            >
-              {approved ? <CheckIcon data-icon="inline-start" /> : null}
-              {approved ? "Approved" : "Mark approved"}
-            </Button>
-          </div>
-          <CollapsibleContent className="border-t border-border px-3 py-3">
+        <Card size="sm" className="w-full gap-0 py-0 ring-0">
+          <CollapsibleContent className="border-b border-border/70 px-3 py-3">
             <div className="grid gap-4 text-sm sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <p className="font-medium">Rationale</p>
@@ -454,6 +546,36 @@ function DecisionBar({
               </div>
             </div>
           </CollapsibleContent>
+          <div className="flex min-w-0 items-center gap-3 px-3 py-2">
+            <CollapsibleTrigger
+              className="group flex min-w-0 flex-1 items-center gap-3 text-left"
+              aria-label="Toggle Decision details"
+            >
+              <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]:-rotate-90 motion-reduce:transition-none" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Decision</span>
+                  <DecisionStatusBadge status={status} />
+                </div>
+                <p className="truncate text-xs text-muted-foreground">
+                  {recommended.name}
+                </p>
+              </div>
+              <span className="shrink-0 text-sm font-medium tabular-nums">
+                {recommended.total}
+              </span>
+            </CollapsibleTrigger>
+            <Button
+              type="button"
+              size="sm"
+              variant={approved ? "secondary" : "default"}
+              disabled={!checksPassed || approved}
+              onClick={onApprove}
+            >
+              {approved ? <CheckIcon data-icon="inline-start" /> : null}
+              {approved ? "Approved" : "Mark approved"}
+            </Button>
+          </div>
         </Card>
       </Collapsible>
     </div>
@@ -468,7 +590,7 @@ function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
     return <Badge variant="destructive">on hold</Badge>
   }
   if (status === "needs human review") {
-    return <Badge variant="outline">needs human review</Badge>
+    return null
   }
   return <Badge variant="outline">evaluating</Badge>
 }
@@ -481,7 +603,7 @@ function AssistantTurn({
   latest: boolean
 }) {
   return (
-    <Message from="assistant">
+    <Message from="assistant" className="max-w-full">
       <MessageContent className="w-full max-w-full">
         <MessageResponse>
           {step.kind === "decision"
@@ -518,7 +640,7 @@ function StepExtras({ step }: { step: ScriptStep }) {
     return (
       <Task defaultOpen>
         <TaskTrigger title="Outreach Tasks · 4 parallel" />
-        <TaskContent className="grid gap-2 sm:grid-cols-2">
+        <TaskContent className="[&>div]:mt-2 [&>div]:grid [&>div]:gap-2 [&>div]:border-l-0 [&>div]:pl-0 sm:[&>div]:grid-cols-2">
           {outreachCandidates.map((candidate) => (
             <TaskItem
               key={candidate.name}
@@ -582,15 +704,15 @@ function MessageComposer({
   onSend: (value: string) => void
 }) {
   return (
-    <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+    <div className="mx-auto w-full max-w-[50vw] px-4 py-3">
       <PromptInput
-        className="mx-auto w-full max-w-2xl bg-card"
+        className="w-full bg-card [&_[data-slot=input-group]]:border-border/70"
         onSubmit={({ text }) => onSend(text)}
       >
         <PromptInputBody>
           <PromptInputTextarea
-            aria-label="Message Stockout"
-            placeholder="Message Stockout"
+            aria-label="Message SupplyOS"
+            placeholder="Message SupplyOS"
             value={value}
             onChange={(event) => onChange(event.currentTarget.value)}
           />
@@ -602,28 +724,6 @@ function MessageComposer({
           </PromptInputSubmit>
         </PromptInputFooter>
       </PromptInput>
-    </div>
-  )
-}
-
-function RunControls({
-  phase,
-  onReplay,
-}: {
-  phase: Phase
-  onReplay: () => void
-}) {
-  const running = phase === "running"
-
-  return (
-    <div className="flex min-h-11 shrink-0 items-center justify-between gap-3 border-b border-border/70 bg-background px-4 py-2">
-      <span className="text-xs text-muted-foreground">
-        Rehearsal · deterministic fixture
-      </span>
-      <Button type="button" size="sm" disabled={running} onClick={onReplay}>
-        {running ? <DotLoader /> : <RotateCcwIcon data-icon="inline-start" />}
-        {running ? "Running" : "Replay"}
-      </Button>
     </div>
   )
 }

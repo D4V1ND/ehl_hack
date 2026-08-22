@@ -722,7 +722,7 @@ export const DECISION = {
   total: "EUR 94880.00",
   policyCheck: "passed",
   costModelCheck: "passed",
-  approval: "A human marks the Decision approved in Stockout.",
+  approval: "A human marks the Decision approved in SupplyOS.",
 } as const
 
 export const PR_PATH = "github.com/D4V1ND/ehl_hack/compare/case/CASE-001"
@@ -817,7 +817,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "decision",
     stepName: "Decision ready",
     kind: "decision",
-    summary: "Decision needs human review in Stockout.",
+    summary: "Decision needs human review in SupplyOS.",
     detail: "The agent recommends. A human marks the Decision approved.",
   },
 ]

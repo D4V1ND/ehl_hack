@@ -12,18 +12,18 @@ This plan builds **on top of** [`docs/specs/supplyguard-plan-1-foundation-spec.m
 
 > **Procurement is an engineering problem. Give it an engineer.**
 >
-> A German automotive manufacturer is 12 days from a bearing shortage across its Munich and Stuttgart plants. Devin reads the system of record, finds Candidates, launches parallel **CALL-E** Outreach Tasks, checks Claims against Supplier Records, runs landed-cost and compliance models, and presents one Decision in Stockout. A human marks that Decision approved; approved is final.
+> A German automotive manufacturer is 12 days from a bearing shortage across its Munich and Stuttgart plants. Devin reads the system of record, finds Candidates, launches parallel **CALL-E** Outreach Tasks, checks Claims against Supplier Records, runs landed-cost and compliance models, and presents one Decision in SupplyOS. A human marks that Decision approved; approved is final.
 
 ### Why this wins the Cognition track
 
 | Track requirement | How we satisfy it |
 |---|---|
-| "output can be expressed as code" | Policy and landed-cost checks remain executable and testable; the user-facing output is an auditable Decision in Stockout. |
+| "output can be expressed as code" | Policy and landed-cost checks remain executable and testable; the user-facing output is an auditable Decision in SupplyOS. |
 | "programmatically triggers Devin sessions" | Reorder-point scanner / webhook / UI button → `POST /v1/sessions` on the Devin API. No human writes the prompt. |
 | "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Both must be green before the Decision is ready for approval. |
 | "produces real artifacts without a human in the loop" | Structured Claims, checked Strategies, and a costed recommendation are produced before human approval. |
 
-**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the autonomous layer: Devin is the procurement engineer, CALL-E is one tool, checks are executable, and the human approves one auditable Decision in Stockout.
+**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the autonomous layer: Devin is the procurement engineer, CALL-E is one tool, checks are executable, and the human approves one auditable Decision in SupplyOS.
 
 ---
 
@@ -102,7 +102,7 @@ The foundation spec explicitly puts comparison and decision-making out of scope:
 
 1. **Demo scale.** The spec's demo data is 12 units needed / 4 on hand → shortfall of **8 units**. At 8 units there are no quantity price breaks, no freight-mode trade-off, no split order, no carrying cost — the entire cost engine in §5 has nothing to chew on, and the decision is trivially "call the preferred supplier." **Proposal:** keep the 4-supplier fixture shape exactly as specified, but scale the incident to a realistic production quantity (e.g. 40 000 pcs against a 12-day line stop) and give each supplier record price-break tiers. Small data change, and it's the difference between a demo with a punchline and one without.
 2. **Claims are per-supplier; Decisions are per-case.** SQLite stores both scopes and their relationship. Fixture objects preserve the same boundary until persistence is implemented.
-3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** It stays true in the strict sense: Devin recommends, and a human marks the Decision approved in Stockout. Approved is final; there is no PR card or merge approval.
+3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** It stays true in the strict sense: Devin recommends, and a human marks the Decision approved in SupplyOS. Approved is final; there is no PR card or merge approval.
 
 ---
 
@@ -117,7 +117,7 @@ The five steps, in order — and the order is the whole point. Most hackathon te
 | A real ERP | Judges see JSON from an endpoint either way | ❌ mock behind the adapter |
 | A production database in this fixture UI | The rehearsal must run with no backend | ⚠️ SQLite intended; fixtures now |
 | User accounts / auth | Nobody logs into a 4-minute demo | ❌ delete |
-| A PR-based approve/reject workflow | Approval belongs on the Decision in Stockout | ❌ delete PR and merge approval |
+| A PR-based approve/reject workflow | Approval belongs on the Decision in SupplyOS | ❌ delete PR and merge approval |
 | Transcript→JSON extraction | CALL-E's `recipient_result_schema` does it | ❌ delete |
 | A parallel call dispatcher | CALL-E `recipients[]` is the dispatcher | ❌ delete |
 | WebSockets for live updates | Append-only event log + 2s poll looks identical on stage | ❌ delete |
@@ -153,7 +153,7 @@ Only once a human-triggered case runs green end-to-end: switch on the reorder-po
 
 ### The MVP as one testable sentence
 
-> `python -m orchestrator.run --case CASE-001` (or the detector firing) launches a Devin session that reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes landed cost, ranks split-order Strategies, and gets both `pytest` suites green. The Cockpit shows the run, then a human marks the Decision approved in Stockout.
+> `python -m orchestrator.run --case CASE-001` (or the detector firing) launches a Devin session that reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes landed cost, ranks split-order Strategies, and gets both `pytest` suites green. The Cockpit shows the run, then a human marks the Decision approved in SupplyOS.
 
 Everything else in this document is optional.
 
@@ -241,23 +241,23 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
-One Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
+One Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
 
 The prototype enters an existing Session, matching an external ERP link. The sidebar lists fixture Sessions; every selection opens the same CASE-001 rehearsal. The linked Incident appears inline in the first user message, and a bottom composer accepts local follow-up messages.
 
-`/chat` has the main conversation and one resizable **Candidate** panel. Its navigation and Candidate sidebars have bounded viewport-relative widths. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal, while `?mock=true` opens its first fixture directly for UI review. The modal uses equal resizable History, voice, and Transcript panels. The status rail stays in the main conversation. A compact expandable Decision bar ends the thread.
+`/chat` has the main conversation and one resizable, closable **Candidate** panel. The Session sidebar spans 10–20% of the viewport; the Candidate panel spans 20–50%. It has no file tree and no **Files | Results** tabs. Candidate cards are stable and independently expandable, so several can remain open. Toggling the Candidate panel preserves the conversation and its scroll position. Outreach Tasks progress in parallel. `?call=<id>` opens a large call modal, while `?mock=true` opens its first fixture directly for UI review. The call modal uses equal resizable History, voice, and Transcript panels. One full-width fixed header holds Incident context, run status, Replay, and Candidate restore. Thread content, Tool calls, the borderless upward-expanding Decision bar, and the composer use `w-full` in one centred column capped at 50% of the viewport. Only the conversation between the header and bottom dock scrolls.
 
 | # | Deliverable |
 |---|---|
 | A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists icon-free fixture Sessions that all render the same CASE-001 rehearsal |
 | A1 | **Incident context** — the first user message contains an inline primary-colour CASE-001 mention, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
-| A2 | **Status rail** — stages and Devin session state live in the main conversation |
-| A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
+| A2 | **Run status** — a small state-coloured pebble, current stage, and Replay live in the single conversation header; a background-colour tooltip shows all five connected stages |
+| A3 | **Candidate panel** — one closable panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule; a top-right header icon restores it |
 | A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows timestamped call activity, a System-first transcript with bubbles only for Candidate turns, masked call state, animated voice activity, and an expandable Claim with Evidence. `?mock=true` opens the first fixture directly |
 | A5 | **Claim versus Supplier Record** — Candidate detail keeps the separation explicit, then shows Landed Cost and the selected split Strategy |
-| A6 | **Decision bar** — compact at the thread end, expandable for rationale, runner-ups, and checks. A human marks the Decision approved in Stockout; approved is final. No PR card or merge approval |
+| A6 | **Decision bar** — borderless and fixed above the composer, with details that expand upward for rationale, runner-ups, and checks. A human marks the Decision approved in SupplyOS; approved is final. No PR card or merge approval |
 
 **Data:** SQLite is the intended operational datastore. This implementation remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 
@@ -301,7 +301,7 @@ The slice the judges are actually grading. Strongest Devin-API person; must not 
 | D8 | **Web supplier research** — Devin searches for distributors matching the exact spec → `Candidate` records with `why_matched` and a contact channel |
 
 **Unblock:** you need only the contracts and fixtures. Start with one Devin session that reads a fixture bearing case and produces a checked Decision. **Close the loop empty, then fill it.**
-**DoD:** one command → real session → Decision ready → both suites green → human approval in Stockout.
+**DoD:** one command → real session → Decision ready → both suites green → human approval in SupplyOS.
 
 ---
 
@@ -320,7 +320,7 @@ Until that's answered, assume nothing. Everything below holds regardless:
 1. **One monorepo — this one.** Four top-level areas matching the slices. One repo = one review surface = one integration to configure.
 2. **Everything lands through a PR. Nothing is pushed to `main` directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
 3. **Never force-push, never squash-merge, never rewrite history.** History *is* the evidence. Merge commits keep the trail intact. Entire's checkpoints are git refs — rewriting refs is exactly what breaks them.
-4. **Development PRs stay separate from product Decisions.** `feat/*` PRs audit engineering work. Product cases live in SQLite and end as approved Decisions in Stockout.
+4. **Development PRs stay separate from product Decisions.** `feat/*` PRs audit engineering work. Product cases live in SQLite and end as approved Decisions in SupplyOS.
 5. **Every development PR body carries its Devin session URL** when available. This engineering review flow is not product approval.
 6. **`AGENTS.md` at the repo root**, and keep `CLAUDE.md` in sync with it — conventions, how to run things, the tool endpoints, commit style. Makes every session reproducible and shows the panel our operating manual.
 7. **`DEMO.md`** — the exact commands to reproduce the demo from a clean clone. Costs 10 minutes; judges love it.
@@ -369,4 +369,4 @@ Two rules that save hackathons: **record the backup video the first time the hap
 - **Slice ownership** — next conversation, after everyone has read this.
 - **The three conflicts in §2.6** — especially the demo scale. Needs a decision before B1 seed data is written.
 - **Session fan-out** (§2.4b) — decide at hour 14 based on whether the happy path is solid. Don't decide now.
-- **Name** — SupplyGuard is the working name and it's good. Alternatives floated: LineStop, Stockout.
+- **Name** — settled as SupplyOS for every product surface. SupplyGuard remains the planning document's historical working name.

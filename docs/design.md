@@ -1,42 +1,45 @@
-# Stockout UI design
+# SupplyOS UI design
 
-How the approved Cockpit looks and behaves. Product name on this surface is **Stockout**. Planning documents may still say SupplyGuard.
+How the approved Cockpit looks and behaves. Product name on every surface is **SupplyOS**. Planning documents may still say SupplyGuard.
 
-**Scenario:** Stockout supports a German automotive manufacturer resolving a bearing shortage across its Munich and Stuttgart plants. ERP owns the live stock picture. Stockout owns one sourcing run at `/chat`.
+**Scenario:** SupplyOS supports a German automotive manufacturer resolving a bearing shortage across its Munich and Stuttgart plants. ERP owns the live stock picture. SupplyOS owns one sourcing run at `/chat`.
 
 ## Settled (do not reopen unless Lorenz says so)
 
-1. The product has one Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard` route or Dashboard navigation.
-2. `/chat` has the main conversation and one fixed **Candidate** panel. It has no file tree and no **Files | Results** tabs.
+1. The product has one Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard` route or Dashboard navigation.
+2. `/chat` has the main conversation and one closable **Candidate** panel. It has no file tree and no **Files | Results** tabs.
 3. Candidate rows in the fixed panel are compact and stable. More than one row can stay expanded.
 4. Outreach Tasks run in parallel. Call details open as a large modal through `?call=<id>`. `?mock=true` opens the first fixture call directly for UI review.
-5. The status rail lives in the main conversation. A compact expandable **Decision** bar appears at the thread end.
-6. The agent recommends. A human marks the Decision approved in Stockout. **Approved** is the final state. There is no PR card or merge approval.
+5. One fixed conversation header holds Incident context, run status, Replay, and the Candidate-panel restore control. A fixed bottom dock holds the expandable **Decision** bar and composer. Only the conversation between them scrolls.
+6. The agent recommends. A human marks the Decision approved in SupplyOS. **Approved** is the final state. There is no PR card or merge approval.
 7. Rehearsal is the default. Phone numbers are masked. Claims remain distinct from trusted Supplier Records.
 8. SQLite is the intended operational datastore. This implementation remains fixture-driven. Supabase is explicitly ignored.
 9. Colours come only from `app/globals.css`. Dark mode is the app default. Build in Next.js; do not use Paper and do not add a route.
 10. Use Tabler icons through `components/icons.tsx`. Product and primitive components do not import an icon library directly.
+11. `components/logo.tsx` owns the SupplyOS wordmark and current-colour icon. The Cockpit sidebar shows the icon at 20 × 20 pixels.
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Stockout opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
+Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. SupplyOS opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
 
-Both sidebars use the muted surface; the conversation and its light top header use the background surface. The left Session sidebar resizes between 5% and 15% of the viewport. The Candidate sidebar resizes between 10% and 50% of the viewport. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The linked Incident is a compact primary-colour mention inside the first user message. A darker composer with a stronger input outline stays at the bottom. Separators remain quiet but visible.
+Both sidebars use the muted surface; the conversation and its fixed top header use the background surface. The left Session sidebar resizes between 10% and 20% of the viewport. Its logo header and separator align with the conversation top header. The Candidate sidebar resizes between 20% and 50% of the viewport. Its header has an X Button instead of a count. Closing it reveals a Tabler sidebar-open Button at the right end of the conversation header. Toggling the Candidate panel keeps the conversation mounted and preserves its scroll position. The single conversation header expands Incident properties in place, reveals its chevron on hover or keyboard focus, and places run status and Replay together at the top-right. The status is a ghost Button with one small state-coloured pebble; its background-colour tooltip shows all five stages as size-2 pebbles joined by hairline connectors. The linked Incident is a compact primary-colour mention inside the first user message. Only the top header spans the conversation width. Thread text, Task cards, Tool calls, the borderless Decision card, and the composer share one consistent horizontal gutter inside a centred `w-full` column capped at 50% of the viewport. Only the conversation content scrolls, using a right-edge muted thumb on a transparent track. The fixed bottom dock has no separating rules. Its Decision card expands upward above its compact row, and the darker composer keeps an outline matching the quiet structural separators elsewhere.
+
+Responsive adaptation is not an MVP priority. Keep the Candidate sidebar visible on tablet and desktop widths. Hide it only below the `md` phone breakpoint.
 
 | Route | File | What you see |
 |---|---|---|
-| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. CTA goes to `/chat` |
-| `/chat` | `components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one fixed Candidate panel |
+| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. A white SupplyOS logo and `Open chat` CTA link to `/chat`; no email field is shown |
+| `/chat` | `components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one closable Candidate panel |
 
 The target `/chat` composition is:
 
 - **Sessions** — compact two-line mock Session links have no icon; the selected Session uses the accent background. Every selection opens the same fixture thread.
-- **Main conversation** — top replay controls, status rail, concise agent turns, parallel Outreach Tasks, checks, and the final Decision bar.
-- **Messaging** — the linked Incident is an inline primary-colour mention in the first user message; a bottom composer appends local prototype messages.
+- **Main conversation** — one full-width fixed top bar above a centred `w-full max-w-[50vw]` content column with concise agent turns, parallel Outreach Tasks, Tool calls, and checks. The header keeps status, Replay, and Candidate restore available without occupying the thread.
+- **Messaging** — the linked Incident is an inline primary-colour mention in the first user message; the fixed bottom composer appends local prototype messages.
 - **Incident header** — compact case context by default; expands to show plant, part, shortfall, line-stop, cost, and inventory properties with Tabler icons.
-- **Candidate panel** — one fixed panel with stable multi-expand Candidate rows, Claim versus Supplier Record fields, evidence, and Landed Cost. It does not become a file browser or general result switcher.
+- **Candidate panel** — one closable panel with stable multi-expand Candidate rows, Claim versus Supplier Record fields, evidence, and Landed Cost. An icon at the right end of the conversation header restores it. It does not become a file browser or general result switcher.
 - **Call modal** — a near-full-screen, three-panel call view addressed by `?call=<id>`. History, voice state, and Transcript use equal resizable widths by default. Both sidebars use the shared transparent `call-sidebar` class with muted foreground. History is a connected, timestamped activity timeline for the Outreach Task, call start, call completion, and filed Claim. The Claim confidence badge sits beside its title, and the Claim expands with Evidence inside it. The first transcript item is a plain System prompt combining the Outreach Task and mandatory disclosure. Its label matches other speaker labels without a separator. Agent turns remain plain text without an avatar. Candidate turns use message bubbles and show the Candidate name. The Transcript header does not repeat the phone number. The compact header toggles History and Transcript around the centred Candidate name. Below `lg`, one panel appears at a time and the header toggles return to the call stage. `?mock=true` opens the first fixture call without waiting for the rehearsal. Closing it returns to the same thread state.
-- **Decision bar** — compact at the thread end and expandable for Strategy, Landed Cost, policy checks, runner-ups, and rationale. Human approval happens here; approved is final.
+- **Decision bar** — borderless and fixed above the composer, with details that expand upward for Strategy, Landed Cost, policy checks, runner-ups, and rationale. Human approval happens here; approved is final.
 
 Rehearsal data is scripted CASE-001. No backend is required for this implementation. SQLite remains the intended operational datastore when persistence is added.
 
@@ -46,9 +49,11 @@ Rehearsal data is scripted CASE-001. No backend is required for this implementat
 2. Shenzhen is rejected by `blocked_origin_country`.
 3. Munich Motion reports `in_stock_allocated`: in stock is not ours.
 4. The cheapest unit price is not the Decision. The winning Strategy splits 20% SKF air and 80% FAG sea.
-5. Policy and landed-cost checks pass before a human approves the Decision in Stockout.
+5. Policy and landed-cost checks pass before a human approves the Decision in SupplyOS.
 
 ## Design references (structure only)
+
+Use the repository's Emil Kowalski design and animation skills for interaction polish and motion.
 
 - [Devin](https://mobbin.com/screens/1bee4b82-38f1-42a0-b500-aaf06efd2ea4): dense conversation beside a stable working panel; do not copy PR or file chrome.
 - [Linear](https://mobbin.com/screens/610d34b6-6ad8-45ab-80fb-2107b31ed01e) and [Plane](https://mobbin.com/screens/75e250ae-a106-4a28-999e-6e51e9ed20e5): compact stable rows with trailing status.
