@@ -1,0 +1,21 @@
+Remove the top navigation bar in our dashboard
+
+---
+
+Commit
+
+---
+
+Now move this bottom replay bar to the top. The header that was just now created should dispaly a chevron when hovered over. Clicking that shoudl expand the infromation about the incident as a [@collapsible.tsx](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/components/ui/collapsible.tsx) . In there you should display its properties using differnt icons (that make sense) as in the first image. From 
+
+From now on start using tabler icons as well https://tabler.io/icons - mark this in [@design.md](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/docs/design.md) 
+
+Replace all other existing icons using the tabler icons. I would create one central Icons.tsx compnoent that we reuse across our codebase so we can quickly change icon libary when we wanted to.
+
+---
+
+Continue, make sure all lucide is replaces with the new icon component so that my dev server works
+
+---
+
+Commit
