@@ -18,7 +18,7 @@ from typing import Any
 import yaml
 
 from packages.contracts.enums import Actor, Level, Stage
-from packages.contracts.models import Candidate, Claim, Decision, Event, OutreachTask
+from packages.contracts.models import Candidate, Claim, Decision, Event, Incident, OutreachTask
 from backend.casestore import events as event_log
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -105,6 +105,27 @@ class CaseStore:
 
     def read_candidates(self, case_id: str) -> list[Candidate]:
         return [Candidate(**row) for row in self._read_json(self.case_dir(case_id) / "candidates.json", [])]
+
+    def write_incident(self, incident: Incident) -> None:
+        """The shortage this case is about.
+
+        Seeded cases live in the ERP, but a case opened for any part in the item
+        master is derived rather than looked up — so the case directory has to
+        hold it, or nothing downstream could read the case back.
+        """
+        _atomic_write(
+            self.case_dir(incident.case_id) / "incident.json",
+            incident.model_dump_json(indent=2) + "\n",
+        )
+
+    def read_incident(self, case_id: str) -> Incident | None:
+        row = self._read_json(self.case_dir(case_id) / "incident.json", None)
+        if not row:
+            return None
+        try:
+            return Incident(**row)
+        except (ValueError, TypeError):
+            return None
 
     def write_claim(self, claim: Claim) -> Path:
         path = self.case_dir(claim.case_id) / "claims" / f"{claim.supplier_ref}-r{claim.round}.json"

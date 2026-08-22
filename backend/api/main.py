@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.deps import erp, settings
-from backend.api.routers import cases, decide, flow, meta, tools
+from backend.api.routers import cases, decide, flow, launch, meta, tools
 
 
 @asynccontextmanager
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
     app.include_router(tools.router)
     app.include_router(decide.router)
     app.include_router(flow.router)
+    app.include_router(launch.router)
     app.include_router(cases.router)
 
     return app

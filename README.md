@@ -71,6 +71,31 @@ locking, so SQLite reports *"database is locked"* regardless of what is running.
 `db-export` writes a `VACUUM INTO` snapshot to your Windows Downloads folder and
 prints the `C:\...` path to paste in.
 
+## Opening a case for any part
+
+`GET /inventory` is every part in the item master with what is in the bin, how
+many days that covers, and whether a case is already open. `POST /cases
+{"part_id": "PRT-6204"}` opens one for a part: the shortage is derived from the
+records — bin, take rate, the BOM line that consumes it, the incumbent, a
+purchase order that has slipped — and a Devin session is started to work it. No
+`DEVIN_API_KEY` means a stub session and an open case, never a failed trigger.
+
+```bash
+python run.py api                                                        # :8010
+curl -s localhost:8010/inventory | head
+curl -s -X POST localhost:8010/cases -H 'content-type: application/json' \
+     -d '{"part_id": "PRT-6204"}'
+```
+
+In the UI that is `/inventory`: one button per row, which opens the case and
+follows it to `/cases/<id>`. Set `NEXT_PUBLIC_DATA_SOURCE=live` and
+`NEXT_PUBLIC_API_BASE` first — fixtures mode has nothing to trigger. The session
+is told to read the part, its stock, its open orders and its price history from
+the ERP *before* it looks at suppliers, and it is told not to order anything.
+
+`PUBLIC_BASE_URL` is what the session is given to call back on; at demo time
+that is the `cloudflared` URL, because the request origin is localhost.
+
 ## Running a whole case
 
 One command does the unattended part: read the shortage, read the part, screen
@@ -93,7 +118,9 @@ run has got to rather than a spinner.
 
 Calling is rehearsed unless live calling is switched on server-side
 (`LIVE_CALLS=yes-place-real-calls` **and** `FAKE_CALLS=0`); `--live` without that
-is refused with a `409` rather than silently rehearsing. Rehearsed answers are
+is refused with a `409` rather than silently rehearsing. `DEMO_CALL_DESTINATION`
+points *every* supplier call at one number, so a live run on stage reaches the
+phone in the room and cannot dial a real supplier by accident. Rehearsed answers are
 derived from the supplier's own record — contract price, standard lead time,
 historical fill minus known allocations — and are deterministic per case and
 supplier, so the demo tells the same story twice.

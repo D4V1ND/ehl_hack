@@ -61,3 +61,12 @@ backend/record/*.db
 
 # a real supplier number for a live call never belongs in git
 backend/fixtures/supplier_phones.local.json
+
+# Case output belongs to a run, not to the repo. The two seeded cases keep their
+# events.jsonl and sourcing_case.yaml; everything a run writes stays local.
+cases/*/candidates.json
+cases/*/claims/
+cases/*/decision.json
+cases/*/outreach.json
+cases/*/incident.json
+cases/*/*.md

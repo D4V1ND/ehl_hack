@@ -7,6 +7,7 @@ parallel dispatcher — we do not build one.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
@@ -17,6 +18,7 @@ from backend import settings
 from backend.outreach.normalize import normalize_result
 from backend.outreach.prompts import build_task_text
 from backend.outreach.protocol import DispatchReceipt
+from packages.contracts.phone import mask
 from backend.store import STORE
 from packages.contracts.models import OutreachTask
 from packages.contracts.schemas import quote_result_schema
@@ -33,7 +35,8 @@ class InvalidPhoneNumber(ValueError):
 
 def validate_e164(number: str) -> str:
     if not _E164.match(number):
-        raise InvalidPhoneNumber(f"not a valid E.164 phone number: {number!r}")
+        # masked: an invalid number is still a number, and must not reach a log
+        raise InvalidPhoneNumber(f"not a valid E.164 phone number: {mask(number)}")
     return number
 
 
@@ -261,10 +264,18 @@ def _flatten(record: dict) -> dict:
 
 
 def _load_supplier_phones(supplier_refs: list[str]) -> dict[str, str]:
-    """Slice B owns supplier data. Until its adapter lands, read the demo
-    fixture. Every committed number is from a reserved fictional range, so a
-    live call needs a real one from the gitignored `.local.json` beside it,
-    which wins per supplier."""
+    """Where the number to dial comes from.
+
+    Committed numbers are all from reserved fictional ranges, so a live call
+    needs a real one: either `DEMO_CALL_DESTINATION` for the whole demo, or the
+    gitignored `.local.json` beside the fixture for a single supplier."""
+    demo_destination = os.environ.get("DEMO_CALL_DESTINATION", "").strip()
+    if demo_destination:
+        # One number for the whole demo: every supplier call reaches the phone on
+        # stage, so a live run cannot dial a real supplier by accident. Set on the
+        # demo machine only, never committed.
+        return {ref: validate_e164(demo_destination) for ref in supplier_refs}
+
     fixtures = settings.REPO_ROOT / "backend" / "fixtures"
     fixture = fixtures / "supplier_phones.json"
     if not fixture.exists():
