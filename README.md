@@ -71,6 +71,37 @@ locking, so SQLite reports *"database is locked"* regardless of what is running.
 `db-export` writes a `VACUUM INTO` snapshot to your Windows Downloads folder and
 prints the `C:\...` path to paste in.
 
+## Running a whole case
+
+One command does the unattended part: read the shortage, read the part, screen
+the approved suppliers, ask the ones that pass, price every plan and write the
+review package. `--hold-for` leaves one supplier uncalled so that call can be
+placed deliberately — that is the demo's live moment.
+
+```bash
+python run.py api                                                        # :8010
+python -m orchestrator.sourcing run     --case CASE-001 --hold-for SUP-KBY
+python -m orchestrator.sourcing call    --case CASE-001 --supplier SUP-KBY   # add --live to dial
+python -m orchestrator.sourcing collect --case CASE-001                      # files the answer, re-prices
+python -m orchestrator.sourcing state   --case CASE-001
+python -m orchestrator.sourcing publish --case CASE-001
+```
+
+The same steps are `POST /flow/run`, `POST /flow/call`, `POST /flow/collect`,
+`GET /flow/state`. Every stage appends an event, so the cockpit shows where the
+run has got to rather than a spinner.
+
+Calling is rehearsed unless live calling is switched on server-side
+(`LIVE_CALLS=yes-place-real-calls` **and** `FAKE_CALLS=0`); `--live` without that
+is refused with a `409` rather than silently rehearsing. Rehearsed answers are
+derived from the supplier's own record — contract price, standard lead time,
+historical fill minus known allocations — and are deterministic per case and
+supplier, so the demo tells the same story twice.
+
+`/flow/run` returns *every* costed plan, not just the winner: a buyer picks one.
+Nothing is ordered by the agent, and `publish` opens a pull request for a human
+to merge (rehearsed unless `GITHUB_TOKEN`/`GITHUB_REPO` are set).
+
 ## Slice 1 — launch a case from the CLI
 
 The launch path that needs nothing but the Next app:

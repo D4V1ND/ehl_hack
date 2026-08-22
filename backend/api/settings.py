@@ -35,6 +35,11 @@ class Settings:
     # and "yaml" is the reference implementation, kept because having two proves
     # the adapter seam is real rather than decorative.
     record_backend: str = "sqlite"
+    # Publishing the decision as a pull request. Unset means rehearsal: the
+    # publish endpoint reports the branch and files it would have pushed.
+    github_token: str | None = None
+    github_repo: str | None = None
+    github_base_branch: str = "main"
     cors_origins: list[str] = field(default_factory=lambda: ["http://localhost:3000", "http://127.0.0.1:3000"])
 
     @property
@@ -52,4 +57,7 @@ def get_settings() -> Settings:
         repo_root=repo_root,
         live_calls_enabled=os.environ.get("LIVE_CALLS", "").strip() == LIVE_CALLS_CONFIRMATION,
         record_backend=backend,
+        github_token=os.environ.get("GITHUB_TOKEN", "").strip() or None,
+        github_repo=os.environ.get("GITHUB_REPO", "").strip() or None,
+        github_base_branch=os.environ.get("GITHUB_BASE_BRANCH", "main").strip() or "main",
     )
