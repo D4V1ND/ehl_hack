@@ -106,3 +106,7 @@ what is the best solution for us
 ---
 
 btw one question regarding the previous PR I opened, when merging which one should I select
+
+---
+
+./run.sh doesnt work on my teammates' computer because they have mac and windows
