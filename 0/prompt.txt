@@ -1,0 +1,1 @@
+Create only the file entire-smoke-test.txt with exactly this content: Entire checkpoint test followed by a newline. Do not modify any other file. Do not commit.

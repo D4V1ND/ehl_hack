@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0N7FJ4TP40T6C80DZWCH78B",
+  "session_id": "01a02a56-3a6f-7bf1-bfe1-f53a38ea9de2",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T17:14:48.665785Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "AGENTS.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "7824ddb5cdf8",
+  "checkpoint_transcript_start": 28,
+  "transcript_lines_at_start": 28,
+  "compact_transcript_start": 4,
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T17:14:48.656279Z",
+    "agent_lines": 113,
+    "agent_removed": 9,
+    "human_added": 2291,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2404,
+    "total_lines_changed": 3029,
+    "agent_percentage": 4.027731924727633,
+    "metric_version": 2
+  }
+}
