@@ -60,3 +60,14 @@ Also, HChat should just have the main and title, and shouldn't have an icon. Als
 Also, the incident linking should be in line in the text, just as my image I paste it now in this chat. Of course, introduce the primary color, not the fill color..context/attachments/Hry2ZD/image.png .context/attachments/tvOC9B/image.png 
 
 Right now, it looks like what you see in the second image I've made. Also, the composer should be slightly darker, and it should have an outline that's slightly lighter than the table. Separators should use a slightly lighter color.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/123M7O/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/123M7O/PR instructions.md
