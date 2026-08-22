@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NNZ2KMZCTKA3P9SC25EJ43",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "public/website/background-4.png"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5706,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 881024,
+    "output_tokens": 900,
+    "api_call_count": 5
+  }
+}

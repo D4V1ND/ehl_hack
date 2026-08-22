@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NNZ2KMZCTKA3P9SC25EJ43",
+  "session_id": "01a02b0f-b48c-7831-9179-3ab323ce65f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T21:29:56.332211Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "public/website/background-4.png"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "2044688f8e58",
+  "checkpoint_transcript_start": 696,
+  "transcript_lines_at_start": 696,
+  "compact_transcript_start": 97,
+  "token_usage": {
+    "input_tokens": 5706,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 881024,
+    "output_tokens": 900,
+    "api_call_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T21:29:56.183346Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 0,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
