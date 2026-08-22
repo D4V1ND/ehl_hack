@@ -4,9 +4,11 @@ EHL Game Jam Munich · Cognition "Devin for X" track · team of 4 · ~weekend
 
 **Read this whole document, then comment on this PR.** Nothing here is final until we've all commented. Slice ownership is **not** assigned yet — that's the next conversation. What *is* settled: the contracts in §4 must be frozen in hour 1, and the walking skeleton in §3 must exist by hour 3.
 
-This plan builds **on top of** [`docs/specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md). That spec is the foundation layer (calls → typed claims) and stands. §2.6 lists exactly what this plan adopts from it, what it adds, and the three places the two conflict.
+This plan builds **on top of** `[docs/specs/supplyguard-plan-1-foundation-spec.md](specs/supplyguard-plan-1-foundation-spec.md)`. That spec is the foundation layer (calls → typed claims) and stands. §2.6 lists exactly what this plan adopts from it, what it adds, and the three places the two conflict.
 
 ---
+
+
 
 ## 1. What we're building
 
@@ -14,28 +16,36 @@ This plan builds **on top of** [`docs/specs/supplyguard-plan-1-foundation-spec.m
 >
 > A production line is 12 days from standing still because a part won't arrive. We file that shortage with Devin. Devin reads the system of record, works out exactly what's missing, finds candidate suppliers, dispatches **CALL-E** agents to phone them and gather claims, runs those claims against the factory's own records, through a **landed-cost model** (quantity price breaks, MOQ, freight, duty, carrying cost) and through the company's **compliance rules** — then ships the whole decision as a **pull request**: the case, the executable checks, the real call transcripts, the cost model, and a recommended purchase order.
 
+
+
 ### Why this wins the Cognition track
 
-| Track requirement | How we satisfy it |
-|---|---|
-| "output can be expressed as code" | A procurement decision **is a Git repo**: `sourcing_case.yaml`, `policy/*.py`, `cost_model.py`, `claims/*.json`, `decision.md`. Procurement-as-code. |
-| "programmatically triggers Devin sessions" | Reorder-point scanner / webhook / UI button → `POST /v1/sessions` on the Devin API. No human writes the prompt. |
-| "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Devin must get both green **before** opening the PR. |
-| "produces real artifacts without a human in the loop" | A merged PR, real recorded CALL-E calls, real claims, a costed PO recommendation. |
+
+| Track requirement                                     | How we satisfy it                                                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "output can be expressed as code"                     | A procurement decision **is a Git repo**: `sourcing_case.yaml`, `policy/*.py`, `cost_model.py`, `claims/*.json`, `decision.md`. Procurement-as-code. |
+| "programmatically triggers Devin sessions"            | Reorder-point scanner / webhook / UI button → `POST /v1/sessions` on the Devin API. No human writes the prompt.                                      |
+| "gives them a way to check their own work"            | Two `pytest` suites per case — the compliance policy and the cost model. Devin must get both green **before** opening the PR.                        |
+| "produces real artifacts without a human in the loop" | A merged PR, real recorded CALL-E calls, real claims, a costed PO recommendation.                                                                    |
+
 
 **The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the *autonomous layer* — Devin is the procurement engineer, CALL-E is one of its tools, and the deliverable is reviewable, testable, diffable code.
 
 ---
 
+
+
 ## 2. Decisions taken (and the reasoning, so you can argue with it)
+
+
 
 ### 2.1 Voice layer: CALL-E — three features delete work we'd planned
 
 [heycall-e.com](https://www.heycall-e.com/) · [docs](https://docs.heycall-e.com/) · [integrations repo](https://github.com/CALLE-AI/call-e-integrations). `test/test_calle.py` already talks to this API.
 
-1. **`recipient_result_schema`** — you hand CALL-E a JSON Schema; it returns `structured_result` validated against it, plus `evidence`, `completion_confidence`, and full `transcript_turns`. This *is* the foundation spec's "answer sheet", enforced server-side. **The transcript → structured data layer is deleted.**
+1. `recipient_result_schema` — you hand CALL-E a JSON Schema; it returns `structured_result` validated against it, plus `evidence`, `completion_confidence`, and full `transcript_turns`. This *is* the foundation spec's "answer sheet", enforced server-side. **The transcript → structured data layer is deleted.**
 2. **Batch calling** — one `POST /v1/calls` takes a `recipients[]` array, so CALL-E *is* the parallel dispatcher. Ours is deleted.
-3. **`webhook_url` + `Idempotency-Key`** — terminal results are pushed to us. No polling loop, and retries are safe.
+3. `webhook_url` **+** `Idempotency-Key` — terminal results are pushed to us. No polling loop, and retries are safe.
 
 **Two hard constraints:**
 
@@ -54,11 +64,13 @@ Seed the mock from YAML using ERPNext's real doctype field names (`item_code`, `
 
 The part matters less than how much calculation it supports. A **deep-groove ball bearing 6204-2RS (DIN 625)** is the best vehicle:
 
-| Candidate | Multi-source? | Phone-reachable? | Calculation surface | Verdict |
-|---|---|---|---|---|
-| **Ball bearing 6204-2RS** | Excellent — SKF, FAG, NSK, NTN, Koyo + generics | Yes, industrial distributors have real sales lines | **Rich**: 10× price spread OEM↔generic, real quantity price breaks, MOQ/pallet quantities, weight-driven freight, and a genuine counterfeit problem → the compliance gate has a *true* story | ✅ **primary** |
-| Hex bolt DIN 933 M8×40 A2 | Excellent | Yes | Good — big volumes, steep price breaks, trivial spec | ✅ secondary case |
-| Electronic component (MLCC, STM32) | Good | **No** — Mouser/Digi-Key/Farnell are web-only | Best compliance story (RoHS/REACH, export control) but **kills the calling demo** | ❌ post-MVP |
+
+| Candidate                          | Multi-source?                                   | Phone-reachable?                                   | Calculation surface                                                                                                                                                                          | Verdict          |
+| ---------------------------------- | ----------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Ball bearing 6204-2RS**          | Excellent — SKF, FAG, NSK, NTN, Koyo + generics | Yes, industrial distributors have real sales lines | **Rich**: 10× price spread OEM↔generic, real quantity price breaks, MOQ/pallet quantities, weight-driven freight, and a genuine counterfeit problem → the compliance gate has a *true* story | ✅ **primary**    |
+| Hex bolt DIN 933 M8×40 A2          | Excellent                                       | Yes                                                | Good — big volumes, steep price breaks, trivial spec                                                                                                                                         | ✅ secondary case |
+| Electronic component (MLCC, STM32) | Good                                            | **No** — Mouser/Digi-Key/Farnell are web-only      | Best compliance story (RoHS/REACH, export control) but **kills the calling demo**                                                                                                            | ❌ post-MVP       |
+
 
 **Nothing in the design is bearing-specific.** `part_class` is a field on `Part` and it selects which policy rules and cost parameters apply, so "complex electrical component" is a row in the profile YAML, not a code change. Say that on stage.
 
@@ -70,6 +82,8 @@ The part matters less than how much calculation it supports. A **deep-groove bal
   - **(a) One session per case** — Devin runs all stages. Simpler, cheaper, easier to demo. **This is the MVP.**
   - **(b) Session fan-out** — a supervisor session spawns one child per candidate supplier for deep research. More impressive, ~4× cost, more failure modes. **Stretch only**, decided at hour 14. It's the one thing you genuinely cannot do without the Devin API, so it's a strong closer if it works.
 - Iterate prompts in rehearsal mode against a fixture case so you're not paying for calls *and* ACUs on every loop.
+
+
 
 ### 2.5 Compliance depth: exactly four rules
 
@@ -89,7 +103,7 @@ Enough to reject a supplier **by name, citing the rule that rejected it** — th
 **Adopted wholesale — these are better than what I had, don't water them down:**
 
 - **The claim/record separation.** "What the supplier said" is a *claim*, never a fact; "what our records say" is the trusted baseline. My earlier draft merged both into one `Quote` blob, which would have quietly destroyed the product's whole point. The models below keep them separate.
-- **`stock_status` with "in stock but already allocated to another customer."** This is the sharpest idea in the spec. A yes/no availability question never catches the supplier who says "yes, we have some" meaning "yes, but not for you." It's also the most demo-able single field we have — build the UI around it.
+- `stock_status` **with "in stock but already allocated to another customer."** This is the sharpest idea in the spec. A yes/no availability question never catches the supplier who says "yes, we have some" meaning "yes, but not for you." It's also the most demo-able single field we have — build the UI around it.
 - **"Unknown" as a first-class answer, and claim conversion that never raises.** A garbled call becomes a confidence-0 claim, not an exception. This matters more once Devin is orchestrating: one bad call must not kill a 5-supplier case mid-run.
 - **All the safety rules**: E.164 validation on entry, masking everywhere but the outbound request body, rehearsal-by-default with explicit live opt-in, mandatory AI disclosure, `Decimal` money, fictional-range phone numbers only. These are non-negotiable and they map cleanly onto CALL-E's API.
 - **Deterministic supplier call ordering** (preferred first, then cheapest contract price). Never leave "who gets called first" to the model.
@@ -106,25 +120,31 @@ The foundation spec explicitly puts comparison and decision-making out of scope:
 
 ---
 
+
+
 ## 3. The MVP, cut with Musk's algorithm
 
 The five steps, in order — and the order is the whole point. Most hackathon teams jump straight to step 5.
 
 ### Step 1 — Make the requirements less dumb
 
-| We assumed we need… | Interrogated | Verdict |
-|---|---|---|
-| A real ERP | Judges see JSON from an endpoint either way | ❌ mock behind the adapter |
-| A database | A case is ~8 files and we want them in Git anyway | ❌ **the repo is the database** |
-| User accounts / auth | Nobody logs into a 4-minute demo | ❌ delete |
-| An approve/reject workflow in-app | Merging the PR *is* the approval | ❌ read-only review view |
-| Transcript→JSON extraction | CALL-E's `recipient_result_schema` does it | ❌ delete |
-| A parallel call dispatcher | CALL-E `recipients[]` is the dispatcher | ❌ delete |
-| WebSockets for live updates | Append-only event log + 2s poll looks identical on stage | ❌ delete |
-| Calling Chinese suppliers | CALL-E has no CN region | ❌ → email/Alibaba channel |
-| A real PO PDF | A committed `po_draft.md` is more on-thesis | ⚠️ downgrade |
-| Many part classes | One part told well, with `part_class` as the seam | ⚠️ one primary, one secondary |
-| **Devin: API-triggered, self-checking, artifact-emitting** | **This is the graded requirement** | ✅ **the only thing truly required** |
+
+| We assumed we need…                                        | Interrogated                                             | Verdict                             |
+| ---------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------- |
+| A real ERP                                                 | Judges see JSON from an endpoint either way              | ❌ mock behind the adapter           |
+| A database                                                 | A case is ~8 files and we want them in Git anyway        | ❌ **the repo is the database**      |
+| User accounts / auth                                       | Nobody logs into a 4-minute demo                         | ❌ delete                            |
+| An approve/reject workflow in-app                          | Merging the PR *is* the approval                         | ❌ read-only review view             |
+| Transcript→JSON extraction                                 | CALL-E's `recipient_result_schema` does it               | ❌ delete                            |
+| A parallel call dispatcher                                 | CALL-E `recipients[]` is the dispatcher                  | ❌ delete                            |
+| WebSockets for live updates                                | Append-only event log + 2s poll looks identical on stage | ❌ delete                            |
+| Calling Chinese suppliers                                  | CALL-E has no CN region                                  | ❌ → email/Alibaba channel           |
+| A real PO PDF                                              | A committed `po_draft.md` is more on-thesis              | ⚠️ downgrade                        |
+| Many part classes                                          | One part told well, with `part_class` as the seam        | ⚠️ one primary, one secondary       |
+| **Devin: API-triggered, self-checking, artifact-emitting** | **This is the graded requirement**                       | ✅ **the only thing truly required** |
+
+
+
 
 ### Step 2 — Delete the part or process
 
@@ -134,6 +154,8 @@ The big one, and the one that makes the pitch coherent: **delete the database.**
 
 > Musk's caveat: if you don't add back ~10% of what you deleted, you didn't delete enough. Expect to re-add the email channel and the PO PDF late. Fine.
 
+
+
 ### Step 3 — Simplify and optimise (only now)
 
 - **One** FastAPI process serves the Devin tool endpoints *and* the UI read API. No service mesh.
@@ -141,11 +163,15 @@ The big one, and the one that makes the pitch coherent: **delete the database.**
 - **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 3 real claims — and **the cheapest unit price is not the right answer** (§5).
 - Policy rules and cost functions as pure functions over dataclasses. No rules engine, no DSL.
 
+
+
 ### Step 4 — Accelerate cycle time
 
 - `make demo` runs a full case end-to-end in **under 90 seconds** in rehearsal mode with a cached Devin transcript. You should run it 50× on Saturday.
 - `make replay CASE=001` replays a recorded event log into the UI at 4× speed — the frontend never waits on the backend, and it's the fallback if venue wifi dies on stage.
 - Fixture-first everywhere: every slice ships its fake before its real.
+
+
 
 ### Step 5 — Automate (last)
 
@@ -164,6 +190,8 @@ End-to-end, ugly, all rehearsal, one command: trigger → Devin session created 
 **Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose. Full task spec in §11 — it's one person, ~2 hours, and it should start the moment the contracts are frozen.
 
 ---
+
+
 
 ## 4. The contracts — freeze in hour 1
 
@@ -201,11 +229,13 @@ Decision    = { case_id, strategies:[Strategy], recommended, runner_ups,
 Event       = { case_id, ts, actor:"devin"|"calle"|"system", stage, level, message, payload }
 ```
 
-**`Claim` does double duty**: it is also CALL-E's `recipient_result_schema` (the spec's "answer sheet"), exported as JSON Schema from the same model. `price_breaks` is added to the answer sheet — the call must ask for tiers, not just one price.
+`Claim` **does double duty**: it is also CALL-E's `recipient_result_schema` (the spec's "answer sheet"), exported as JSON Schema from the same model. `price_breaks` is added to the answer sheet — the call must ask for tiers, not just one price.
 
 The `Event` log is what makes the UI feel alive *and* makes debugging possible: `GET /cases/{id}/events`, append-only, everything writes to it.
 
 ---
+
+
 
 ## 5. The cost engine — where "Devin makes a smart decision" lives
 
@@ -234,65 +264,81 @@ Four decisions Devin then makes on top of the model — each a genuine trade-off
 
 ---
 
+
+
 ## 6. Vertical slices
 
 Each is a demoable strip through the whole stack, not a layer. Each ships **its fake before its real**. Ownership TBD.
 
 ### SLICE A — Cockpit UI
-| # | Deliverable |
-|---|---|
-| A1 | **Shortage dashboard** — parts at risk, hours-to-line-stop, stock vs. reorder point, cost-of-standing-still, "Launch sourcing agent" button |
-| A2 | **Case timeline** — stages live from the event feed, with the Devin session link |
-| A3 | **Supplier board** — candidate cards: matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
-| A4 | **Live calls panel** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.** |
-| A5 | **Claim vs. record comparison** — side by side: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
-| A6 | **Decision view** — rationale, runner-ups, link to the GitHub PR |
+
+
+| #   | Deliverable                                                                                                                                                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | **Shortage dashboard** — parts at risk, hours-to-line-stop, stock vs. reorder point, cost-of-standing-still, "Launch sourcing agent" button                                                                                              |
+| A2  | **Case timeline** — stages live from the event feed, with the Devin session link                                                                                                                                                         |
+| A3  | **Supplier board** — candidate cards: matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre                                                                    |
+| A4  | **Live calls panel** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.**                                                                                                                       |
+| A5  | **Claim vs. record comparison** — side by side: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
+| A6  | **Decision view** — rationale, runner-ups, link to the GitHub PR                                                                                                                                                                         |
+
 
 **Unblock:** build 100% against contract fixtures + `make replay`; the UI must be fully demoable with the backend switched off. **DoD:** the demo command tells the whole story with no backend running.
 
 ### SLICE B — Core API, system of record & seed data
-| # | Deliverable |
-|---|---|
-| B1 | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
-| B2 | **Case store + event log** — files under `cases/<id>/`, `GET /cases/{id}/events` |
-| B3 | **Devin tool endpoints** — `/tools/part/{id}`, `/tools/stock`, `/tools/suppliers`, `/tools/price_history`, `/tools/alternates`, `POST /tools/outreach`, `POST /tools/claims`. Boring, fast, documented, stable. |
-| B4 | **Shortage detector** — reorder-point + open-PO-delay scan → launches a Devin session. The "no human in the loop" trigger. *(Step 5 — build last.)* |
-| B5 | **Company profile YAML** — legal entity, country, blocked origin countries, required certs **per part class**, audit requirements, budget thresholds, WACC + warehousing rate for carrying cost |
+
+
+| #   | Deliverable                                                                                                                                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
+| B2  | **Case store + event log** — files under `cases/<id>/`, `GET /cases/{id}/events`                                                                                                                                                                                                             |
+| B3  | **Devin tool endpoints** — `/tools/part/{id}`, `/tools/stock`, `/tools/suppliers`, `/tools/price_history`, `/tools/alternates`, `POST /tools/outreach`, `POST /tools/claims`. Boring, fast, documented, stable.                                                                              |
+| B4  | **Shortage detector** — reorder-point + open-PO-delay scan → launches a Devin session. The "no human in the loop" trigger. *(Step 5 — build last.)*                                                                                                                                          |
+| B5  | **Company profile YAML** — legal entity, country, blocked origin countries, required certs **per part class**, audit requirements, budget thresholds, WACC + warehousing rate for carrying cost                                                                                              |
+
 
 **Unblock:** publish contracts + a running stub with fixture responses within 2 hours. Stub before logic. **DoD:** `curl` any tool endpoint → schema-valid data.
 
 ### SLICE C — CALL-E outreach & negotiation
-| # | Deliverable |
-|---|---|
-| C1 | **Rehearsal dispatcher first** — `OutreachTask → Claim` from saved results, with price breaks and random delays. Ships hour 1; B and D develop against it all weekend. |
-| C2 | **CALL-E integration** — batch `POST /v1/calls`, our `Claim` JSON Schema as `recipient_result_schema`, `Idempotency-Key`, `metadata.case_id` |
-| C3 | **Webhook receiver** — `/calle/webhook` → normalise `structured_result` + `evidence` + `completion_confidence` + `transcript_turns` → `Claim` → event log. **Never raises** (spec rule): garbage in → confidence-0 claim. Needs a public tunnel (ngrok/cloudflared) — **set it up in hour 1, it's a classic time sink.** |
-| C4 | **The call script** — mandatory AI disclosure first, then the answer-sheet questions **including price-break tiers and the free-vs-allocated stock question**, negotiate within `[target, floor]`, never mention our contract price, confirm numbers back before hanging up |
-| C5 | **Channel router** — voice for CALL-E-supported regions, email RFQ for the rest (China). Same `Claim` out either way. |
-| C6 | **Rehearsal-override personas** — teammate numbers from their own env (never committed) with printed "supplier" personas, so rehearsals are repeatable and no real supplier is ever dialed by accident |
+
+
+| #   | Deliverable                                                                                                                                                                                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C1  | **Rehearsal dispatcher first** — `OutreachTask → Claim` from saved results, with price breaks and random delays. Ships hour 1; B and D develop against it all weekend.                                                                                                                                                   |
+| C2  | **CALL-E integration** — batch `POST /v1/calls`, our `Claim` JSON Schema as `recipient_result_schema`, `Idempotency-Key`, `metadata.case_id`                                                                                                                                                                             |
+| C3  | **Webhook receiver** — `/calle/webhook` → normalise `structured_result` + `evidence` + `completion_confidence` + `transcript_turns` → `Claim` → event log. **Never raises** (spec rule): garbage in → confidence-0 claim. Needs a public tunnel (ngrok/cloudflared) — **set it up in hour 1, it's a classic time sink.** |
+| C4  | **The call script** — mandatory AI disclosure first, then the answer-sheet questions **including price-break tiers and the free-vs-allocated stock question**, negotiate within `[target, floor]`, never mention our contract price, confirm numbers back before hanging up                                              |
+| C5  | **Channel router** — voice for CALL-E-supported regions, email RFQ for the rest (China). Same `Claim` out either way.                                                                                                                                                                                                    |
+| C6  | **Rehearsal-override personas** — teammate numbers from their own env (never committed) with printed "supplier" personas, so rehearsals are repeatable and no real supplier is ever dialed by accident                                                                                                                   |
+
 
 ⚠️ **Legal, and non-negotiable (already in the spec, restated because it's easy to lose under time pressure):** in Germany recording a call without consent is criminal (§201 StGB), and EU AI Act transparency means the callee must know they're talking to an AI. The disclosure is the **first thing said**, always. Put it in the pitch — it shows we thought about deployment, not just the demo.
 
 **DoD:** one real call to a teammate's own number produces a schema-valid `Claim` end-to-end.
 
 ### SLICE D — Devin orchestration & procurement-as-code
+
 The slice the judges are actually grading. Strongest Devin-API person; must not be a side job.
 
-| # | Deliverable |
-|---|---|
-| D1 | **Session launcher** — Devin API client: create session with structured prompt + `case_id`, stream status, capture session URL into the event log |
-| D2 | **Prompt pack / playbook** — versioned, in-repo: the procedure, the available tool endpoints, the artifacts to write, and the rule *"both test suites must be green before you open the PR"* |
-| D3 | **Policy-as-code** — the four rules from §2.5 as pure functions |
-| D4 | **Self-check suites** — `pytest` over the policy **and** the cost model; fail loudly. **This is the "checks its own work" requirement — name it explicitly on stage.** |
-| D5 | **Cost engine** (§5) — `cost_model.py` + strategy search over split orders and quantity breaks |
-| D6 | **Claim-vs-record verification** — the comparison the foundation spec deliberately left out: claimed price vs. contract price, claimed lead time vs. standard, `qty_offered` vs. `known_allocations`, certification claim vs. `certification_expires_at`. Low-confidence claims get distrusted, not used. |
-| D7 | **Artifact writer** — `cases/<id>/{sourcing_case.yaml, candidates.json, claims/*.json, policy_report.md, cost_report.md, decision.md, po_draft.md}` → branch → PR |
-| D8 | **Web supplier research** — Devin searches for distributors matching the exact spec → `Candidate` records with `why_matched` and a contact channel |
+
+| #   | Deliverable                                                                                                                                                                                                                                                                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | **Session launcher** — Devin API client: create session with structured prompt + `case_id`, stream status, capture session URL into the event log                                                                                                                                                         |
+| D2  | **Prompt pack / playbook** — versioned, in-repo: the procedure, the available tool endpoints, the artifacts to write, and the rule *"both test suites must be green before you open the PR"*                                                                                                              |
+| D3  | **Policy-as-code** — the four rules from §2.5 as pure functions                                                                                                                                                                                                                                           |
+| D4  | **Self-check suites** — `pytest` over the policy **and** the cost model; fail loudly. **This is the "checks its own work" requirement — name it explicitly on stage.**                                                                                                                                    |
+| D5  | **Cost engine** (§5) — `cost_model.py` + strategy search over split orders and quantity breaks                                                                                                                                                                                                            |
+| D6  | **Claim-vs-record verification** — the comparison the foundation spec deliberately left out: claimed price vs. contract price, claimed lead time vs. standard, `qty_offered` vs. `known_allocations`, certification claim vs. `certification_expires_at`. Low-confidence claims get distrusted, not used. |
+| D7  | **Artifact writer** — `cases/<id>/{sourcing_case.yaml, candidates.json, claims/*.json, policy_report.md, cost_report.md, decision.md, po_draft.md}` → branch → PR                                                                                                                                         |
+| D8  | **Web supplier research** — Devin searches for distributors matching the exact spec → `Candidate` records with `why_matched` and a contact channel                                                                                                                                                        |
+
 
 **Unblock:** you need only the contracts + stub. Start by launching one Devin session from a script that reads a fixture case and opens a PR with a hand-written `decision.md`. **Close the loop empty, then fill it.**
 **DoD:** one command → real session → real PR → both suites green → zero human input.
 
 ---
+
+
 
 ## 7. Auditability: Entire + GitHub
 
@@ -307,54 +353,66 @@ The panel reviews our work through **Entire**, which is already wired into this 
 Until that's answered, assume nothing. Everything below holds regardless:
 
 1. **One monorepo — this one.** Four top-level areas matching the slices. One repo = one review surface = one integration to configure.
-2. **Everything lands through a PR. Nothing is pushed to `main` directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
+2. **Everything lands through a PR. Nothing is pushed to** `main` **directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
 3. **Never force-push, never squash-merge, never rewrite history.** History *is* the evidence. Merge commits keep the trail intact. Entire's checkpoints are git refs — rewriting refs is exactly what breaks them.
 4. **Two PR streams, clearly labelled:**
-   - `feat/*` — the system being built (Devin sessions doing engineering work)
-   - `case/CASE-xxx` — the artifacts the *product* generates (Devin sessions doing procurement work)
+  - `feat/*` — the system being built (Devin sessions doing engineering work)
+  - `case/CASE-xxx` — the artifacts the *product* generates (Devin sessions doing procurement work)
    The second stream is what proves autonomy. Have **several merged** by demo time, not one.
 5. **Every PR body carries its Devin session URL** (Devin's PR tooling adds this automatically — don't strip it). Prompt → diff → review → merge, fully traceable.
-6. **`AGENTS.md` at the repo root**, and keep `CLAUDE.md` in sync with it — conventions, how to run things, the tool endpoints, commit style. Makes every session reproducible and shows the panel our operating manual.
-7. **`DEMO.md`** — the exact commands to reproduce the demo from a clean clone. Costs 10 minutes; judges love it.
+6. `AGENTS.md` **at the repo root**, and keep `CLAUDE.md` in sync with it — conventions, how to run things, the tool endpoints, commit style. Makes every session reproducible and shows the panel our operating manual.
+7. `DEMO.md` — the exact commands to reproduce the demo from a clean clone. Costs 10 minutes; judges love it.
 8. **One Devin session per meaningful unit of work** — not one 40-hour session. Easier to audit, easier to point at on stage.
 
 ---
+
+
+
+
 
 ## 8. Timeline & sync rhythm
 
 Hourly sync, 5 minutes, structured: **(1) what's green, (2) what I need from whom, (3) contract changes.** Anything longer becomes a 1:1 between the two people involved.
 
-| Phase | Focus | Gate |
-|---|---|---|
-| **H0–H1** | Together: freeze contracts, `AGENTS.md`, **resolve the Entire/Devin coverage question (§7)**, CALL-E accounts + keys, **public tunnel working**, agree the demo script | Contracts merged, tunnel reachable, Entire coverage confirmed |
-| **H1–H3** | **Walking skeleton** (§3) + each slice's fake running standalone | One command → empty PR + UI shows it |
-| **H3–H8** | Real logic per slice, still on fakes | Each slice demoable alone |
-| **H8** | **Integration checkpoint #1** — A↔B and D↔B real, C in rehearsal | One case end-to-end in rehearsal |
-| **H8–H14** | Real Devin session, cost + policy suites green, **first real CALL-E call** | |
-| **H14** | **Integration checkpoint #2** — everything real, one full case | 🎥 **Record the backup demo video the moment this goes green** |
-| **H14–H18** | Polish, better seed data, the compliance-rejection beat, the allocated-stock beat, the split-order beat, second case, optional session fan-out | |
-| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, get the `case/*` PRs merged | |
+
+| Phase       | Focus                                                                                                                                                                  | Gate                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **H0–H1**   | Together: freeze contracts, `AGENTS.md`, **resolve the Entire/Devin coverage question (§7)**, CALL-E accounts + keys, **public tunnel working**, agree the demo script | Contracts merged, tunnel reachable, Entire coverage confirmed  |
+| **H1–H3**   | **Walking skeleton** (§3) + each slice's fake running standalone                                                                                                       | One command → empty PR + UI shows it                           |
+| **H3–H8**   | Real logic per slice, still on fakes                                                                                                                                   | Each slice demoable alone                                      |
+| **H8**      | **Integration checkpoint #1** — A↔B and D↔B real, C in rehearsal                                                                                                       | One case end-to-end in rehearsal                               |
+| **H8–H14**  | Real Devin session, cost + policy suites green, **first real CALL-E call**                                                                                             |                                                                |
+| **H14**     | **Integration checkpoint #2** — everything real, one full case                                                                                                         | 🎥 **Record the backup demo video the moment this goes green** |
+| **H14–H18** | Polish, better seed data, the compliance-rejection beat, the allocated-stock beat, the split-order beat, second case, optional session fan-out                         |                                                                |
+| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, get the `case/`* PRs merged                                                            |                                                                |
+
 
 Two rules that save hackathons: **record the backup video the first time the happy path works**, and **hard freeze 3 hours out, no exceptions.**
 
 ---
 
+
+
 ## 9. Risks and hedges
 
-| # | Risk | Hedge |
-|---|---|---|
-| 1 | **Entire doesn't capture Devin's work** → the panel can't see the thing we're judged on | §7 — resolve in hour 1 by asking the sponsors directly |
-| 2 | **Real distributors don't cooperate on the phone** — IVR, gatekeeper, hangs up on a bot, no sales line | Validate in the **first 3 hours**: one person hand-dials two real distributors for 30 minutes and reports what actually happens. Worth more than any code written in that window. Demo with teammate personas. |
-| 3 | 20-call free tier burns out mid-Saturday | Rehearsal default; one account untouched for the demo |
-| 4 | Tunnel/webhook dies on venue wifi | Polling fallback behind the same interface; `make replay` for the UI |
-| 5 | Devin's decision looks like a black box | Policy tests + `cost_report.md` + runner-ups; show a **rejected** supplier and the exact rule |
-| 6 | Web search returns garbage suppliers | Curated shortlist of real bearing distributors seeded; free search is bonus, not the path |
-| 7 | Integration hell at hour 20 | Walking skeleton at H3 + the two checkpoints are mandatory |
-| 8 | Foundation-only scope means nothing to grade | §2.6 — Plan 2 is the submission, prioritise Slice D accordingly |
-| 9 | Scope creep into "central ERP brain" | Roadmap slide, not MVP. One part, one plant, one scenario. |
-| 10 | ACU budget spent on debugging | Fixture-driven prompt iteration, fast endpoints, webhooks not polling |
+
+| #   | Risk                                                                                                   | Hedge                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Entire doesn't capture Devin's work** → the panel can't see the thing we're judged on                | §7 — resolve in hour 1 by asking the sponsors directly                                                                                                                                                         |
+| 2   | **Real distributors don't cooperate on the phone** — IVR, gatekeeper, hangs up on a bot, no sales line | Validate in the **first 3 hours**: one person hand-dials two real distributors for 30 minutes and reports what actually happens. Worth more than any code written in that window. Demo with teammate personas. |
+| 3   | 20-call free tier burns out mid-Saturday                                                               | Rehearsal default; one account untouched for the demo                                                                                                                                                          |
+| 4   | Tunnel/webhook dies on venue wifi                                                                      | Polling fallback behind the same interface; `make replay` for the UI                                                                                                                                           |
+| 5   | Devin's decision looks like a black box                                                                | Policy tests + `cost_report.md` + runner-ups; show a **rejected** supplier and the exact rule                                                                                                                  |
+| 6   | Web search returns garbage suppliers                                                                   | Curated shortlist of real bearing distributors seeded; free search is bonus, not the path                                                                                                                      |
+| 7   | Integration hell at hour 20                                                                            | Walking skeleton at H3 + the two checkpoints are mandatory                                                                                                                                                     |
+| 8   | Foundation-only scope means nothing to grade                                                           | §2.6 — Plan 2 is the submission, prioritise Slice D accordingly                                                                                                                                                |
+| 9   | Scope creep into "central ERP brain"                                                                   | Roadmap slide, not MVP. One part, one plant, one scenario.                                                                                                                                                     |
+| 10  | ACU budget spent on debugging                                                                          | Fixture-driven prompt iteration, fast endpoints, webhooks not polling                                                                                                                                          |
+
 
 ---
+
+
 
 ## 10. Open, deliberately deferred
 
@@ -364,6 +422,8 @@ Two rules that save hackathons: **record the backup video the first time the hap
 - **Name** — SupplyGuard is the working name and it's good. Alternatives floated: LineStop, Stockout.
 
 ---
+
+
 
 ## 11. Slice 0 — the walking skeleton, as one assignable task
 
@@ -417,21 +477,27 @@ sequenceDiagram
     UI-->>Human: "Done" · PR link · transcript
 ```
 
+
+
+
+
 ### The two stub APIs — this is the bit that was unclear
 
 They are **two different stubs with two different jobs**, and the skeleton person owns both temporarily, then hands each to its real owner:
 
-| | **Stub #1 — system of record** | **Stub #2 — CALL-E / outreach** |
-|---|---|---|
-| Endpoint | `GET /tools/part/{part_id}` | `POST /tools/outreach` |
-| Answers | "what is this part and how many do we have?" | "what did the supplier say?" |
-| Returns | one hardcoded part + stock + one supplier, using ERPNext field names (`item_code`, `actual_qty`, `supplier_name`) | one **saved CALL-E response**, replayed verbatim: `structured_result` (a `Claim`), `transcript_turns`, `evidence`, `completion_confidence` |
-| Stands in for | the mock ERP → **Slice B (B1/B3)** | the rehearsal dispatcher → **Slice C (C1/C3)** |
-| Network | none | **none** |
+
+|               | **Stub #1 — system of record**                                                                                    | **Stub #2 — CALL-E / outreach**                                                                                                            |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Endpoint      | `GET /tools/part/{part_id}`                                                                                       | `POST /tools/outreach`                                                                                                                     |
+| Answers       | "what is this part and how many do we have?"                                                                      | "what did the supplier say?"                                                                                                               |
+| Returns       | one hardcoded part + stock + one supplier, using ERPNext field names (`item_code`, `actual_qty`, `supplier_name`) | one **saved CALL-E response**, replayed verbatim: `structured_result` (a `Claim`), `transcript_turns`, `evidence`, `completion_confidence` |
+| Stands in for | the mock ERP → **Slice B (B1/B3)**                                                                                | the rehearsal dispatcher → **Slice C (C1/C3)**                                                                                             |
+| Network       | none                                                                                                              | **none**                                                                                                                                   |
+
 
 **Yes, put the CALL-E stub in the MVP skeleton** — that was the open question and the answer is unambiguous:
 
-- It's what **freezes the `Claim` schema**, and `Claim` is the one contract that Slices A, C and D all depend on. Discovering its real shape at hour 14 is the single most expensive mistake available to us.
+- It's what **freezes the** `Claim` **schema**, and `Claim` is the one contract that Slices A, C and D all depend on. Discovering its real shape at hour 14 is the single most expensive mistake available to us.
 - It costs **zero calls and zero credits** — it's a file read, so the 20-call free tier is untouched.
 - It gives Slice A something real to render on the live-calls panel and the claim-vs-record view from hour 3 instead of hour 12.
 - It makes the skeleton demoable as a *story* ("a supplier was asked and answered") rather than a plumbing test, which is what gets the team to actually keep it working.
