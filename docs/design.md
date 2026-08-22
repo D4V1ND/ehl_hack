@@ -6,7 +6,7 @@ How the approved Cockpit looks and behaves. Product name on this surface is **St
 
 ## Settled (do not reopen unless Lorenz says so)
 
-1. The product has one Cockpit route: `/chat`. The landing CTA opens it directly. There is no `/dashboard` route or Dashboard navigation.
+1. The product has one Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard` route or Dashboard navigation.
 2. `/chat` has the main conversation and one fixed **Candidate** panel. It has no file tree and no **Files | Results** tabs.
 3. Candidate rows in the fixed panel are compact and stable. More than one row can stay expanded.
 4. Outreach Tasks run in parallel. Call details open as a large modal through `?call=<id>`.
@@ -23,7 +23,7 @@ Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Both
 
 | Route | File | What you see |
 |---|---|---|
-| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. CTA goes to `/chat` |
+| `/` | `app/page.tsx` | No-scroll private-beta landing with a mock email field over `background-4.png` |
 | `/chat` | `components/cockpit/cockpit-chat.tsx` | One CASE-001 rehearsal thread and one fixed Candidate panel |
 
 The target `/chat` composition is:

@@ -241,7 +241,7 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
-One product route: `/chat`. The landing CTA opens it directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
+One Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
 
@@ -249,7 +249,7 @@ The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`
 
 | # | Deliverable |
 |---|---|
-| A0 | **Direct entry** — `/` links to `/chat`; full-height sidebar chrome has mock New session and Open incidents controls, with no Dashboard link or stored sessions until SQLite is wired |
+| A0 | **Private-beta entry** — `/` is a no-scroll beta landing with a mock email field; `/chat` keeps full-height sidebar chrome with mock New session and Open incidents controls, with no Dashboard link or stored sessions until SQLite is wired |
 | A1 | **Incident context** — compact Munich and Stuttgart plant context for the 6204-2RS bearing shortage and a launch control |
 | A2 | **Status rail** — stages and Devin session state live in the main conversation |
 | A3 | **Candidate panel** — one fixed panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule |
