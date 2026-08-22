@@ -105,3 +105,14 @@ The user has attached these files. Read them before proceeding.
 
 
 Wtf is this now? .context/attachments/rvjUUi/image.png  Make sure text is correctly indented, all my tool calls should be correctly indented
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/mvh84M/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/mvh84M/PR instructions.md
