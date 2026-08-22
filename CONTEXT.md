@@ -44,9 +44,13 @@ _Avoid_: Vendor, supplier data
 A supplier we believe could supply this Part for this Incident, whether it came out of the system of record or off the open web. Being a Candidate implies nothing about willingness, price or eligibility.
 _Avoid_: Lead, prospect, option, match
 
+**Quote**:
+The commercial half of what a supplier said: price, price breaks, MOQ, lead time, incoterm, expedite option. A Quote on its own does not say whether any of it was actually established.
+_Avoid_: Offer, bid, response
+
 **Claim**:
-What a supplier *said*, captured as structured data with a confidence score. Never a fact and never a decision — a Claim is only evidence, and it may be wrong, stale or self-serving. The distinction from a Supplier record is the most important one in this glossary.
-_Avoid_: Quote, offer, response, answer
+A Quote plus the Answer sheet — stock status, and whether price, part number and certification were *confirmed* or merely asserted, each with its evidence and a confidence score. Never a fact and never a decision: a Claim is only what a supplier said, and it may be wrong, stale or self-serving. The distinction from a Supplier record is the most important one in this glossary.
+_Avoid_: Verified quote, answer, supplier data
 
 **Stock status**:
 Whether the goods are free, physically in stock but already committed to another customer, still to be made, or unavailable. "In stock" alone is not an answer, because stock committed elsewhere is not stock we can buy.
