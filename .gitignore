@@ -58,3 +58,6 @@ backend/record/*.db
 
 # run.py writes background logs here
 .logs/
+
+# a real supplier number for a live call never belongs in git
+backend/fixtures/supplier_phones.local.json
