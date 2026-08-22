@@ -1,0 +1,84 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NV8A1MN83963KNJQVB45ZF",
+  "session_id": "01a02b83-7663-7501-ba8b-9350585f3aa6",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T23:00:34.930576Z",
+  "branch": "lorenzkrinner/redesign-call-dialogue",
+  "checkpoints_count": 5,
+  "save_step_count": 4,
+  "files_touched": [
+    "app/globals.css",
+    "components/cockpit/call-detail-dialog.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/icons.tsx",
+    "docs/PLAN.md",
+    "docs/design.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "c27b4ff0b5fc",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 418974,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17304192,
+    "output_tokens": 77310,
+    "api_call_count": 169
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T23:00:34.817609Z",
+    "agent_lines": 639,
+    "agent_removed": 188,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 639,
+    "total_lines_changed": 827,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 596,
+      "agent_lines_removed": 190
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 602,
+      "agent_lines_removed": 188
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 638,
+      "agent_lines_removed": 188
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 15,
+      "user_lines_removed": 0,
+      "agent_lines_added": 639,
+      "agent_lines_removed": 188,
+      "user_added_per_file": {
+        ".context/attachments/xrNmfW/PR instructions.md": 15
+      }
+    }
+  ]
+}
