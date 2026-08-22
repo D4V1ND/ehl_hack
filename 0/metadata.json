@@ -1,0 +1,145 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NT97EKG009PMA2QJY8A93Z",
+  "session_id": "01a02b79-4957-72c1-ae73-44bbc10449d8",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T22:43:28.386174Z",
+  "branch": "lorenzkrinner/keep-sidebar-visible",
+  "checkpoints_count": 5,
+  "save_step_count": 5,
+  "files_touched": [
+    "app/globals.css",
+    "components/cockpit/candidate-panel.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/cockpit-shell.tsx",
+    "components/icons.tsx",
+    "components/ui/tooltip.tsx",
+    "docs/PLAN.md",
+    "docs/design.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "d063c8ca39e1",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 285823,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 8040832,
+    "output_tokens": 53072,
+    "api_call_count": 80
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T22:43:28.316144Z",
+    "agent_lines": 302,
+    "agent_removed": 152,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 302,
+    "total_lines_changed": 454,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2953,
+      "user_lines_removed": 200,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".agents/skills/animate/RECIPES.md": 324,
+        ".agents/skills/animate/SKILL.md": 199,
+        ".agents/skills/animation-vocabulary/SKILL.md": 173,
+        ".agents/skills/apple-design/SKILL.md": 282,
+        ".agents/skills/ask-sonner/API.md": 64,
+        ".agents/skills/ask-sonner/SKILL.md": 80,
+        ".agents/skills/emil-design-eng/SKILL.md": 674,
+        ".agents/skills/find-animation-opportunities/SKILL.md": 132,
+        ".agents/skills/improve-animations/AUDIT.md": 115,
+        ".agents/skills/improve-animations/PLAN-TEMPLATE.md": 73,
+        ".agents/skills/improve-animations/SKILL.md": 101,
+        ".agents/skills/pick-ui-library/SKILL.md": 77,
+        ".agents/skills/prototype/PICKER.md": 197,
+        ".agents/skills/prototype/SKILL.md": 79,
+        ".agents/skills/review-animations/SKILL.md": 112,
+        ".agents/skills/review-animations/STANDARDS.md": 187,
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1,
+        "skills-lock.json": 57
+      },
+      "user_removed_per_file": {
+        ".agents/skills/prototype/LOGIC.md": 67,
+        ".agents/skills/prototype/SKILL.md": 15,
+        ".agents/skills/prototype/UI.md": 112,
+        ".agents/skills/prototype/agents/openai.yaml": 3,
+        "skills-lock.json": 3
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 27,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3090,
+      "agent_lines_removed": 302,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 27,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3213,
+      "agent_lines_removed": 344,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 27,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3216,
+      "agent_lines_removed": 344,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 27,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3229,
+      "agent_lines_removed": 350,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 42,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3228,
+      "agent_lines_removed": 352,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1,
+        ".context/attachments/mvh84M/PR instructions.md": 15
+      }
+    }
+  ]
+}
