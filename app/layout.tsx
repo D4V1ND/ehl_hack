@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: {
-    default: "Stockout",
-    template: "%s · Stockout",
+    default: "SupplyOS",
+    template: "%s · SupplyOS",
   },
   description:
-    "Procurement as code. A shortage launches an agent that ships a purchase recommendation as a pull request.",
+    "Auditable sourcing for factory shortages, from supplier Claims to a human-approved Decision.",
 }
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'})
