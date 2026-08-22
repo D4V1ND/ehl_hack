@@ -1,0 +1,35 @@
+For our app would you recommend a own database where we store everythign like tool calls, artifacts, etc. or would you store the artefacts on the ERP and the tool calls are on devin (since we use devin for our AI) and we're bascially just a harness on top of all that
+
+---
+
+For our app would you recommend a own database where we store everythign like tool calls, artifacts, etc. or would you store the artefacts on the ERP and the tool calls are on devin (since we use devin for our AI) and we're bascially just a harness on top of all that
+
+---
+
+Could we store the case store in sqlit in github?
+
+---
+
+how would the storage then look like while devin is working on this and when does the storage get created?
+
+---
+
+ah okay, so this lives on the devin VM basically, how do we then get this into our repo so we have reopanable chats? It just opens a PR into this codebase?
+
+---
+
+okay so the vm starts -> we inject a CASE folder with premade schema -> when chat is done -> opens PR – when exactly opens it the PR? When we close the chat? When a decision has been made, or when the initial research is done? And what if we abort the chat mid stream, we should still store that...
+
+And what abotu using a cloud postgres DB?
+
+---
+
+okay, summarize what we talked about here, first start with why no sqllite, then how the PR loop works, ignore the POSTGRES stuff though
+
+---
+
+turn this into a small html artifact
+
+---
+
+Adjust it to say that when we open the chat again we just fetch the branch if it's not complete yet, and if it's complete we just read from the main branch's codebase.
