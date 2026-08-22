@@ -4,6 +4,7 @@
     python run.py            build the database, start the API and the cockpit
     python run.py ui         cockpit only (it runs offline; this is the demo path)
     python run.py api        API only
+    python run.py tunnel     public HTTPS front door for the CALL-E webhook, on its own
     python run.py test       every test, plus the UI typecheck. Touches no network.
     python run.py db         rebuild the SQL system of record from the seed YAML
     python run.py db-export  copy the database somewhere a GUI can open it
@@ -38,6 +39,13 @@ UI_PORT_DEFAULT = int(os.environ.get("UI_PORT", 3000))
 
 MIN_NODE_MAJOR = 20  # Next 16 requires >= 20.9
 
+# All interfaces, not loopback. Under WSL the browser is a Windows process and
+# cannot reach a socket bound to 127.0.0.1 inside the VM -- every fetch fails
+# before it leaves the browser, which looks like CORS but is not. Next already
+# binds this way; the API has to match. Override with API_HOST for a locked-down
+# machine.
+API_HOST = os.environ.get("API_HOST", "0.0.0.0")
+
 
 # --- output ---------------------------------------------------------------
 # Colour only when the terminal will render it. Windows consoles that predate
@@ -50,19 +58,19 @@ def _c(code: str, text: str) -> str:
 
 
 def bold(msg: str) -> None:
-    print(_c("1", msg))
+    print(_c("1", msg), flush=True)
 
 
 def dim(msg: str) -> None:
-    print(_c("2", msg))
+    print(_c("2", msg), flush=True)
 
 
 def ok(msg: str) -> None:
-    print(f"  {_c('32', 'OK')} {msg}")
+    print(f"  {_c('32', 'OK')} {msg}", flush=True)
 
 
 def warn(msg: str) -> None:
-    print(f"  {_c('33', '!')} {msg}")
+    print(f"  {_c('33', '!')} {msg}", flush=True)
 
 
 def die(msg: str) -> None:
@@ -124,53 +132,96 @@ def run_module(py: Path, module: str, *args: str, **kw) -> subprocess.CompletedP
 
 def node_cmd(name: str) -> str:
     """npm and npx are batch files on Windows; shutil.which finds the right one."""
+    if _NODE_BIN is not None:
+        for candidate in (_NODE_BIN / name, _NODE_BIN / f"{name}.cmd"):
+            if candidate.exists():
+                return str(candidate)
     found = shutil.which(name) or (shutil.which(name + ".cmd") if WINDOWS else None)
     if not found:
         die(f"{name} not found on PATH. Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org")
     return found
 
 
-def _nvm_hint() -> str:
-    """If a new-enough node is already installed under nvm, say so.
+# Set once a usable node is located somewhere other than PATH, and prepended to
+# PATH for every subprocess we spawn.
+_NODE_BIN: Path | None = None
 
-    The common case on a dev machine is not "node is missing" but "nvm's default
-    is old and this shell never ran `nvm use`". Pointing at the version they
-    already have beats telling them to install one.
+
+def _node_major(node: str | Path) -> int | None:
+    try:
+        out = subprocess.run([str(node), "-v"], capture_output=True, text=True).stdout.strip()
+        return int(out.lstrip("v").split(".")[0])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def _nvm_candidates() -> list[Path]:
+    """New-enough node binaries installed under nvm, newest last.
+
+    A shell whose nvm default is old is the common case, not a missing node.
+    Rather than telling you to run `nvm use`, we just use the one you have --
+    `nvm use` only edits PATH, and we control the PATH our subprocesses get.
     """
-    versions = Path.home() / ".nvm" / "versions" / "node"
+    versions = Path(os.environ.get("NVM_DIR", Path.home() / ".nvm")) / "versions" / "node"
     if not versions.is_dir():
-        return ""
-    usable = sorted(
-        d.name for d in versions.iterdir()
-        if d.name.startswith("v") and d.name[1:].split(".")[0].isdigit()
-        and int(d.name[1:].split(".")[0]) >= MIN_NODE_MAJOR
+        return []
+
+    def parts(d: Path) -> tuple:
+        try:
+            return tuple(int(x) for x in d.name.lstrip("v").split("."))
+        except ValueError:
+            return (0,)
+
+    return sorted(
+        (d / "bin" for d in versions.iterdir()
+         if d.name.startswith("v") and (d / "bin" / "node").exists()
+         and parts(d)[0] >= MIN_NODE_MAJOR),
+        key=lambda b: parts(b.parent),
     )
-    if not usable:
-        return ""
-    return f"  You already have {usable[-1]} installed — run: nvm use {usable[-1].lstrip('v').split('.')[0]}"
+
+
+def _shell_node_version() -> str:
+    node = shutil.which("node")
+    if not node:
+        return "none"
+    return subprocess.run([node, "-v"], capture_output=True, text=True).stdout.strip()
+
+
+def node_env() -> dict:
+    """Environment for node subprocesses, with a usable node first on PATH."""
+    if _NODE_BIN is None:
+        return dict(os.environ)
+    return {**os.environ, "PATH": f"{_NODE_BIN}{os.pathsep}{os.environ.get('PATH', '')}"}
 
 
 def ensure_node() -> None:
-    node = shutil.which("node")
-    if not node:
-        hint = _nvm_hint()
-        die(f"node not found. Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org"
-            + (f"\n{hint}" if hint else " (or `nvm install 22` if you use nvm)."))
-    version = subprocess.run([node, "-v"], capture_output=True, text=True).stdout.strip()
-    try:
-        major = int(version.lstrip("v").split(".")[0])
-    except ValueError:
-        die(f"could not read the node version from {version!r}")
+    global _NODE_BIN
+
+    on_path = shutil.which("node")
+    if on_path and (_node_major(on_path) or 0) >= MIN_NODE_MAJOR:
         return
-    if major < MIN_NODE_MAJOR:
-        hint = _nvm_hint() or f"  Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org"
-        die(f"node {version} is too old for Next 16 (ui/.nvmrc pins 22).\n{hint}")
+
+    for candidate in reversed(_nvm_candidates()):
+        if (_node_major(candidate / "node") or 0) >= MIN_NODE_MAJOR:
+            _NODE_BIN = candidate
+            version = subprocess.run([str(candidate / "node"), "-v"],
+                                     capture_output=True, text=True).stdout.strip()
+            shell = f" (this shell defaults to {_shell_node_version()})" if on_path else ""
+            dim(f"  using node {version} from nvm{shell}")
+            return
+
+    if not on_path:
+        die(f"node not found. Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org "
+            "(or `nvm install 22` if you use nvm).")
+    die(f"node {subprocess.run([on_path, '-v'], capture_output=True, text=True).stdout.strip()} "
+        f"is too old for Next 16 (ui/.nvmrc pins 22).\n"
+        f"  Install Node >= {MIN_NODE_MAJOR}.9, or with nvm: nvm install 22")
 
 
 def ensure_node_modules() -> None:
     if not (UI / "node_modules").exists():
         warn("ui/node_modules missing — installing (this takes a minute)")
-        subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
+        subprocess.run([node_cmd("npm"), "install"], cwd=UI, env=node_env(), check=True)
 
 
 # --- ports ----------------------------------------------------------------
@@ -212,8 +263,8 @@ def cmd_setup() -> None:
     py = ensure_python()
     ok(f"python ({py})")
     ensure_node()
-    subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
-    ok(f"node {subprocess.run([shutil.which('node'), '-v'], capture_output=True, text=True).stdout.strip()}")
+    subprocess.run([node_cmd("npm"), "install"], cwd=UI, env=node_env(), check=True)
+    ok("node ready")
     cmd_db(py)
     ok("database")
 
@@ -230,17 +281,72 @@ def cmd_test() -> None:
     bold("UI typecheck")
     ensure_node()
     ensure_node_modules()
-    if subprocess.run([node_cmd("npx"), "tsc", "--noEmit"], cwd=UI).returncode != 0:
+    if subprocess.run([node_cmd("npx"), "tsc", "--noEmit"], cwd=UI, env=node_env()).returncode != 0:
         raise SystemExit(1)
     ok("no type errors")
+
+
+def live_calling() -> bool:
+    """Whether this run places real calls.
+
+    Asks `backend.settings` rather than reading the environment again: importing
+    it is what loads `.env`, and one switch read in two places is how a run ends
+    up tunnelling for a rehearsal or dialling without a webhook.
+    """
+    from backend import settings as backend_settings
+
+    return not backend_settings.FAKE_CALLS
+
+
+def open_tunnel(port: int) -> subprocess.Popen | None:
+    """A public HTTPS address for the webhook, or None and a reason why not.
+
+    Only opened for a live run: rehearsal delivers its own results in-process and
+    has nothing to receive from outside. Never fatal — a failed tunnel costs the
+    answers, not the calls, and finding that out at dispatch time is worse than
+    reading it here.
+    """
+    from backend.tunnel import TunnelUnavailable, start
+
+    try:
+        url, process = start(port)
+    except TunnelUnavailable as exc:
+        warn(f"no public webhook address ({exc})")
+        warn("calls will still be placed, but their answers cannot come back")
+        return None
+
+    os.environ["PUBLIC_BASE_URL"] = url
+    ok(f"webhook reachable at {url}/calle/webhook")
+    return process
+
+
+def cmd_tunnel() -> None:
+    """The tunnel on its own, for a run whose API is already up elsewhere."""
+    ensure_python()
+    port = int(os.environ.get("API_PORT", API_PORT_DEFAULT))
+    process = open_tunnel(port)
+    if process is None:
+        raise SystemExit(1)
+    bold(f"Tunnelling port {port}. Export this into the API's environment:")
+    print(f"  PUBLIC_BASE_URL={os.environ['PUBLIC_BASE_URL']}")
+    try:
+        process.wait()
+    except KeyboardInterrupt:
+        process.terminate()
 
 
 def cmd_api() -> None:
     py = ensure_python()
     ensure_db(py)
     port = pick_port(API_PORT_DEFAULT)
+    tunnel = open_tunnel(port) if live_calling() else None
     bold(f"API on http://localhost:{port}  (docs at /docs)")
-    run_module(py, "uvicorn", "backend.api.main:app", "--reload", "--port", str(port))
+    try:
+        run_module(py, "uvicorn", "backend.api.main:app", "--reload",
+                   "--host", API_HOST, "--port", str(port))
+    finally:
+        if tunnel is not None:
+            tunnel.terminate()
 
 
 def cmd_ui() -> None:
@@ -248,13 +354,13 @@ def cmd_ui() -> None:
     ensure_node_modules()
     port = pick_port(UI_PORT_DEFAULT)
     bold(f"Cockpit on http://localhost:{port}/cockpit")
-    subprocess.run([node_cmd("npx"), "next", "dev", "--port", str(port)], cwd=UI)
+    subprocess.run([node_cmd("npx"), "next", "dev", "--port", str(port)], cwd=UI, env=node_env())
 
 
 def cmd_build() -> None:
     ensure_node()
     ensure_node_modules()
-    subprocess.run([node_cmd("npm"), "run", "build"], cwd=UI, check=True)
+    subprocess.run([node_cmd("npm"), "run", "build"], cwd=UI, env=node_env(), check=True)
 
 
 def cmd_all() -> None:
@@ -265,6 +371,11 @@ def cmd_all() -> None:
 
     api_port = pick_port(API_PORT_DEFAULT)
     ui_port = pick_port(UI_PORT_DEFAULT)
+
+    # Before the API process is spawned: the webhook address travels to it in
+    # the environment, and a tunnel opened afterwards would arrive too late.
+    tunnel = open_tunnel(api_port) if live_calling() else None
+
     logs = ROOT / ".logs"
     logs.mkdir(exist_ok=True)
     api_log = (logs / "api.log").open("w")
@@ -275,15 +386,40 @@ def cmd_all() -> None:
     flags = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if WINDOWS else {}
 
     api = subprocess.Popen(
-        [str(py), "-m", "uvicorn", "backend.api.main:app", "--port", str(api_port)],
+        [str(py), "-m", "uvicorn", "backend.api.main:app",
+         "--host", API_HOST, "--port", str(api_port)],
         cwd=ROOT, env={**os.environ, "PYTHONPATH": ""},
         stdout=api_log, stderr=subprocess.STDOUT, **flags,
     )
     ui = subprocess.Popen(
         [node_cmd("npx"), "next", "dev", "--port", str(ui_port)],
-        cwd=UI, env={**os.environ, "NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}"},
+        cwd=UI,
+        env={
+            **node_env(),
+            "NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}",
+            # Starting the API is the whole reason this command exists, so the
+            # cockpit reads it live rather than the committed fixtures. Override
+            # with NEXT_PUBLIC_DATA_SOURCE=fixtures for the offline demo, or use
+            # `run.py ui`, which never starts an API at all.
+            "NEXT_PUBLIC_DATA_SOURCE": os.environ.get("NEXT_PUBLIC_DATA_SOURCE", "live"),
+        },
         stdout=ui_log, stderr=subprocess.STDOUT, **flags,
     )
+
+    def ui_daemon_pid() -> int | None:
+        """Next 16 forks a background dev server and prints its pid.
+
+        The foreground `next dev` then exits immediately, so its exit says
+        nothing about whether the cockpit is up -- and killing it on the way out
+        would leave the real server running on the port.
+        """
+        try:
+            for line in (logs / "ui.log").read_text(errors="replace").splitlines():
+                if "- PID:" in line:
+                    return int(line.split("- PID:")[1].strip())
+        except (OSError, ValueError, IndexError):
+            pass
+        return None
 
     try:
         # Wait for the API rather than guessing with a sleep.
@@ -299,27 +435,59 @@ def cmd_all() -> None:
         if not ready:
             die("the API never became ready — see .logs/api.log")
 
+        mode = "rehearsal"
+        try:
+            import json as _json
+            from urllib.request import urlopen
+
+            with urlopen(f"http://localhost:{api_port}/healthz", timeout=3) as response:
+                mode = _json.load(response).get("call_mode", "rehearsal")
+        except Exception:
+            pass
+
+        for _ in range(80):
+            if not port_free(ui_port):
+                break
+            time.sleep(0.5)
+        else:
+            print((logs / "ui.log").read_text(errors="replace")[-1500:])
+            die("the cockpit never came up — see .logs/ui.log")
+
         print()
         bold("Stockout — Slice B")
         ok(f"cockpit   http://localhost:{ui_port}/cockpit")
         ok(f"API       http://localhost:{api_port}/docs")
+        ok(f"calls     {mode}"
+           + ("  — REAL PHONE CALLS" if mode == "live" else "  — nothing is dialled"))
+        if tunnel is not None:
+            ok(f"webhook   {os.environ['PUBLIC_BASE_URL']}/calle/webhook")
         dim(f"  logs      {logs / 'api.log'}  {logs / 'ui.log'}")
         dim("  Ctrl-C to stop both")
         print()
 
-        while api.poll() is None and ui.poll() is None:
+        # Wait on the API only. The cockpit's launcher has already exited by
+        # design; the port test above is what proves it is actually serving.
+        while api.poll() is None:
             time.sleep(0.5)
     except KeyboardInterrupt:
         print()
         dim("stopping…")
     finally:
-        for proc in (ui, api):
+        daemon = ui_daemon_pid()
+        for proc in (ui, api, tunnel):
+            if proc is None:
+                continue
             if proc.poll() is None:
                 proc.terminate()
                 try:
                     proc.wait(timeout=8)
                 except subprocess.TimeoutExpired:
                     proc.kill()
+        if daemon is not None:
+            try:
+                os.kill(daemon, 15)
+            except OSError:
+                pass
         api_log.close()
         ui_log.close()
 
@@ -369,6 +537,7 @@ COMMANDS = {
     "ui": lambda a: cmd_ui(),
     "api": lambda a: cmd_api(),
     "test": lambda a: cmd_test(),
+    "tunnel": lambda a: cmd_tunnel(),
     "db": lambda a: cmd_db(),
     "db-export": lambda a: cmd_db_export(a.dest),
     "fixtures": lambda a: cmd_fixtures(),

@@ -164,7 +164,7 @@ def open_case(
                 detection.case_id,
                 actor=Actor.SYSTEM,
                 stage=Stage.DETECTED,
-                message="Sourcing session launched. No human wrote this prompt.",
+                message="Sourcing agent started",
                 payload={"session_url": session_url},
             )
 

@@ -1,4 +1,12 @@
-import type { CaseSnapshot, CaseSummary, CompanyProfile, Event, ShortageAlert } from "@/lib/contracts"
+import type {
+  CaseSnapshot,
+  CaseSummary,
+  CompanyProfile,
+  Event,
+  OutreachTask,
+  Quote,
+  ShortageAlert,
+} from "@/lib/contracts"
 
 import caseOne from "@/lib/fixtures/CASE-001.json"
 import caseOneEvents from "@/lib/fixtures/CASE-001.events.json"
@@ -108,4 +116,76 @@ export function initialProfile(): CompanyProfile | null {
 
 export function initialCase(caseId: string): CaseSnapshot | null {
   return DATA_SOURCE === "fixtures" ? (FIXTURES.snapshots[caseId] ?? null) : null
+}
+
+// --- outreach -------------------------------------------------------------
+// These are the only calls in the cockpit that make the backend *do* something
+// rather than report something, so they are live-only by construction: in
+// fixtures mode there is no backend to dispatch through, and pretending
+// otherwise would put a button on screen that looks like it places calls.
+
+export type CallMode = "test" | "live"
+
+export interface OutreachDispatch {
+  case_id: string
+  provider: string
+  mode: CallMode
+  tasks: OutreachTask[]
+}
+
+export interface Health {
+  ok: boolean
+  call_mode: CallMode
+  /** Masked. Null when no demo number is configured — live dispatch refuses then. */
+  call_target: string | null
+  parts: number
+  suppliers: number
+  incidents: number
+}
+
+export async function getHealth(): Promise<Health | null> {
+  if (DATA_SOURCE === "fixtures") return null
+  try {
+    return await live<Health>("/healthz")
+  } catch {
+    return null
+  }
+}
+
+export async function dispatchOutreach(
+  caseId: string,
+  supplierRefs: string[],
+  qty: number,
+): Promise<OutreachDispatch> {
+  if (DATA_SOURCE === "fixtures") {
+    throw new Error(
+      "Not connected to the sourcing service — supplier contact is unavailable " +
+        "while viewing a recorded case.",
+    )
+  }
+  const params = new URLSearchParams({ case_id: caseId, qty: String(qty) })
+  const response = await fetch(`${API_BASE}/tools/outreach?${params}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(supplierRefs),
+    cache: "no-store",
+  })
+  if (!response.ok) {
+    // The server sends a sentence an operator can act on; a bare status code is
+    // the least useful thing we could show instead.
+    let reason = `request failed (${response.status})`
+    try {
+      const body = (await response.json()) as { detail?: string }
+      if (body?.detail) reason = body.detail
+    } catch {
+      /* non-JSON error body; keep the status */
+    }
+    throw new Error(reason)
+  }
+  return (await response.json()) as OutreachDispatch
+}
+
+export async function getQuotes(caseId: string): Promise<Quote[]> {
+  if (DATA_SOURCE === "fixtures") return []
+  return live<Quote[]>(`/tools/quotes?case_id=${encodeURIComponent(caseId)}`)
 }

@@ -1,12 +1,22 @@
 """Real CALL-E calling. Only reachable when FAKE_CALLS=0.
 
-CALL-E's batch endpoint takes a recipients[] array, so CALL-E IS the
-parallel dispatcher — we do not build one.
+**One request per task, not one batch.** CALL-E's endpoint does take a
+`recipients[]` array, but nothing in a result identifies *which* recipient it
+answers for, and the API rejects a `metadata` object on a recipient (422, "Extra
+inputs are not permitted" at `recipients[0].metadata`). Correlation therefore
+rides in the top-level `metadata`, which can only name one task — so batching
+would make every answer ambiguous. One call, one task, one unmistakable answer.
+
+**Results are pulled, not pushed.** `webhook_url` is still sent and
+`POST /calle/webhook` is still mounted, but no callback has ever been observed
+arriving, so each accepted call gets a watcher thread that polls
+`GET /v1/calls/{id}` to a terminal state. The webhook stays wired up — with a
+public tunnel in front of it (see `backend/tunnel.py`) — so that if delivery
+does start working it lands in the same place the poller writes to.
 """
 
 from __future__ import annotations
 
-import json
 import re
 import threading
 import time
@@ -51,14 +61,8 @@ def build_calle_payload(
 ) -> dict:
     """Pure. The ONLY place a raw phone number is allowed to appear.
 
-    CALL-E's real API rejects a `metadata` field on recipient objects
-    (confirmed: 422 "Extra inputs are not permitted" at
-    recipients[0].metadata). There is no verified way to tell, from a
-    webhook result, which recipient of a multi-recipient request it
-    answers for — so correlation instead rides in the top-level
-    `metadata`, which only unambiguously identifies one task. Callers
-    that need per-recipient correlation (see CalleOutreachProvider)
-    must pass a single-task list.
+    Takes a list for the caller's convenience, but only the first task is named
+    in the metadata — pass one, for the reason in the module docstring.
     """
     if not tasks:
         raise ValueError("no tasks to dispatch")
@@ -68,6 +72,8 @@ def build_calle_payload(
         raw = phones_by_supplier.get(task.supplier_ref)
         if raw is None:
             raise InvalidPhoneNumber(f"no phone number for {task.supplier_ref}")
+        # A recipient accepts phones, region and locale and nothing else
+        # (`additionalProperties: false`), so correlation cannot travel here.
         recipients.append(
             {
                 "phones": [validate_e164(raw)],
@@ -81,7 +87,7 @@ def build_calle_payload(
         "task": build_task_text(first, buyer_name=buyer_name),
         "recipients": recipients,
         "recipient_result_schema": quote_result_schema(),
-        "webhook_url": f"{settings.PUBLIC_BASE_URL}/calle/webhook",
+        "webhook_url": f"{settings.public_base_url()}/calle/webhook",
         "metadata": {
             "case_id": first.case_id,
             "task_id": first.task_id,
@@ -94,10 +100,6 @@ class CalleOutreachProvider:
     name = "calle"
 
     def dispatch(self, tasks: list[OutreachTask]) -> DispatchReceipt:
-        """One CALL-E request per task, not one batched request for all of
-        them: correlating a webhook result back to its task relies on
-        top-level `metadata`, which only names a single task_id/supplier_ref
-        (see build_calle_payload). Batching would make results ambiguous."""
         if not settings.CALLE_API_KEY:
             raise RuntimeError(
                 "live calling requested but CALLE_API_KEY is not set — "
@@ -129,9 +131,10 @@ class CalleOutreachProvider:
                 timeout=60.0,
             )
             if response.is_error:
-                # CALL-E puts the reason in the body; raise_for_status alone
-                # reports only the status code, which is not enough to fix
-                # a rejected payload.
+                # The body names the offending field; the status code alone sent
+                # us hunting through a whole payload once already. File it, then
+                # raise the status error so the API layer can quote the reason
+                # back to the operator.
                 STORE.append_event(
                     case_id,
                     actor="calle",
@@ -140,19 +143,21 @@ class CalleOutreachProvider:
                     message=f"CALL-E rejected the call: {response.status_code}",
                     payload={"task_id": task.task_id, "body": response.text[:2000]},
                 )
-                raise RuntimeError(
-                    f"CALL-E returned {response.status_code} for {task.task_id}: "
-                    f"{response.text[:2000]}"
-                )
+                response.raise_for_status()
 
             # Keep what CALL-E gives back: without the call id there is no way
             # to chase a call that never fires its webhook.
             try:
                 accepted = response.json()
             except ValueError:
-                accepted = {"unparseable_body": response.text[:2000]}
+                accepted = {}
 
             call_id = accepted.get("id") if isinstance(accepted, dict) else None
+            if call_id:
+                # Also the correlation the webhook route reads, for the day
+                # delivery starts working.
+                STORE.remember_call(call_id, case_id, task.task_id, task.supplier_ref)
+
             STORE.append_event(
                 case_id,
                 actor="calle",
@@ -162,14 +167,8 @@ class CalleOutreachProvider:
             )
 
             if call_id:
-                # CALL-E does not appear to honour webhook_url (no callback ever
-                # arrives, and the field is not echoed back), so pull the result
-                # instead of waiting to be pushed. The webhook route stays in
-                # place in case delivery starts working.
                 watcher = threading.Thread(
-                    target=_watch_call,
-                    args=(call_id, task),
-                    daemon=True,
+                    target=_watch_call, args=(call_id, task), daemon=True
                 )
                 watcher.start()
 
@@ -261,17 +260,26 @@ def _flatten(record: dict) -> dict:
 
 
 def _load_supplier_phones(supplier_refs: list[str]) -> dict[str, str]:
-    """Slice B owns supplier data. Until its adapter lands, read the demo
-    fixture. Every committed number is from a reserved fictional range, so a
-    live call needs a real one from the gitignored `.local.json` beside it,
-    which wins per supplier."""
-    fixtures = settings.REPO_ROOT / "backend" / "fixtures"
-    fixture = fixtures / "supplier_phones.json"
-    if not fixture.exists():
-        raise RuntimeError(f"no supplier phone fixture at {fixture}")
+    """Where a live call is allowed to land — Slice B's adapter, now that it exists.
 
-    data: dict[str, str] = json.loads(fixture.read_text(encoding="utf-8"))
-    override = fixtures / "supplier_phones.local.json"
-    if override.exists():
-        data.update(json.loads(override.read_text(encoding="utf-8")))
-    return {ref: data[ref] for ref in supplier_refs if ref in data}
+    This replaces the phone fixture the provider read before that adapter landed.
+    Every recipient resolves to the one number in DEMO_CALL_NUMBER -- a phone
+    somebody on the team is holding -- and the supplier identity travels as call
+    metadata instead. Two reasons:
+
+    * the seeded supplier numbers are from reserved fictional ranges, so dialling
+      them either fails or, worse, reaches somebody who never agreed to be in a
+      demo;
+    * a demo that dials real distributors is not a demo, it is cold-calling.
+
+    With no DEMO_CALL_NUMBER set this raises rather than falling back to anything,
+    which is the only safe behaviour when the alternative is an unintended call.
+    """
+    from backend.record.dialling import LiveCallRefused, destination_for
+
+    try:
+        destination = destination_for(supplier_refs[0] if supplier_refs else "", live=True)
+    except LiveCallRefused as exc:
+        raise RuntimeError(str(exc)) from None
+
+    return {ref: destination for ref in supplier_refs}

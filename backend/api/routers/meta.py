@@ -1,10 +1,17 @@
-"""Schema export and health. The `Claim` schema here is what CALL-E receives."""
+"""Schema export and health.
+
+These are Pydantic *validation* schemas, for reading and for generating client
+types. They are deliberately NOT what CALL-E receives: its structured-result
+engine rejects the `anyOf`/`$ref` shapes Pydantic emits, so the call answer
+sheet is hand-written in `packages/contracts/schemas.py`.
+"""
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.api.deps import erp, settings
+from backend.record.dialling import LiveCallRefused, demo_number_masked
 from pydantic import BaseModel
 
 from packages.contracts import models as contract_models
@@ -24,11 +31,21 @@ EXPORTABLE = {
 }
 
 
-@router.get("/healthz", summary="Liveness, and which call mode we are in")
+@router.get("/healthz", summary="Liveness, call mode, and where live calls would go")
 def healthz(records: SystemOfRecord = Depends(erp), config=Depends(settings)) -> dict:
+    """`call_target` is what makes the cockpit's live badge trustworthy.
+
+    Masked, because this is an API response like any other. It is None when no
+    demo number is configured, which is also when live dispatch refuses.
+    """
+    try:
+        target = demo_number_masked()
+    except LiveCallRefused:
+        target = None
     return {
         "ok": True,
         "call_mode": config.call_mode,
+        "call_target": target,
         "parts": len(records.list_parts()),
         "suppliers": len(records.list_suppliers()),
         "incidents": len(records.list_incidents()),
@@ -42,7 +59,9 @@ def list_schemas() -> dict:
 
 @router.get("/schema/{model}", summary="One model as JSON Schema")
 def get_schema(model: str) -> dict:
-    """`GET /schema/Claim` is what Slice C hands CALL-E as `recipient_result_schema`."""
+    """One model as Pydantic emits it — a validation schema, not the call answer
+    sheet. What CALL-E receives is `packages.contracts.schemas.quote_result_schema`.
+    """
     if model not in EXPORTABLE:
         raise HTTPException(status_code=404, detail=f"no model {model}; see GET /schema")
     return EXPORTABLE[model].model_json_schema()

@@ -11,10 +11,17 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from backend.outreach.provider import get_provider
+from backend.record.dialling import LiveCallRefused, destination_for
+from backend.store import STORE
 
 from backend.api.deps import erp, settings, store
 from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
+    Channel,
+    Quote,
     Candidate,
     Claim,
     Event,
@@ -31,7 +38,71 @@ from packages.contracts.safe import claim_from_result
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
 
+def _provider_complaint(response) -> str:
+    """What the carrier actually objected to, in its own words.
+
+    CALL-E answers a rejected request with
+    `{"error": {"code", "message", "details": {"reason": ...}}}`. The reason is
+    the sentence that names the offending field, so it is the one part worth
+    reading -- "the telephony provider returned 400" sent us hunting through the
+    whole payload once already. Falls back to the raw body for any other shape.
+    """
+    try:
+        error = response.json().get("error", {})
+    except ValueError:
+        return response.text[:200]
+    parts = [error.get("message"), (error.get("details") or {}).get("reason")]
+    return " ".join(str(p) for p in parts if p) or response.text[:200]
+
+
+def _carrier_error(exc: Exception) -> str:
+    """A sentence an operator can act on, without leaking the credential."""
+    import httpx
+
+    if isinstance(exc, httpx.HTTPStatusError):
+        code = exc.response.status_code
+        if code in (401, 403):
+            return (
+                "the telephony provider rejected our credentials — check "
+                "CALLE_API_KEY (a value wrapped in quotes is a common cause)"
+            )
+        if code == 429:
+            return "the telephony provider is rate limiting us — wait and retry"
+        if 400 <= code < 500:
+            return (
+                f"the telephony provider rejected the request "
+                f"({code}): {_provider_complaint(exc.response)}"
+            )
+        return f"the telephony provider returned {code}"
+    if isinstance(exc, httpx.TimeoutException):
+        return "the telephony provider did not respond in time"
+    if isinstance(exc, httpx.RequestError):
+        return f"could not reach the telephony provider: {exc.__class__.__name__}"
+    return str(exc)[:300] or exc.__class__.__name__
+
+
+def call_mode() -> str:
+    """Test mode unless Slice C's FAKE_CALLS switch is explicitly turned off.
+
+    Read per request rather than captured at import, so restarting the API is
+    enough to change modes and a stale module constant can never disagree with
+    what the provider actually does.
+    """
+    import os
+
+    return "live" if os.environ.get("FAKE_CALLS", "1").strip() == "0" else "test"
+
+
 router = APIRouter(prefix="/tools", tags=["devin-tools"])
+
+
+class OutreachDispatch(BaseModel):
+    """What the cockpit gets back the instant it presses "call the suppliers"."""
+
+    case_id: str
+    provider: str = Field(description='"fake" in rehearsal, the CALL-E provider when live')
+    mode: str = Field(description='"test" or "live"')
+    tasks: list[OutreachTask]
 
 
 @router.get("/part/{part_id}", response_model=Part, summary="One part, with its spec, weight and HS code")
@@ -116,7 +187,10 @@ def post_candidates(
         case_id,
         actor=Actor.DEVIN,
         stage=Stage.RESEARCHING,
-        message=f"{len(candidates)} candidates, {len(rejected)} rejected by policy",
+        message=(
+            f"{len(candidates)} supplier{'' if len(candidates) == 1 else 's'} assessed, "
+            f"{len(rejected)} did not meet procurement policy"
+        ),
         payload={
             "rejected": [
                 {"supplier_ref": c.supplier_ref, "rules": [r.value for r in c.compliance.failed_rules]}
@@ -127,7 +201,7 @@ def post_candidates(
     return candidates
 
 
-@router.post("/outreach", response_model=list[OutreachTask], summary="Turn compliant candidates into outreach tasks")
+@router.post("/outreach", response_model=OutreachDispatch, summary="Brief the suppliers and start outreach")
 def post_outreach(
     case_id: str,
     supplier_ids: list[str],
@@ -135,17 +209,33 @@ def post_outreach(
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
     config=Depends(settings),
-) -> list[OutreachTask]:
-    """Build the tasks. Placing the calls is Slice C's job.
+) -> OutreachDispatch:
+    """Build briefs from the system of record, then hand them to Slice C.
+
+    Slice B knows the part, the quantity and which suppliers exist; Slice C knows
+    how to reach them. So this builds the `OutreachTask`s and dispatches them
+    through Slice C's `OutreachProvider` seam -- the same call whether that seam
+    is the rehearsal provider or a real CALL-E line. Nothing here places a call
+    itself.
+
+    Dispatch is asynchronous by design: it returns a receipt immediately and the
+    claims land later, because that is the shape a real phone call has.
 
     The channel is chosen by geography, not preference: CALL-E has no CN region,
-    so a Chinese supplier routes to email rather than voice. Same `Claim` comes
-    back either way.
+    so a Chinese supplier routes to email rather than voice.
     """
     incident = records.get_incident(case_id)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     part = records.get_part(incident.part_id)
+
+    # Fail before briefing anyone. A live run with no configured destination is
+    # a mistake, and the only safe response to it is to not dial.
+    if call_mode() == "live":
+        try:
+            destination_for(supplier_ids[0] if supplier_ids else "", live=True)
+        except LiveCallRefused as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from None
 
     tasks: list[OutreachTask] = []
     for supplier_id in supplier_ids:
@@ -172,14 +262,48 @@ def post_outreach(
         )
 
     cases.write_outreach_tasks(case_id, tasks)
+
+    provider = get_provider()
+    try:
+        receipt = provider.dispatch(tasks)
+    except Exception as exc:  # noqa: BLE001 - the reason must reach the operator
+        # An unhandled exception here returns a 500 with no CORS headers, which
+        # the browser reports as "NetworkError" -- the least useful sentence
+        # available when the real cause is a rejected key or an unreachable
+        # carrier. Surface what actually happened instead.
+        detail = _carrier_error(exc)
+        cases.append_event(
+            case_id,
+            actor=Actor.SYSTEM,
+            stage=Stage.CALLING,
+            level=Level.ERROR,
+            message=f"Could not reach suppliers: {detail}",
+            payload={"suppliers": supplier_ids},
+        )
+        raise HTTPException(status_code=502, detail=detail) from None
+
     cases.append_event(
         case_id,
         actor=Actor.SYSTEM,
         stage=Stage.CALLING,
-        message=f"{len(tasks)} outreach tasks queued in {config.call_mode} mode",
-        payload={"mode": config.call_mode, "channels": [t.channel.value for t in tasks]},
+        message=(
+            f"Contacting {len(tasks)} supplier"
+            f"{'' if len(tasks) == 1 else 's'} about {part.item_code if part else incident.part_id}"
+            f" — {qty:,} pcs needed by {incident.needed_by}"
+        ),
+        payload={
+            "mode": call_mode(),
+            "provider": provider.name,
+            "channels": [t.channel.value for t in tasks],
+            "task_ids": receipt.task_ids,
+        },
     )
-    return tasks
+    return OutreachDispatch(
+        case_id=case_id,
+        provider=provider.name,
+        mode=call_mode(),
+        tasks=tasks,
+    )
 
 
 @router.post("/claims", response_model=Claim, summary="File what a supplier said. Never raises.")
@@ -209,8 +333,8 @@ def post_claim(
         stage=Stage.CALLING,
         level=Level.WARN if claim.confidence < 0.4 else Level.INFO,
         message=(
-            f"{supplier_ref}: {claim.stock_status.value}, "
-            f"{claim.qty_offered} pcs, confidence {claim.confidence:.0%}"
+            f"{supplier_ref} responded: {claim.stock_status.value.replace('_', ' ')}, "
+            f"{claim.qty_offered:,} pcs offered"
         ),
         payload={"supplier_ref": supplier_ref, "stock_status": claim.stock_status.value},
     )
@@ -230,3 +354,13 @@ def post_event(
     return cases.append_event(
         case_id, actor=actor, stage=stage, message=message, level=level, payload=payload
     )
+
+
+@router.get("/quotes", response_model=list[Quote], summary="What the calls have returned so far")
+def get_quotes(case_id: str = Query(...)) -> list[Quote]:
+    """Reads Slice C's live working set.
+
+    Dispatch is asynchronous, so the cockpit polls this while calls are in
+    flight. Empty is a normal answer, not an error.
+    """
+    return STORE.quotes_for(case_id)

@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.deps import erp, settings
-from backend.api.routers import cases, decide, flow, meta, tools
+from backend.api.routers import calle, cases, decide, flow, meta, tools
 
 
 @asynccontextmanager
@@ -38,7 +38,7 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=config.cors_origins,
+        allow_origin_regex=config.cors_origin_regex,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -48,6 +48,9 @@ def create_app() -> FastAPI:
     app.include_router(decide.router)
     app.include_router(flow.router)
     app.include_router(cases.router)
+    # Where finished calls come back. Registered on the same app the cockpit
+    # talks to, because that is the process holding the live quote store.
+    app.include_router(calle.router)
 
     return app
 

@@ -23,6 +23,7 @@ import { IncidentPanel } from "@/components/cockpit/incident-panel"
 import { ShortageStrip } from "@/components/cockpit/shortage-strip"
 import { StageRail } from "@/components/cockpit/stage-rail"
 import { SupplierTable } from "@/components/cockpit/supplier-table"
+import { CallsPanel } from "@/components/cockpit/calls-panel"
 import { cn } from "@/lib/utils"
 
 const SECTIONS = [
@@ -210,10 +211,10 @@ export default function CockpitPage() {
             kicker="Outreach"
             title="What the suppliers actually said"
           >
-            <AwaitingSlice
-              owner="CALL-E outreach"
-              what="One card per call: masked number, live status, and the claim it produced — including whether stock is free or already allocated to someone else. Nothing here is treated as fact; it sits beside our own records for comparison."
-              endpoint="GET /cases/{id} → claims[]"
+            <CallsPanel
+              caseId={snapshot.case_id}
+              suppliers={snapshot.supplier_records ?? []}
+              qty={snapshot.incident.qty_required}
             />
           </Section>
 
@@ -234,14 +235,9 @@ export default function CockpitPage() {
           </Section>
 
           <footer className="border-t border-hairline py-6 text-[12px] text-muted-ink">
-            Data source <Mono>{DATA_SOURCE}</Mono>
-            {DATA_SOURCE === "fixtures" ? (
-              <>
-                {" "}— a recording of the live endpoints, exported by{" "}
-                <Mono>python -m packages.contracts.export</Mono>. Set{" "}
-                <Mono>NEXT_PUBLIC_DATA_SOURCE=live</Mono> to read the running API instead.
-              </>
-            ) : null}
+            {DATA_SOURCE === "fixtures"
+              ? "Viewing a recorded case. Connect to the sourcing service for live data and supplier contact."
+              : "Connected to the sourcing service."}
           </footer>
         </main>
 

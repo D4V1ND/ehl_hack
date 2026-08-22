@@ -19,6 +19,21 @@ class Store:
         self._lock = threading.Lock()
         self._quotes: dict[str, dict[str, Quote]] = {}
         self._events: dict[str, list[dict[str, Any]]] = {}
+        self._calls: dict[str, tuple[str, str, str]] = {}
+
+    def remember_call(self, call_id: str, case_id: str, task_id: str, supplier_ref: str) -> None:
+        """Which task a provider call id belongs to.
+
+        Every recipient in the demo shares one destination number, so nothing in
+        a result identifies the supplier by itself. The call id does, and it is
+        the only correlation that survives results arriving out of order.
+        """
+        with self._lock:
+            self._calls[call_id] = (case_id, task_id, supplier_ref)
+
+    def call_route(self, call_id: str) -> tuple[str, str, str] | None:
+        with self._lock:
+            return self._calls.get(call_id)
 
     def add_quote(self, quote: Quote) -> None:
         with self._lock:
@@ -63,6 +78,7 @@ class Store:
         with self._lock:
             self._quotes.clear()
             self._events.clear()
+            self._calls.clear()
 
 
 STORE = Store()
