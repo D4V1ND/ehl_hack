@@ -1,0 +1,24 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/seattle directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Into our composer, when we send a message, mimick a 1.5 second timeout for sending a message by displaying a loading spinne rin the send button. Install spinne rfrom shadcn for that.
+
+While the agent is "streaming" make the send button a cancle button with a rectangle inside, clikcing that should stop the deterministic flow.
+
+Also make the tremendously flows a lot more realistic by making me take longer for certain tool calls, some take a bit shorter, and text actually streams in, doesn't just appear immediately.
+
+Create a deterministic doc into our docs folder that makes exactly what all the deterministic logic lives, so that when we add the actual Devin agent, we can remove that deterministic logic again.
+
+What's your subpatients for your implementation? Do you have the orchestrator, subpatients, or the trauma? What do you do? So, the plain implementation work.

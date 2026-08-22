@@ -1,0 +1,67 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NYNAK96TPT43STZD7KDABV",
+  "session_id": "01a02bd8-51b8-7122-aa37-22699959adff",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T23:59:55.7664Z",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "components/ai-elements/prompt-input.tsx",
+    "components/cockpit/assistant-turn.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/message-composer.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "docs/deterministic-rehearsal.md",
+    "hooks/use-deterministic-rehearsal.ts",
+    "lib/case-001/script.ts",
+    "lib/case-001/types.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "f38f1c621746",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 222244,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7193856,
+    "output_tokens": 44756,
+    "api_call_count": 59
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T23:59:55.723409Z",
+    "agent_lines": 1163,
+    "agent_removed": 271,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1163,
+    "total_lines_changed": 1434,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 15,
+      "user_lines_removed": 0,
+      "agent_lines_added": 378,
+      "agent_lines_removed": 58,
+      "user_added_per_file": {
+        ".context/attachments/qBcw2F/PR instructions.md": 15
+      }
+    }
+  ]
+}

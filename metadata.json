@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NYNAK96TPT43STZD7KDABV",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/ai-elements/prompt-input.tsx",
+    "components/cockpit/assistant-turn.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/cockpit/message-composer.tsx",
+    "docs/PLAN.md",
+    "docs/design.md",
+    "docs/deterministic-rehearsal.md",
+    "hooks/use-deterministic-rehearsal.ts",
+    "lib/case-001/script.ts",
+    "lib/case-001/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 222244,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7193856,
+    "output_tokens": 44756,
+    "api_call_count": 59
+  }
+}
