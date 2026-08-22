@@ -159,9 +159,9 @@ Everything else in this document is optional.
 
 ### The hour-3 walking skeleton — build this before anything pretty
 
-End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded part from the stub API → writes a two-line `decision.md` → opens a PR → UI shows "done" + PR link.
+End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded part from the stub API → gets one saved call result back → writes a two-line `decision.md` → opens a PR → UI shows "done" + PR link.
 
-**Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose.
+**Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose. Full task spec in §11 — it's one person, ~2 hours, and it should start the moment the contracts are frozen.
 
 ---
 
@@ -362,3 +362,104 @@ Two rules that save hackathons: **record the backup video the first time the hap
 - **The three conflicts in §2.6** — especially the demo scale. Needs a decision before B1 seed data is written.
 - **Session fan-out** (§2.4b) — decide at hour 14 based on whether the happy path is solid. Don't decide now.
 - **Name** — SupplyGuard is the working name and it's good. Alternatives floated: LineStop, Stockout.
+
+---
+
+## 11. Slice 0 — the walking skeleton, as one assignable task
+
+**One person. ~2 hours. Starts the moment the contracts (§4) are frozen. Nobody else's real work can safely start in parallel until this is green.**
+
+> **Task: close the loop empty.** Make one command drive a real Devin session that reads a stub endpoint, receives one saved CALL-E result, writes a two-line `decision.md`, opens a real GitHub PR, and makes the cockpit show "done" plus the PR link. Every piece is a stub. Nothing is correct. Nothing is styled. **The only deliverable is that the loop closes.**
+
+The point is not the code — all of it gets thrown away or replaced. The point is that by hour 3 every wire in the system has had a real message pushed through it, so the remaining 15 hours are four people filling in blanks instead of four people discovering at hour 20 that their pieces don't fit.
+
+### How it flows
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Human
+    participant UI as Cockpit (Slice A)
+    participant API as Core API (Slice B)
+    participant Devin as Devin session (Slice D)
+    participant Fake as Outreach fake (Slice C)
+    participant GH as GitHub
+
+    Human->>UI: click "Launch sourcing agent"
+    UI->>API: POST /cases {part_id, qty_required}
+    API->>API: mkdir cases/CASE-001/ · Event(stage="created")
+    API->>Devin: POST /v1/sessions  (prompt + case_id)
+    Devin-->>API: session_id, session_url
+    API-->>UI: 202 {case_id, session_url}
+
+    rect rgb(245,245,245)
+    note over UI,API: UI polls every 2s for the whole run
+    UI->>API: GET /cases/CASE-001/events
+    API-->>UI: [Event, ...]
+    end
+
+    Devin->>API: GET /tools/part/BRG-6204-2RS
+    note right of API: STUB #1 — system of record<br/>hardcoded, ERPNext-shaped keys
+    API-->>Devin: {item_code, item_name, actual_qty, supplier_name}
+
+    Devin->>API: POST /tools/outreach {OutreachTask}
+    API->>Fake: dispatch (rehearsal — always)
+    note right of Fake: STUB #2 — CALL-E<br/>replays one saved response<br/>no network, no credits
+    Fake-->>API: {structured_result, transcript_turns, evidence, completion_confidence}
+    API->>API: normalise → Claim · Event(stage="claim_received")
+    API-->>Devin: Claim
+
+    Devin->>Devin: write cases/CASE-001/decision.md  (2 lines, wrong, fine)
+    Devin->>GH: branch → commit → open PR
+    GH-->>Devin: pr_url
+    Devin->>API: POST /cases/CASE-001/done {pr_url}
+    API->>API: Event(stage="done", pr_url)
+    UI-->>Human: "Done" · PR link · transcript
+```
+
+### The two stub APIs — this is the bit that was unclear
+
+They are **two different stubs with two different jobs**, and the skeleton person owns both temporarily, then hands each to its real owner:
+
+| | **Stub #1 — system of record** | **Stub #2 — CALL-E / outreach** |
+|---|---|---|
+| Endpoint | `GET /tools/part/{part_id}` | `POST /tools/outreach` |
+| Answers | "what is this part and how many do we have?" | "what did the supplier say?" |
+| Returns | one hardcoded part + stock + one supplier, using ERPNext field names (`item_code`, `actual_qty`, `supplier_name`) | one **saved CALL-E response**, replayed verbatim: `structured_result` (a `Claim`), `transcript_turns`, `evidence`, `completion_confidence` |
+| Stands in for | the mock ERP → **Slice B (B1/B3)** | the rehearsal dispatcher → **Slice C (C1/C3)** |
+| Network | none | **none** |
+
+**Yes, put the CALL-E stub in the MVP skeleton** — that was the open question and the answer is unambiguous:
+
+- It's what **freezes the `Claim` schema**, and `Claim` is the one contract that Slices A, C and D all depend on. Discovering its real shape at hour 14 is the single most expensive mistake available to us.
+- It costs **zero calls and zero credits** — it's a file read, so the 20-call free tier is untouched.
+- It gives Slice A something real to render on the live-calls panel and the claim-vs-record view from hour 3 instead of hour 12.
+- It makes the skeleton demoable as a *story* ("a supplier was asked and answered") rather than a plumbing test, which is what gets the team to actually keep it working.
+
+What **doesn't** go in the skeleton: real dialing, the negotiation script, the webhook, the policy rules, the cost model, web search, the real ERP, and any styling. All of those are Slices A–D.
+
+### Where the example transcript comes from
+
+Don't invent it by hand — a hand-written fixture is a guess at CALL-E's response shape, and the whole value of the stub is that the shape is *right*.
+
+`test/test_calle.py` already talks to the live API. So: **make exactly one real call, to your own phone, and save the raw response verbatim.**
+
+1. Set `CALLE_API_KEY`, `TEST_CALL_DESTINATION_NUMBER` (your own number), `CALLE_LIVE_TEST_CONFIRM=yes-call-my-phone` in your local `.env` — never committed.
+2. Place one call with the frozen `Claim` JSON Schema as `recipient_result_schema`. Read the "supplier" side yourself: give a price, a lead time, a quantity, and say the stock is *committed to another customer* so we capture `in_stock_allocated`.
+3. Save the **unmodified** response JSON to `fixtures/calle/recorded_001.json`, redacting only the phone number (masked per the repo rules). Commit it.
+4. Never call again during development. That one file is what the whole weekend runs against.
+
+One credit, spent deliberately, buys a correctly-shaped fixture and proves the CALL-E integration works on day one. Best-value call of the jam.
+
+### Done when
+
+- [ ] Contracts imported from the shared module — the skeleton must not define its own types.
+- [ ] `make skeleton` (or `python -m orchestrator.run --case CASE-001`) runs with **no arguments and no manual steps**.
+- [ ] A **real Devin session** is created via the API and its `session_url` is in the event log — not a local script pretending to be Devin. This is the requirement being graded; don't fake it here of all places.
+- [ ] `GET /cases/CASE-001/events` returns at least: `created → part_read → claim_received → decision_written → pr_opened → done`.
+- [ ] A **real PR** exists on this repo containing `cases/CASE-001/decision.md`.
+- [ ] The cockpit — unstyled is fine — shows the stage list, the transcript, and a clickable PR link.
+- [ ] `fixtures/calle/recorded_001.json` is committed and no test or run touches the network.
+- [ ] Total runtime **under 90 seconds**, because it's going to be run a few hundred times this weekend.
+
+Then hand over: stub #1 → whoever has Slice B, stub #2 → Slice C, the launcher and prompt → Slice D, the poll-and-render page → Slice A. Each replaces their stub behind the same URL, and the loop never breaks.
