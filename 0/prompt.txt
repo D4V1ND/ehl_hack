@@ -159,3 +159,7 @@ fix it. also does try_real_outreach give output of the call?
 ---
 
 I want it to show me the call output
+
+---
+
+the calls ended
