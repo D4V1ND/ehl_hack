@@ -25,6 +25,7 @@ export type ScriptStep = {
   id: string
   stepName: string
   kind: ScriptKind
+  waitMs: number
   method?: string
   path?: string
   summary: string

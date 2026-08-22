@@ -17,39 +17,50 @@ import {
 } from "@/components/ai-elements/tool"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { CANDIDATES, type ScriptStep } from "@/lib/case-001"
+import { CANDIDATES, getStepResponse, type ScriptStep } from "@/lib/case-001"
+
+type AssistantTurnPhase = "pending" | "streaming" | "stopped" | "complete"
 
 export function AssistantTurn({
   step,
-  latest,
+  phase,
+  text,
 }: {
   step: ScriptStep
-  latest: boolean
+  phase: AssistantTurnPhase
+  text?: string
 }) {
+  const pending = phase === "pending"
+  const response = text ?? getStepResponse(step)
+
+  if (pending && !(step.method && step.path)) return null
+
   return (
     <Message from="assistant" className="max-w-full">
       <MessageContent className="w-full max-w-full">
-        <MessageResponse>
-          {step.kind === "decision"
-            ? "Decision ready for human review."
-            : step.summary}
-        </MessageResponse>
+        {!pending && response ? (
+          <MessageResponse isAnimating={phase === "streaming"}>
+            {response}
+          </MessageResponse>
+        ) : null}
         {step.method && step.path ? (
           <Tool defaultOpen={false} className="mb-0">
             <ToolHeader
               type={`tool-${step.id}`}
-              state={latest ? "input-available" : "output-available"}
+              state={pending ? "input-available" : "output-available"}
               title={`${step.method} ${step.path}`}
             />
-            <ToolContent>
-              <ToolOutput
-                output={<p className="p-3 text-pretty">{step.detail}</p>}
-                errorText={undefined}
-              />
-            </ToolContent>
+            {!pending ? (
+              <ToolContent>
+                <ToolOutput
+                  output={<p className="p-3 text-pretty">{step.detail}</p>}
+                  errorText={undefined}
+                />
+              </ToolContent>
+            ) : null}
           </Tool>
         ) : null}
-        <StepExtras step={step} />
+        {phase === "complete" ? <StepExtras step={step} /> : null}
       </MessageContent>
     </Message>
   )

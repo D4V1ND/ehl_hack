@@ -140,26 +140,32 @@ export function PromptInputSubmit({
   onClick,
   ...props
 }: PromptInputSubmitProps) {
-  const generating = status === "submitted" || status === "streaming"
+  const canStop = status === "streaming" && Boolean(onStop)
   const icon =
     status === "submitted" ? (
       <Spinner />
     ) : status === "streaming" ? (
-      <SquareIcon className="size-4" />
+      <SquareIcon />
     ) : status === "error" ? (
-      <XIcon className="size-4" />
+      <XIcon />
     ) : (
-      <CornerDownLeftIcon className="size-4" />
+      <CornerDownLeftIcon />
     )
 
   return (
     <InputGroupButton
-      aria-label={generating ? "Stop" : "Submit"}
+      aria-label={
+        status === "submitted"
+          ? "Sending message"
+          : status === "streaming"
+            ? "Stop generating"
+            : "Submit message"
+      }
       size="icon-sm"
-      type={generating && onStop ? "button" : "submit"}
+      type={canStop ? "button" : "submit"}
       variant="default"
       onClick={(event) => {
-        if (generating && onStop) {
+        if (canStop && onStop) {
           event.preventDefault()
           onStop()
         } else {
