@@ -1,18 +1,22 @@
-"""Place ONE real CALL-E call and print what came back.
+"""Place ONE real CALL-E call through our own provider and print the result.
 
 Not a pytest test — a script you run by hand. It costs money and rings a
 real phone.
 
-    1. python -m uvicorn backend.main:app --port 8000     (in another terminal)
-    2. python test/try_real_outreach.py
+    python test/try_real_outreach.py
+
+No server needed. This drives backend/outreach/calle.py directly, so it
+exercises the whole SDK path in one process:
+
+    build_calle_payload  ->  client.calls.create        (calle SDK)
+                         ->  client.calls.wait_for_result
+                         ->  normalize_result           (-> Quote)
+                         ->  save_quote                 (-> disk)
 
 Needs FAKE_CALLS=0 and CALLE_API_KEY in .env, and the supplier below
 mapped to a number in backend/fixtures/supplier_phones.json.
 
-No tunnel needed: the result is fetched with GET /v1/calls/{id}, not
-pushed to a webhook, so ngrok and PUBLIC_BASE_URL play no part here.
-
-Edit REQUEST to change what gets asked on the call.
+Edit TASK to change what gets asked on the call.
 """
 
 from __future__ import annotations
@@ -21,31 +25,30 @@ import json
 import sys
 import time
 import uuid
+from pathlib import Path
 
-import httpx
+# Run as a plain script, `backend` is not importable: only the test/
+# directory lands on sys.path, not the repo root. pytest adds the root for
+# its own runs, so this only bites here.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-BASE_URL = "http://localhost:8000"
+from backend import settings  # noqa: E402
+from backend.outreach.calle import CalleOutreachProvider  # noqa: E402
+from backend.store import STORE  # noqa: E402
+from packages.contracts.models import OutreachTask  # noqa: E402
 
-# The request body sent to POST /tools/outreach. Edit freely.
-# case_id and task_id get a unique suffix at runtime (see freshen_ids) so
-# each run is its own case — without that, a re-run would find the previous
-# run's quote already in the store and print it without ever calling.
-REQUEST = {
-    "tasks": [
-        {
-            "task_id": "task-1",
-            "case_id": "case",
-            "supplier_ref": "SUP-ATLAS",
-            "channel": "voice",
-            "brief": {
-                "part_spec": "6203-2RS deep groove ball bearing",
-                "qty": 100,
-                "needed_by": "2026-09-15",
-                "target_price": "3.20",
-                "floor_price": "2.50",
-            },
-        }
-    ]
+# What to ask, and who to ask. Edit freely.
+# task_id/case_id are filled in per run, so each run is its own case.
+TASK = {
+    "supplier_ref": "SUP-ATLAS",
+    "channel": "voice",
+    "brief": {
+        "part_spec": "6203-2RS deep groove ball bearing",
+        "qty": 100,
+        "needed_by": "2026-09-15",
+        "target_price": "3.20",
+        "floor_price": "2.50",
+    },
 }
 
 POLL_INTERVAL = 5.0
@@ -68,108 +71,94 @@ QUOTE_FIELDS = (
 )
 
 
-def freshen_ids(request: dict) -> str:
-    """Give this run its own case_id/task_id. Returns the case_id."""
+def build_task() -> OutreachTask:
     run = uuid.uuid4().hex[:8]
-    case_id = f"{request['tasks'][0]['case_id']}-{run}"
-    for index, task in enumerate(request["tasks"], start=1):
-        task["case_id"] = case_id
-        task["task_id"] = f"{case_id}-task-{index}"
-    return case_id
+    case_id = f"case-{run}"
+    return OutreachTask(
+        task_id=f"{case_id}-task-1",
+        case_id=case_id,
+        **TASK,
+    )
 
 
-def print_quote(quote: dict) -> None:
+def print_quote(quote) -> None:
     print("\n" + "=" * 64)
     print("QUOTE")
     print("=" * 64)
+    data = quote.model_dump(mode="json")
     for field in QUOTE_FIELDS:
-        print(f"  {field:<16} {quote.get(field)}")
-    print(f"  {'confidence':<16} {quote.get('confidence')}")
+        print(f"  {field:<16} {data.get(field)}")
+    print(f"  {'confidence':<16} {data.get('confidence')}")
 
-    if quote.get("summary"):
+    if quote.summary:
         print("\n  summary:")
-        print(f"    {quote['summary']}")
+        print(f"    {quote.summary}")
 
 
-def print_transcript(quote: dict) -> None:
+def print_transcript(quote) -> None:
     """The evidence behind every field above."""
-    turns = quote.get("transcript") or []
-    if not turns:
+    if not quote.transcript:
         print("\n(no transcript returned)")
         return
 
     print("\n" + "=" * 64)
-    print(f"TRANSCRIPT ({len(turns)} turns)")
+    print(f"TRANSCRIPT ({len(quote.transcript)} turns)")
     print("=" * 64)
-    for turn in turns:
-        print(
-            f"  [{turn.get('offset_seconds', 0):>3}s] "
-            f"{turn.get('speaker', '?'):<5} {turn.get('text', '')}"
-        )
+    for turn in quote.transcript:
+        print(f"  [{turn.offset_seconds:>3}s] {turn.speaker:<5} {turn.text}")
 
 
-def print_saved_path(client: httpx.Client, case_id: str) -> None:
-    """The server writes each quote to disk; say where it landed."""
-    try:
-        events = client.get(f"/cases/{case_id}/events").json()["events"]
-    except (httpx.HTTPError, KeyError, ValueError):
-        return
-    for event in events:
+def print_events(case_id: str) -> None:
+    print("\n" + "=" * 64)
+    print("EVENTS")
+    print("=" * 64)
+    for event in STORE.events_for(case_id):
+        print(f"  {event['ts']}  {event['stage']:<22} {event['message']}")
         saved_to = (event.get("payload") or {}).get("saved_to")
         if saved_to:
             print(f"\nsaved to: {saved_to}")
-            return
-    print("\nsaved to: (nothing recorded — check the server log)")
 
 
 def main() -> None:
-    case_id = freshen_ids(REQUEST)
+    if settings.FAKE_CALLS:
+        sys.exit("FAKE_CALLS is on — set FAKE_CALLS=0 in .env to place a real call.")
+    if not settings.CALLE_API_KEY:
+        sys.exit("CALLE_API_KEY is not set in .env.")
 
-    # POST /tools/outreach blocks while CALL-E accepts the call, which is
-    # well past the httpx default timeout.
-    with httpx.Client(base_url=BASE_URL, timeout=90.0) as client:
-        try:
-            health = client.get("/health").json()
-        except httpx.HTTPError:
-            sys.exit(f"No server at {BASE_URL} — start uvicorn first.")
+    task = build_task()
+    print(f"case:   {task.case_id}")
+    print(f"locale: {settings.CALLE_LOCALE}  region: {settings.CALLE_REGION}")
+    print("task:")
+    print(json.dumps(task.model_dump(mode="json"), indent=2))
 
-        print(f"health: {health}")
-        if health.get("fake_calls"):
-            sys.exit("FAKE_CALLS is on — this would not place a real call.")
+    print("\nplacing a REAL call via the calle SDK...")
+    receipt = CalleOutreachProvider().dispatch([task])
+    print(f"receipt: {receipt.model_dump(mode='json')}")
 
-        print(f"\ncase: {case_id}")
-        print("request:")
-        print(json.dumps(REQUEST, indent=2))
+    # dispatch returns as soon as CALL-E accepts; a daemon thread is now
+    # waiting on the result and will drop the Quote into STORE.
+    print(f"\nwaiting for the call to finish (up to {TIMEOUT_SECONDS}s)...")
+    deadline = time.monotonic() + TIMEOUT_SECONDS
+    waited = 0
 
-        print("\nplacing a REAL call...")
-        receipt = client.post("/tools/outreach", json=REQUEST).json()
-        print(f"receipt: {receipt}")
+    while True:
+        quotes = STORE.quotes_for(task.case_id)
+        if quotes:
+            print()  # end the progress line
+            for quote in quotes:
+                print_quote(quote)
+                print_transcript(quote)
+            print_events(task.case_id)
+            return
 
-        print(f"\nwaiting for the call to finish (up to {TIMEOUT_SECONDS}s)...")
-        deadline = time.monotonic() + TIMEOUT_SECONDS
-        waited = 0
+        if time.monotonic() > deadline:
+            print(f"\n\nTIMED OUT after {TIMEOUT_SECONDS}s with no quote.")
+            print_events(task.case_id)
+            sys.exit(1)
 
-        while True:
-            quotes = client.get(
-                "/tools/quotes", params={"case_id": case_id}
-            ).json()["quotes"]
-
-            if quotes:
-                print()  # end the progress line
-                for quote in quotes:
-                    print_quote(quote)
-                    print_transcript(quote)
-                print_saved_path(client, case_id)
-                return
-
-            if time.monotonic() > deadline:
-                print(f"\n\nTIMED OUT after {TIMEOUT_SECONDS}s with no quote.")
-                print(f"Check: curl {BASE_URL}/cases/{case_id}/events")
-                sys.exit(1)
-
-            time.sleep(POLL_INTERVAL)
-            waited += POLL_INTERVAL
-            print(f"  ...{int(waited)}s", end="\r", flush=True)
+        time.sleep(POLL_INTERVAL)
+        waited += POLL_INTERVAL
+        print(f"  ...{int(waited)}s", end="\r", flush=True)
 
 
 if __name__ == "__main__":
