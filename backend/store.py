@@ -24,6 +24,12 @@ class Store:
         with self._lock:
             self._quotes.setdefault(quote.case_id, {})[quote.task_id] = quote
 
+    def clear_quotes(self, case_id: str) -> None:
+        """Drop a case's quote buffer. A re-run asks again; last run's answers
+        must not be filed a second time as if they were fresh."""
+        with self._lock:
+            self._quotes.pop(case_id, None)
+
     def quotes_for(self, case_id: str) -> list[Quote]:
         with self._lock:
             return list(self._quotes.get(case_id, {}).values())
