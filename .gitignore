@@ -61,3 +61,6 @@ backend/record/*.db
 
 # a real supplier number for a live call never belongs in git
 backend/fixtures/supplier_phones.local.json
+
+# Saved call results: real phone numbers and call transcripts, never committed.
+/data/quotes/

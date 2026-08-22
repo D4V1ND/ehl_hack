@@ -1,7 +1,11 @@
 """Real CALL-E calling. Only reachable when FAKE_CALLS=0.
 
-CALL-E's batch endpoint takes a recipients[] array, so CALL-E IS the
-parallel dispatcher — we do not build one.
+Uses the official `calle` SDK: client.calls.create() to place a call and
+client.calls.wait_for_result() to collect it. Both are plain outbound
+requests, so this flow needs no public URL and no tunnel.
+
+CALL-E's endpoint takes a recipients[] array, so CALL-E IS the parallel
+dispatcher — we do not build one.
 """
 
 from __future__ import annotations
@@ -9,20 +13,43 @@ from __future__ import annotations
 import json
 import re
 import threading
-import time
 
-import httpx
+from calle import CalleClient
+from calle.errors import (
+    CalleAPIError,
+    CalleConnectionError,
+    CalleTimeoutError,
+)
 
 from backend import settings
 from backend.outreach.normalize import normalize_result
 from backend.outreach.prompts import build_task_text
 from backend.outreach.protocol import DispatchReceipt
+from backend.persistence import save_quote
 from backend.store import STORE
 from packages.contracts.models import OutreachTask
 from packages.contracts.schemas import quote_result_schema
 
-# CALL-E states that mean the call will not progress any further.
-_TERMINAL = {"completed", "failed", "cancelled", "canceled", "expired"}
+# The SDK raises a different class per failure mode with no shared base, so
+# catching "anything CALL-E threw" needs them named together.
+CalleError = (CalleAPIError, CalleConnectionError, CalleTimeoutError)
+
+_CLIENT: CalleClient | None = None
+_CLIENT_LOCK = threading.Lock()
+
+
+def _client() -> CalleClient:
+    """One client for the process. It holds an httpx.Client, so building a
+    fresh one per call would leak a connection pool every time."""
+    global _CLIENT
+    with _CLIENT_LOCK:
+        if _CLIENT is None:
+            _CLIENT = CalleClient(
+                api_key=settings.CALLE_API_KEY or "",
+                base_url=settings.CALLE_BASE_URL,
+                timeout=60.0,
+            )
+        return _CLIENT
 
 _E164 = re.compile(r"^\+[1-9]\d{1,14}$")
 
@@ -71,8 +98,8 @@ def build_calle_payload(
         recipients.append(
             {
                 "phones": [validate_e164(raw)],
-                "region": "DE",
-                "locale": "de-DE",
+                "region": settings.CALLE_REGION,
+                "locale": settings.CALLE_LOCALE,
             }
         )
 
@@ -81,7 +108,12 @@ def build_calle_payload(
         "task": build_task_text(first, buyer_name=buyer_name),
         "recipients": recipients,
         "recipient_result_schema": quote_result_schema(),
-        "webhook_url": f"{settings.PUBLIC_BASE_URL}/calle/webhook",
+        # No webhook_url on purpose. Results are pulled via GET /v1/calls/{id}
+        # (see _watch_call), which is an outbound request and so needs no
+        # public URL and no tunnel. CALL-E does deliver terminal webhooks, but
+        # wrapped in an {id, type, created_at, data} envelope that the
+        # /calle/webhook route does not unwrap -- and requiring a tunnel to
+        # collect a result the API will hand us on request is not worth it.
         "metadata": {
             "case_id": first.case_id,
             "task_id": first.task_id,
@@ -118,41 +150,26 @@ class CalleOutreachProvider:
                 payload={"task_id": task.task_id},
             )
 
-            response = httpx.post(
-                f"{settings.CALLE_BASE_URL}/v1/calls",
-                headers={
-                    "Authorization": f"Bearer {settings.CALLE_API_KEY}",
-                    "Idempotency-Key": f"{case_id}:{task.task_id}",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-                timeout=60.0,
-            )
-            if response.is_error:
-                # CALL-E puts the reason in the body; raise_for_status alone
-                # reports only the status code, which is not enough to fix
-                # a rejected payload.
+            try:
+                accepted = _client().calls.create(
+                    **payload,
+                    idempotency_key=f"{case_id}:{task.task_id}",
+                )
+            except CalleAPIError as exc:
+                # The SDK has already parsed CALL-E's error body, which is
+                # where the reason for a rejected payload lives — the status
+                # code alone is not enough to fix one.
                 STORE.append_event(
                     case_id,
                     actor="calle",
                     stage="outreach_failed",
                     level="error",
-                    message=f"CALL-E rejected the call: {response.status_code}",
-                    payload={"task_id": task.task_id, "body": response.text[:2000]},
+                    message=f"CALL-E rejected the call: {exc}",
+                    payload={"task_id": task.task_id},
                 )
-                raise RuntimeError(
-                    f"CALL-E returned {response.status_code} for {task.task_id}: "
-                    f"{response.text[:2000]}"
-                )
+                raise
 
-            # Keep what CALL-E gives back: without the call id there is no way
-            # to chase a call that never fires its webhook.
-            try:
-                accepted = response.json()
-            except ValueError:
-                accepted = {"unparseable_body": response.text[:2000]}
-
-            call_id = accepted.get("id") if isinstance(accepted, dict) else None
+            call_id = accepted.get("id")
             STORE.append_event(
                 case_id,
                 actor="calle",
@@ -184,26 +201,18 @@ def _watch_call(call_id: str, task: OutreachTask) -> None:
     """Poll one call to its end, then store the Quote. Never raises: this
     runs on a daemon thread where an exception would vanish silently and
     leave the case with no quote and no explanation."""
-    deadline = time.monotonic() + settings.CALLE_POLL_TIMEOUT
     record: dict = {}
 
     try:
-        while time.monotonic() < deadline:
-            time.sleep(settings.CALLE_POLL_INTERVAL)
-            try:
-                response = httpx.get(
-                    f"{settings.CALLE_BASE_URL}/v1/calls/{call_id}",
-                    headers={"Authorization": f"Bearer {settings.CALLE_API_KEY}"},
-                    timeout=30.0,
-                )
-            except httpx.HTTPError:
-                continue  # transient; try again until the deadline
-            if response.is_error:
-                continue
-            record = response.json()
-            if str(record.get("status", "")).lower() in _TERMINAL:
-                break
-        else:
+        try:
+            record = _client().calls.wait_for_result(
+                call_id,
+                interval_seconds=settings.CALLE_POLL_INTERVAL,
+                timeout_seconds=settings.CALLE_POLL_TIMEOUT,
+            )
+        except CalleTimeoutError:
+            # Still worth one last look: a call that ran long may hold partial
+            # answers, and a quote with confidence 0 beats no quote at all.
             STORE.append_event(
                 task.case_id,
                 actor="calle",
@@ -212,18 +221,42 @@ def _watch_call(call_id: str, task: OutreachTask) -> None:
                 message=f"{task.supplier_ref}: gave up waiting for the call result",
                 payload={"task_id": task.task_id, "call_id": call_id},
             )
+            try:
+                record = _client().calls.get(call_id)
+            except CalleError:
+                record = {}
 
         quote = normalize_result(
             task.task_id, task.case_id, task.supplier_ref, _flatten(record)
         )
         STORE.add_quote(quote)
+
+        # Save before announcing: a quote the cockpit can see but that never
+        # reached disk would be lost on the next restart.
+        saved_to = None
+        try:
+            saved_to = str(save_quote(quote))
+        except OSError as exc:
+            STORE.append_event(
+                task.case_id,
+                actor="calle",
+                stage="quote_not_saved",
+                level="error",
+                message=f"{task.supplier_ref}: quote could not be written to disk: {exc}",
+                payload={"task_id": task.task_id},
+            )
+
         STORE.append_event(
             task.case_id,
             actor="calle",
             stage="quote_received",
             message=f"{task.supplier_ref}: "
             + ("quoted" if quote.available else "no quote"),
-            payload={"task_id": task.task_id, "confidence": quote.confidence},
+            payload={
+                "task_id": task.task_id,
+                "confidence": quote.confidence,
+                "saved_to": saved_to,
+            },
         )
     except Exception as exc:  # noqa: BLE001 - a dead thread must still say why
         STORE.append_event(
@@ -251,12 +284,23 @@ def _flatten(record: dict) -> dict:
     if not isinstance(recipient, dict):
         recipient = {}
 
+    # The transcript sits two levels down, on the attempt that connected.
+    # A redialled number has several attempts; the last one is the one that
+    # produced the answers.
+    attempts = recipient.get("attempts")
+    attempts = [a for a in attempts if isinstance(a, dict)] if isinstance(attempts, list) else []
+    transcript_turns = next(
+        (a.get("transcript_turns") for a in reversed(attempts) if a.get("transcript_turns")),
+        [],
+    )
+
     return {
         **record,
         "structured_result": (
             recipient.get("structured_result") or record.get("structured_result")
         ),
         "summary": recipient.get("summary") or record.get("summary"),
+        "transcript_turns": transcript_turns,
     }
 
 

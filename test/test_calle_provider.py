@@ -53,6 +53,33 @@ def test_the_raw_number_appears_only_in_the_recipients_array():
     assert "+447700900123" not in payload["task"]
 
 
+def test_the_payload_matches_the_sdk_create_signature():
+    """dispatch calls client.calls.create(**payload). A key the SDK does not
+    accept would raise TypeError only on a real, billed call."""
+    import inspect
+
+    from calle.calls import CalleCalls
+
+    payload = build_calle_payload(
+        [_task()],
+        phones_by_supplier={"SUP-ATLAS": "+447700900123"},
+        buyer_name="Meridian Motors",
+    )
+    allowed = set(inspect.signature(CalleCalls.create).parameters) - {"self"}
+    assert set(payload) <= allowed, f"SDK rejects: {set(payload) - allowed}"
+
+
+def test_the_call_is_placed_in_english():
+    """The locale drives the spoken language: a de-DE call came back fully
+    in German despite an English task text."""
+    payload = build_calle_payload(
+        [_task()],
+        phones_by_supplier={"SUP-ATLAS": "+447700900123"},
+        buyer_name="Meridian Motors",
+    )
+    assert payload["recipients"][0]["locale"].startswith("en")
+
+
 def test_a_malformed_number_is_refused_not_dialled():
     with pytest.raises(InvalidPhoneNumber):
         build_calle_payload(

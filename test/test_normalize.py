@@ -55,6 +55,40 @@ def test_an_unknown_currency_becomes_unknown_not_an_error():
     assert q.currency is Currency.UNKNOWN
 
 
+def test_the_transcript_comes_back_as_typed_turns():
+    q = _norm(
+        {
+            "transcript_turns": [
+                {"offset_seconds": 0, "speaker": "bot", "text": "Good morning"},
+                {"offset_seconds": 4, "speaker": "user", "text": "Five euro each"},
+            ]
+        }
+    )
+    assert [t.text for t in q.transcript] == ["Good morning", "Five euro each"]
+    assert q.transcript[1].speaker == "user"
+    assert q.transcript[1].offset_seconds == 4
+
+
+def test_a_garbled_transcript_turn_does_not_lose_the_whole_transcript():
+    q = _norm(
+        {
+            "transcript_turns": [
+                "not a dict",
+                {"speaker": None, "text": None, "offset_seconds": "x"},
+                {"speaker": "bot", "text": "still here"},
+            ]
+        }
+    )
+    assert len(q.transcript) == 2
+    assert q.transcript[0].speaker == "unknown"
+    assert q.transcript[0].text == ""
+    assert q.transcript[-1].text == "still here"
+
+
+def test_no_transcript_is_an_empty_list_not_a_crash():
+    assert _norm({}).transcript == []
+
+
 def test_the_raw_payload_is_always_kept():
     payload = {"structured_result": {"available": True}, "anything": "else"}
     assert _norm(payload).raw == payload
