@@ -25,6 +25,9 @@ backend/              Slice B — the service.
   detect/             shortage detector (the no-human-in-the-loop trigger)
   tests/              Slice B's tests
 ui/                   Slice A — the cockpit (Next.js). Runs with no backend.
+  app/api/cases/      Slice 1 launch API as Route Handlers, so a case can be
+                      started from a Vercel deployment with no Python process
+orchestrator/         the CLI that launches a case
 cases/                Runtime output. One directory per case; the artifact IS the datastore.
 test/                 Slice C's CALL-E smoke test
 docs/                 plans and specs
@@ -67,6 +70,31 @@ WSL, and Windows reaches that over `\\wsl.localhost`, which has no POSIX file
 locking, so SQLite reports *"database is locked"* regardless of what is running.
 `db-export` writes a `VACUUM INTO` snapshot to your Windows Downloads folder and
 prints the `C:\...` path to paste in.
+
+## Slice 1 — launch a case from the CLI
+
+The launch path that needs nothing but the Next app:
+
+```bash
+cd ui && npm install && npm run dev
+python -m orchestrator.run --case CASE-001 --api http://localhost:3000
+```
+
+- `POST /api/cases` — `{ "case_id": "CASE-001" }`, or an inline `incident`. Loads
+  the fixture, appends `created`, starts a Devin session, appends
+  `session_started`, returns `201`.
+- `GET /api/cases/CASE-001/events` — the append-only log.
+- `/cases/CASE-001` — polls it every 2s.
+
+Events live in a module-level map (`ui/lib/cases/store.ts`) because serverless has
+no durable disk; the durable case store is `backend/casestore/`. Money is only
+ever a decimal string. Without `DEVIN_API_KEY` the session is stubbed, so this
+never fails on a missing key and never places a phone call. Cross-origin browser
+access is opt-in via `CASES_ALLOWED_ORIGINS`.
+
+```bash
+cd ui && npm test   # route handlers, in-memory, no live Devin
+```
 
 ## The system of record
 

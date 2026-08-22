@@ -1,8 +1,8 @@
-import { CORS_HEADERS, json } from "@/lib/cases/http"
+import { corsHeaders, json } from "@/lib/cases/http"
 import { eventsFor, getCase } from "@/lib/cases/store"
 
-export async function OPTIONS(): Promise<Response> {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
+export async function OPTIONS(request: Request): Promise<Response> {
+  return new Response(null, { status: 204, headers: corsHeaders(request) })
 }
 
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
   const { caseId } = await params
   const record = getCase(caseId)
   if (!record) {
-    return json({ error: `unknown case ${caseId}`, events: [] }, 404)
+    return json({ error: `unknown case ${caseId}`, events: [] }, 404, request)
   }
   return json(
     {
@@ -21,6 +21,7 @@ export async function GET(
       session_url: record.session_url,
       events: eventsFor(caseId),
     },
-    200
+    200,
+    request
   )
 }

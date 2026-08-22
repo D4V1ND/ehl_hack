@@ -5,7 +5,7 @@
  * route handler on Vercel.
  */
 
-import caseOne from "@/fixtures/incidents/CASE-001.json"
+import caseOne from "@/lib/cases/fixtures/CASE-001.json"
 import type { Incident } from "./types"
 
 const FIXTURES: Record<string, Incident> = {
