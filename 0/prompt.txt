@@ -175,3 +175,7 @@ https://docs.heycall-e.com/calls. can we use this instead of Grok?
 ---
 
 https://docs.heycall-e.com/calls. can we use this instead of ngrok? the goal is to save the output
+
+---
+
+add on the prompt, always use english and if the product is name, pronounce it slowly
