@@ -7,3 +7,11 @@ Continue
 ---
 
 Don't implement. Give suggestions
+
+---
+
+honestly, i would just name it /session-end (or docs audit btu with same description) and in the description name it "run before you finish the session, or before commits". Then in agents.md also say to run this skill. I don't think we need a hook for this.
+
+als try entire again, it shold be authentiacated now
+
+does devin mcp work? check entire again if agents use it already.
