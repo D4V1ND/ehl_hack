@@ -1,25 +1,18 @@
-"""Manual smoke script for the REAL CALL-E outreach flow.
+"""Place ONE real CALL-E call and print what came back.
 
-Not a pytest test — a script you run by hand against a locally running
-server to place one real, billed phone call and watch the typed Quote
-come back.
+Not a pytest test — a script you run by hand. It costs money and rings a
+real phone.
 
-No tunnel required. The result is pulled with GET /v1/calls/{id} (an
-outbound request), not pushed to a webhook, so ngrok / PUBLIC_BASE_URL
-play no part in this flow.
+    1. python -m uvicorn backend.main:app --port 8000     (in another terminal)
+    2. python test/try_real_outreach.py
 
-Requires, in .env:
-    FAKE_CALLS=0
-    CALLE_API_KEY=<your key>
+Needs FAKE_CALLS=0 and CALLE_API_KEY in .env, and the supplier below
+mapped to a number in backend/fixtures/supplier_phones.json.
 
-And a real phone number mapped in backend/fixtures/supplier_phones.json
-under the SUPPLIER_REF used below.
+No tunnel needed: the result is fetched with GET /v1/calls/{id}, not
+pushed to a webhook, so ngrok and PUBLIC_BASE_URL play no part here.
 
-Start the server first:
-    python -m uvicorn backend.main:app --port 8000
-
-Then run this:
-    python test/try_real_outreach.py
+Edit REQUEST to change what gets asked on the call.
 """
 
 from __future__ import annotations
@@ -32,13 +25,35 @@ import uuid
 import httpx
 
 BASE_URL = "http://localhost:8000"
-SUPPLIER_REF = "SUP-ATLAS"
-POLL_INTERVAL = 5.0
-TIMEOUT_SECONDS = 900  # a real call sits queued, then runs for a few minutes
 
-# The fields the supplier actually answers for. Everything else on a Quote
-# (task_id, confidence, raw, ...) is ours, not theirs.
-_QUOTE_FIELDS = (
+# The request body sent to POST /tools/outreach. Edit freely.
+# case_id and task_id get a unique suffix at runtime (see freshen_ids) so
+# each run is its own case — without that, a re-run would find the previous
+# run's quote already in the store and print it without ever calling.
+REQUEST = {
+    "tasks": [
+        {
+            "task_id": "task-1",
+            "case_id": "case",
+            "supplier_ref": "SUP-ATLAS",
+            "channel": "voice",
+            "brief": {
+                "part_spec": "6203-2RS deep groove ball bearing",
+                "qty": 100,
+                "needed_by": "2026-09-15",
+                "target_price": "3.20",
+                "floor_price": "2.50",
+            },
+        }
+    ]
+}
+
+POLL_INTERVAL = 5.0
+TIMEOUT_SECONDS = 900  # a call sits queued, then runs for a few minutes
+
+# What the supplier actually answers for. The rest of a Quote (task_id,
+# raw, confidence, ...) is ours, not theirs.
+QUOTE_FIELDS = (
     "available",
     "qty_offered",
     "unit_price",
@@ -53,52 +68,48 @@ _QUOTE_FIELDS = (
 )
 
 
-def build_task(case_id: str) -> dict:
-    return {
-        "task_id": f"{case_id}-task-1",
-        "case_id": case_id,
-        "supplier_ref": SUPPLIER_REF,
-        "channel": "voice",
-        "brief": {
-            "part_spec": "6203-2RS deep groove ball bearing",
-            "qty": 100,
-            "needed_by": "2026-09-15",
-            "target_price": "3.20",
-            "floor_price": "2.50",
-        },
-    }
+def freshen_ids(request: dict) -> str:
+    """Give this run its own case_id/task_id. Returns the case_id."""
+    run = uuid.uuid4().hex[:8]
+    case_id = f"{request['tasks'][0]['case_id']}-{run}"
+    for index, task in enumerate(request["tasks"], start=1):
+        task["case_id"] = case_id
+        task["task_id"] = f"{case_id}-task-{index}"
+    return case_id
 
 
 def print_quote(quote: dict) -> None:
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 64)
     print("QUOTE")
-    print("=" * 60)
-    for field in _QUOTE_FIELDS:
+    print("=" * 64)
+    for field in QUOTE_FIELDS:
         print(f"  {field:<16} {quote.get(field)}")
     print(f"  {'confidence':<16} {quote.get('confidence')}")
-    if quote.get("notes"):
-        print(f"\n  notes: {quote['notes']}")
+
+    if quote.get("summary"):
+        print("\n  summary:")
+        print(f"    {quote['summary']}")
 
 
 def print_transcript(quote: dict) -> None:
-    """The transcript is the evidence behind every field above."""
-    raw = quote.get("raw") or {}
-    recipients = raw.get("recipients") or []
-    attempts = (recipients[0].get("attempts") if recipients else []) or []
-    turns = (attempts[0].get("transcript_turns") if attempts else []) or []
+    """The evidence behind every field above."""
+    turns = quote.get("transcript") or []
     if not turns:
+        print("\n(no transcript returned)")
         return
 
-    print("\n" + "=" * 60)
-    print("TRANSCRIPT")
-    print("=" * 60)
+    print("\n" + "=" * 64)
+    print(f"TRANSCRIPT ({len(turns)} turns)")
+    print("=" * 64)
     for turn in turns:
-        who = turn.get("speaker", "?")
-        print(f"  [{turn.get('offset_seconds', 0):>3}s] {who:<5} {turn.get('text', '')}")
+        print(
+            f"  [{turn.get('offset_seconds', 0):>3}s] "
+            f"{turn.get('speaker', '?'):<5} {turn.get('text', '')}"
+        )
 
 
-def report_where_saved(client: httpx.Client, case_id: str) -> None:
-    """The server writes each quote to disk; surface where it landed."""
+def print_saved_path(client: httpx.Client, case_id: str) -> None:
+    """The server writes each quote to disk; say where it landed."""
     try:
         events = client.get(f"/cases/{case_id}/events").json()["events"]
     except (httpx.HTTPError, KeyError, ValueError):
@@ -108,44 +119,53 @@ def report_where_saved(client: httpx.Client, case_id: str) -> None:
         if saved_to:
             print(f"\nsaved to: {saved_to}")
             return
-    print("\nsaved to: (no path recorded — check the server log)")
+    print("\nsaved to: (nothing recorded — check the server log)")
 
 
 def main() -> None:
-    case_id = f"case-real-{uuid.uuid4().hex[:8]}"
-    task = build_task(case_id)
+    case_id = freshen_ids(REQUEST)
 
     # POST /tools/outreach blocks while CALL-E accepts the call, which is
-    # well over the httpx default.
+    # well past the httpx default timeout.
     with httpx.Client(base_url=BASE_URL, timeout=90.0) as client:
-        health = client.get("/health").json()
+        try:
+            health = client.get("/health").json()
+        except httpx.HTTPError:
+            sys.exit(f"No server at {BASE_URL} — start uvicorn first.")
+
         print(f"health: {health}")
         if health.get("fake_calls"):
-            print("FAKE_CALLS is on — this would not place a real call. Aborting.")
-            sys.exit(1)
+            sys.exit("FAKE_CALLS is on — this would not place a real call.")
 
-        print(f"\nLIVE CALL ABOUT TO BE PLACED to supplier '{SUPPLIER_REF}'.")
-        print("dispatching outreach task...")
-        receipt = client.post("/tools/outreach", json={"tasks": [task]}).json()
+        print(f"\ncase: {case_id}")
+        print("request:")
+        print(json.dumps(REQUEST, indent=2))
+
+        print("\nplacing a REAL call...")
+        receipt = client.post("/tools/outreach", json=REQUEST).json()
         print(f"receipt: {receipt}")
-        print(f"\nwaiting for the call to finish (up to {TIMEOUT_SECONDS}s)...")
 
+        print(f"\nwaiting for the call to finish (up to {TIMEOUT_SECONDS}s)...")
         deadline = time.monotonic() + TIMEOUT_SECONDS
         waited = 0
-        while True:
-            if time.monotonic() > deadline:
-                print(f"\nTIMEOUT after {TIMEOUT_SECONDS}s waiting for a quote.")
-                sys.exit(1)
 
+        while True:
             quotes = client.get(
                 "/tools/quotes", params={"case_id": case_id}
             ).json()["quotes"]
+
             if quotes:
-                quote = quotes[0]
-                print_quote(quote)
-                print_transcript(quote)
-                report_where_saved(client, case_id)
+                print()  # end the progress line
+                for quote in quotes:
+                    print_quote(quote)
+                    print_transcript(quote)
+                print_saved_path(client, case_id)
                 return
+
+            if time.monotonic() > deadline:
+                print(f"\n\nTIMED OUT after {TIMEOUT_SECONDS}s with no quote.")
+                print(f"Check: curl {BASE_URL}/cases/{case_id}/events")
+                sys.exit(1)
 
             time.sleep(POLL_INTERVAL)
             waited += POLL_INTERVAL
