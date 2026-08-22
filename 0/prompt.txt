@@ -163,3 +163,15 @@ I want it to show me the call output
 ---
 
 the calls ended
+
+---
+
+did you use ngrok tho? where is the output being saved?
+
+---
+
+https://docs.heycall-e.com/calls. can we use this instead of Grok?
+
+---
+
+https://docs.heycall-e.com/calls. can we use this instead of ngrok? the goal is to save the output
