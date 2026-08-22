@@ -1,0 +1,53 @@
+Use the /$prototype skill to build multiply version of a no scroll, screen high, beta website. For that research the web online for such sites, I would like to use some kind of gradient as the background. One using [@background-1.png](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-1.png) and one using [@background-2.jpeg](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-2.jpeg) , both should have a mock inpout field, different wording, different structure for the text etc. But i just want a logo in the tob right, a title, a short descritpin (max 16 words), and then one of either background. For each background create two varaints for the other content
+
+---
+
+COntinue
+
+---
+
+Continue
+
+---
+
+Let's go with B, but make the header 3 lines max and shorten it slightly and use [@background-3.png](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/public/website/background-3.png) . For this final version create a new version E
+
+---
+
+what's taking so long?
+
+---
+
+The background image is way too close, make it zoomed out, it should fill the entire screen but with the highest fidelity possible
+
+---
+
+Jo?
+
+---
+
+Revert your changes.
+
+---
+
+The image should still actually fill the screen my bad
+
+---
+
+Commit & push your changes
+
+---
+
+Before that though, replace current [@page.tsx](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/app/page.tsx) with the E version. I just adjusted it slightly, keep it this way
+
+---
+
+Why are you taking so fucking long all the time? WOrk faster.
+
+---
+
+okay, quicker now, commit
+
+---
+
+and push
