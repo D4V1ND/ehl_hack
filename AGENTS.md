@@ -34,12 +34,12 @@ Use the domain words from `docs/PLAN.md` and `docs/specs/supplyguard-plan-1-foun
 
 The planned path is shortage trigger → Devin Session → system-of-record lookup → supplier outreach → structured Claims → compliance and landed-cost checks → repository artifacts → pull request. The cockpit renders progress and the final recommendation.
 
-The repository is still a walking skeleton. It currently contains the Next.js landing page, the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. Confirm that a planned module exists before extending it.
+The repository is still a walking skeleton. It currently contains the Next.js landing page, the `/chat` Cockpit (scripted CASE-001 rehearsal), planning documents, and a standalone CALL-E smoke test. Slice A also plans `/dashboard` (Incident list). Confirm that a planned module exists before extending it.
 
 ## Where code lives
 
 - `app/` — Next.js App Router pages, layout, and global styles.
-- `components/` — shared React components; `components/ui/` contains shadcn primitives.
+- `components/` — shared React components; `components/ui/` contains shadcn primitives; `components/ai-elements/` is the Cockpit chat kit.
 - `docs/PLAN.md` — MVP architecture, contracts, vertical slices, and delivery plan.
 - `docs/specs/` — durable behavior and safety requirements.
 - `app/globals.css` — UI colour tokens. Use only these colours.

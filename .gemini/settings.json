@@ -1,4 +1,13 @@
 {
+  "mcpServers": {
+    "devin": {
+      "httpUrl": "https://mcp.devin.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DEVIN_API_KEY}"
+      },
+      "trust": false
+    }
+  },
   "hooks": {
     "AfterAgent": [
       {

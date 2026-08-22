@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Installed registry internals (AI Elements)
+    "components/ai-elements/code-block.tsx",
   ]),
 ]);
 

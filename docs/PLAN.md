@@ -240,16 +240,21 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
-One chat screen at `/chat`. A1–A6 are turns and inline blocks in that transcript, not separate routes. Until Slice B fixtures land, the page runs a hardcoded CASE-001 rehearsal.
+Two routes. `/dashboard` lists Incidents. `/chat` is one case. A2–A6 are turns and inline blocks in that transcript, not extra routes. The ERP still owns the live stock picture; Stockout lists Incidents so a judge can pick a case. Until Slice B fixtures land, both pages run hardcoded CASE-001 rehearsal data.
+
+The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
+
+`/chat` is a split: conversation on the left, working object on the right. The right pane has a **Files | Results** tab switch. Files is the Manus list of case artifacts. Results is the live object for this beat (call transcript, Claim vs record, or PR).
 
 | # | Deliverable |
 |---|---|
-| A1 | **Shortage turn** — the Incident (hours-to-line-stop, stock vs. reorder point, cost-of-standing-still) and a "Launch sourcing agent" control |
+| A0 | **Incident list** — `/dashboard`. Rows of Incidents (case id, part, hours-to-line-stop, stage). Open a row → `/chat` for that case |
+| A1 | **Shortage chip** — compact Incident context already in the case (hours-to-line-stop, stock vs. reorder point) and a "Launch sourcing agent" control. Not a second ERP incident page |
 | A2 | **Case timeline** — stages live from the event feed, with the Devin session link |
 | A3 | **Candidates in the thread** — matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
-| A4 | **Live calls** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.** |
-| A5 | **Claim vs. record comparison** — side by side: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
-| A6 | **Decision turn** — rationale, runner-ups, link to the GitHub PR |
+| A4 | **Live calls** — Results tab: Lindy-style transcript, Grok-style connected bar, masked numbers, structured Claim strip filling in |
+| A5 | **Claim vs. record comparison** — Results tab: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
+| A6 | **Decision turn** — rationale, runner-ups. Results tab: PR card. Files tab: case artifacts. Human approval is merge, not an in-app button |
 
 **Unblock:** build 100% against contract fixtures + `make replay`; the UI must be fully demoable with the backend switched off. **DoD:** the demo command tells the whole story with no backend running.
 

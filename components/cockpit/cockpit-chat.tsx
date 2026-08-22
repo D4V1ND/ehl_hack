@@ -2,55 +2,43 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import {
-  BotIcon,
-  ChevronDownIcon,
-  GitPullRequestIcon,
-  PlayIcon,
-  RotateCcwIcon,
-} from "lucide-react"
+import { GitPullRequestIcon, PlayIcon, RotateCcwIcon } from "lucide-react"
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
-  Attachment,
-  AttachmentContent,
-  AttachmentDescription,
-  AttachmentMedia,
-  AttachmentTitle,
-} from "@/components/ui/attachment"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Bubble, BubbleContent } from "@/components/ui/bubble"
-import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Field, FieldLabel } from "@/components/ui/field"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
-import { Marker, MarkerContent } from "@/components/ui/marker"
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation"
 import {
   Message,
-  MessageAvatar,
   MessageContent,
-  MessageFooter,
-  MessageHeader,
-} from "@/components/ui/message"
+  MessageResponse,
+} from "@/components/ai-elements/message"
 import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerItem,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-} from "@/components/ui/message-scroller"
-import { Spinner } from "@/components/ui/spinner"
+  PromptInput,
+  PromptInputBody,
+  PromptInputButton,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input"
+import {
+  Task,
+  TaskContent,
+  TaskItem,
+  TaskTrigger,
+} from "@/components/ai-elements/task"
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolOutput,
+} from "@/components/ai-elements/tool"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { DotLoader } from "@/components/cockpit/dot-loader"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -142,9 +130,10 @@ export function CockpitChat() {
         <Badge variant="outline">{INCIDENT.caseId}</Badge>
         <Badge variant="secondary">rehearsal</Badge>
         <p
-          className="ml-auto truncate text-sm text-muted-foreground tabular-nums"
+          className="ml-auto flex items-center gap-2 truncate text-sm text-muted-foreground tabular-nums"
           aria-live="polite"
         >
+          {phase === "running" ? <DotLoader /> : null}
           {currentStep}
           <span className="text-muted-foreground/70">
             {" "}
@@ -153,33 +142,27 @@ export function CockpitChat() {
         </p>
       </header>
 
-      <MessageScrollerProvider autoScroll>
-        <MessageScroller className="min-h-0 flex-1">
-          <MessageScrollerViewport aria-label="Sourcing transcript">
-            <MessageScrollerContent className="mx-auto w-full max-w-2xl gap-6 px-4 py-6">
-              <MessageScrollerItem messageId="marker">
-                <Marker variant="separator">
-                  <MarkerContent>Incident {INCIDENT.caseId}</MarkerContent>
-                </Marker>
-              </MessageScrollerItem>
+      <Conversation className="min-h-0">
+        <ConversationContent className="mx-auto w-full max-w-2xl">
+          <UserIncident />
 
-              <MessageScrollerItem messageId="user" scrollAnchor>
-                <UserIncident />
-              </MessageScrollerItem>
+          {SCRIPT.slice(0, visible).map((step, index) => (
+            <AssistantTurn
+              key={step.id}
+              step={step}
+              latest={index === visible - 1 && phase === "running"}
+            />
+          ))}
 
-              {SCRIPT.slice(0, visible).map((step, index) => (
-                <MessageScrollerItem key={step.id} messageId={step.id}>
-                  <AssistantTurn
-                    step={step}
-                    latest={index === visible - 1 && phase === "running"}
-                  />
-                </MessageScrollerItem>
-              ))}
-            </MessageScrollerContent>
-          </MessageScrollerViewport>
-          <MessageScrollerButton />
-        </MessageScroller>
-      </MessageScrollerProvider>
+          {phase === "running" ? (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <DotLoader />
+              <span>{currentStep}</span>
+            </div>
+          ) : null}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
       <Composer phase={phase} onLaunch={launch} onReset={reset} />
     </div>
@@ -188,37 +171,27 @@ export function CockpitChat() {
 
 function UserIncident() {
   return (
-    <Message align="end">
-      <MessageAvatar>
-        <Avatar size="sm">
-          <AvatarFallback>Y</AvatarFallback>
-        </Avatar>
-      </MessageAvatar>
+    <Message from="user">
       <MessageContent>
-        <MessageHeader>You</MessageHeader>
-        <Bubble variant="default" align="end">
-          <BubbleContent>
-            <p className="text-pretty">{USER_PROMPT}</p>
-            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs tabular-nums sm:grid-cols-4">
-              <div>
-                <dt className="opacity-70">qty_required</dt>
-                <dd>{INCIDENT.qtyRequired}</dd>
-              </div>
-              <div>
-                <dt className="opacity-70">qty_on_hand</dt>
-                <dd>{INCIDENT.qtyOnHand}</dd>
-              </div>
-              <div>
-                <dt className="opacity-70">shortfall</dt>
-                <dd>{INCIDENT.shortfall}</dd>
-              </div>
-              <div>
-                <dt className="opacity-70">line_stop</dt>
-                <dd>{INCIDENT.lineStopDays}d</dd>
-              </div>
-            </dl>
-          </BubbleContent>
-        </Bubble>
+        <MessageResponse>{USER_PROMPT}</MessageResponse>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs tabular-nums sm:grid-cols-4">
+          <div>
+            <dt className="text-muted-foreground">qty_required</dt>
+            <dd>{INCIDENT.qtyRequired}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">qty_on_hand</dt>
+            <dd>{INCIDENT.qtyOnHand}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">shortfall</dt>
+            <dd>{INCIDENT.shortfall}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">line_stop</dt>
+            <dd>{INCIDENT.lineStopDays}d</dd>
+          </div>
+        </dl>
       </MessageContent>
     </Message>
   )
@@ -232,42 +205,25 @@ function AssistantTurn({
   latest: boolean
 }) {
   return (
-    <Message align="start">
-      <MessageAvatar>
-        <Avatar size="sm">
-          <AvatarFallback>
-            <BotIcon />
-          </AvatarFallback>
-        </Avatar>
-      </MessageAvatar>
-      <MessageContent>
-        <MessageHeader>Devin</MessageHeader>
-        <Bubble variant={step.kind === "decision" ? "tinted" : "muted"} align="start">
-          <BubbleContent className="flex max-w-full flex-col gap-3">
-            <p className="text-pretty">{step.summary}</p>
-            {step.method && step.path ? (
-              <Attachment state={latest ? "processing" : "done"}>
-                <AttachmentMedia variant="icon">
-                  {latest ? <Spinner /> : <BotIcon />}
-                </AttachmentMedia>
-                <AttachmentContent>
-                  <AttachmentTitle>
-                    {step.method} {step.path}
-                  </AttachmentTitle>
-                  <AttachmentDescription>{step.detail}</AttachmentDescription>
-                </AttachmentContent>
-              </Attachment>
-            ) : null}
-            <StepExtras step={step} />
-          </BubbleContent>
-        </Bubble>
-        <MessageFooter>
-          {latest ? (
-            <span className="shimmer">{step.stepName}</span>
-          ) : (
-            step.stepName
-          )}
-        </MessageFooter>
+    <Message from="assistant">
+      <MessageContent className="w-full max-w-full">
+        <MessageResponse>{step.summary}</MessageResponse>
+        {step.method && step.path ? (
+          <Tool defaultOpen={latest} className="mb-0">
+            <ToolHeader
+              type={`tool-${step.id}`}
+              state={latest ? "input-available" : "output-available"}
+              title={`${step.method} ${step.path}`}
+            />
+            <ToolContent>
+              <ToolOutput
+                output={<p className="p-3 text-pretty">{step.detail}</p>}
+                errorText={undefined}
+              />
+            </ToolContent>
+          </Tool>
+        ) : null}
+        <StepExtras step={step} />
       </MessageContent>
     </Message>
   )
@@ -288,18 +244,24 @@ function StepExtras({ step }: { step: ScriptStep }) {
 
   if (step.kind === "claims") {
     return (
-      <div className="flex flex-col gap-2">
-        {CANDIDATES.filter((candidate) => candidate.stockStatus).map(
-          (candidate) => (
-            <div key={candidate.name} className="flex flex-wrap items-center gap-2">
-              <span>{candidate.name}</span>
-              <Badge variant={stockBadgeVariant(candidate.stockStatus!)}>
-                {candidate.stockStatus}
-              </Badge>
-            </div>
-          )
-        )}
-      </div>
+      <Task defaultOpen>
+        <TaskTrigger title="Claims" />
+        <TaskContent>
+          {CANDIDATES.filter((candidate) => candidate.stockStatus).map(
+            (candidate) => (
+              <TaskItem
+                key={candidate.name}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <span>{candidate.name}</span>
+                <Badge variant={stockBadgeVariant(candidate.stockStatus!)}>
+                  {candidate.stockStatus}
+                </Badge>
+              </TaskItem>
+            )
+          )}
+        </TaskContent>
+      </Task>
     )
   }
 
@@ -309,20 +271,23 @@ function StepExtras({ step }: { step: ScriptStep }) {
 
   if (step.kind === "strategy") {
     return (
-      <ul className="flex flex-col gap-2 tabular-nums">
-        {STRATEGIES.map((strategy) => (
-          <li key={strategy.name}>
-            <span className="font-medium">{strategy.name}</span>
-            <span className="text-muted-foreground"> · {strategy.total}</span>
-            {strategy.recommended ? (
-              <Badge className="ml-2" variant="default">
-                recommended
-              </Badge>
-            ) : null}
-            <p className="text-muted-foreground">{strategy.note}</p>
-          </li>
-        ))}
-      </ul>
+      <Task defaultOpen>
+        <TaskTrigger title="Strategies" />
+        <TaskContent>
+          {STRATEGIES.map((strategy) => (
+            <TaskItem key={strategy.name} className="tabular-nums">
+              <span className="font-medium">{strategy.name}</span>
+              <span> · {strategy.total}</span>
+              {strategy.recommended ? (
+                <Badge className="ml-2" variant="default">
+                  recommended
+                </Badge>
+              ) : null}
+              <p>{strategy.note}</p>
+            </TaskItem>
+          ))}
+        </TaskContent>
+      </Task>
     )
   }
 
@@ -336,20 +301,6 @@ function StepExtras({ step }: { step: ScriptStep }) {
           <span className="font-mono">{PR_PATH}</span>.
         </AlertDescription>
       </Alert>
-    )
-  }
-
-  if (step.detail && step.method) {
-    return (
-      <Collapsible>
-        <CollapsibleTrigger render={<Button variant="ghost" size="sm" />}>
-          Result
-          <ChevronDownIcon data-icon="inline-end" />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <p className="pt-2 text-pretty text-muted-foreground">{step.detail}</p>
-        </CollapsibleContent>
-      </Collapsible>
     )
   }
 
@@ -407,56 +358,51 @@ function Composer({
   const done = phase === "done"
 
   return (
-    <form
-      className="shrink-0 border-t border-border bg-background px-4 py-3"
-      onSubmit={(event) => {
-        event.preventDefault()
-        if (running) {
-          return
-        }
-        if (done) {
-          onReset()
+    <div className="shrink-0 bg-background px-4 py-3">
+      <PromptInput
+        className="mx-auto w-full max-w-2xl"
+        onSubmit={() => {
+          if (running) {
+            return
+          }
+          if (done) {
+            onReset()
+            onLaunch()
+            return
+          }
           onLaunch()
-          return
-        }
-        onLaunch()
-      }}
-    >
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-2">
-        <Field>
-          <FieldLabel htmlFor="sourcing-prompt" className="sr-only">
-            Sourcing prompt
-          </FieldLabel>
-          <InputGroup className="h-auto">
-            <InputGroupTextarea
-              id="sourcing-prompt"
-              readOnly
-              rows={2}
-              value={USER_PROMPT}
-            />
-            <InputGroupAddon align="block-end" className="justify-end gap-2">
-              {phase !== "idle" ? (
-                <InputGroupButton
-                  type="button"
-                  variant="ghost"
-                  onClick={onReset}
-                >
-                  <RotateCcwIcon data-icon="inline-start" />
-                  Reset
-                </InputGroupButton>
-              ) : null}
-              <InputGroupButton type="submit" variant="default" disabled={running}>
-                {running ? (
-                  <Spinner data-icon="inline-start" />
-                ) : (
-                  <PlayIcon data-icon="inline-start" />
-                )}
-                {done ? "Replay" : "Launch sourcing agent"}
-              </InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-      </div>
-    </form>
+        }}
+      >
+        <PromptInputBody>
+          <PromptInputTextarea
+            readOnly
+            value={USER_PROMPT}
+            placeholder="Sourcing prompt"
+          />
+        </PromptInputBody>
+        <PromptInputFooter>
+          <PromptInputTools>
+            {phase !== "idle" ? (
+              <PromptInputButton type="button" onClick={onReset}>
+                <RotateCcwIcon />
+                Reset
+              </PromptInputButton>
+            ) : null}
+          </PromptInputTools>
+          <PromptInputSubmit
+            disabled={running}
+            size="sm"
+            status={running ? "submitted" : "ready"}
+          >
+            {running ? (
+              <DotLoader />
+            ) : (
+              <PlayIcon />
+            )}
+            {done ? "Replay" : "Launch sourcing agent"}
+          </PromptInputSubmit>
+        </PromptInputFooter>
+      </PromptInput>
+    </div>
   )
 }

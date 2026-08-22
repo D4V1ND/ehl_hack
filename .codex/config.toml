@@ -1,0 +1,4 @@
+[mcp_servers.devin]
+url = "https://mcp.devin.ai/mcp"
+bearer_token_env_var = "DEVIN_API_KEY"
+default_tools_approval_mode = "writes"
