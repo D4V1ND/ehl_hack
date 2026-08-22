@@ -9,27 +9,13 @@ import {
   type ReactNode,
 } from "react"
 
+import { SessionSidebar } from "@/components/cockpit/session-sidebar"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarRail,
-} from "@/components/ui/sidebar"
-import { LogoIcon } from "@/components/logo"
-import { INCIDENTS } from "@/lib/case-001"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 const LEFT_SIDEBAR_MIN = 10
 const LEFT_SIDEBAR_MAX = 20
@@ -46,10 +32,7 @@ export function CockpitShell({
   function resizeLeftSidebar(clientX: number) {
     const viewportPercentage = (clientX / window.innerWidth) * 100
     setLeftSidebarWidth(
-      Math.min(
-        LEFT_SIDEBAR_MAX,
-        Math.max(LEFT_SIDEBAR_MIN, viewportPercentage)
-      )
+      Math.min(LEFT_SIDEBAR_MAX, Math.max(LEFT_SIDEBAR_MIN, viewportPercentage))
     )
   }
 
@@ -85,11 +68,9 @@ export function CockpitShell({
       open
       onOpenChange={() => undefined}
       className="h-dvh min-h-0 overflow-hidden"
-      style={
-        { "--sidebar-width": `${leftSidebarWidth}vw` } as CSSProperties
-      }
+      style={{ "--sidebar-width": `${leftSidebarWidth}vw` } as CSSProperties}
     >
-      <CockpitSidebar
+      <SessionSidebar
         width={leftSidebarWidth}
         onResizeStart={startLeftResize}
         onResize={continueLeftResize}
@@ -97,7 +78,9 @@ export function CockpitShell({
         onResizeKeyDown={resizeLeftWithKeyboard}
       />
       <SidebarInset className="h-dvh min-h-0 min-w-0 overflow-hidden">
-        <WorkspacePanels rightSidebar={rightSidebar}>{children}</WorkspacePanels>
+        <WorkspacePanels rightSidebar={rightSidebar}>
+          {children}
+        </WorkspacePanels>
       </SidebarInset>
     </SidebarProvider>
   )
@@ -142,71 +125,5 @@ function WorkspacePanels({
         </>
       ) : null}
     </ResizablePanelGroup>
-  )
-}
-
-function CockpitSidebar({
-  width,
-  onResizeStart,
-  onResize,
-  onResizeEnd,
-  onResizeKeyDown,
-}: {
-  width: number
-  onResizeStart: (event: PointerEvent<HTMLButtonElement>) => void
-  onResize: (event: PointerEvent<HTMLButtonElement>) => void
-  onResizeEnd: (event: PointerEvent<HTMLButtonElement>) => void
-  onResizeKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
-}) {
-  const [activeSession, setActiveSession] =
-    useState<(typeof INCIDENTS)[number]["caseId"]>(INCIDENTS[0].caseId)
-
-  return (
-    <Sidebar collapsible="offcanvas" className="h-dvh">
-      <SidebarHeader className="h-11 items-start justify-center border-b border-border/70 px-4 py-0">
-        <LogoIcon
-          aria-label="SupplyOS"
-          className="size-5 text-sidebar-foreground"
-        />
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup className="flex-1 py-3">
-          <SidebarGroupLabel>Sessions</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {INCIDENTS.map((incident) => (
-                <SidebarMenuItem key={incident.caseId}>
-                  <SidebarMenuButton
-                    size="lg"
-                    isActive={incident.caseId === activeSession}
-                    onClick={() => setActiveSession(incident.caseId)}
-                  >
-                    <span className="min-w-0">
-                      <span className="block font-mono text-xs">
-                        {incident.caseId}
-                      </span>
-                      <span className="block truncate text-xs text-sidebar-foreground/60">
-                        {incident.partLabel}
-                      </span>
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarRail
-        resizable
-        aria-valuemin={LEFT_SIDEBAR_MIN}
-        aria-valuemax={LEFT_SIDEBAR_MAX}
-        aria-valuenow={Math.round(width)}
-        onPointerDown={onResizeStart}
-        onPointerMove={onResize}
-        onPointerUp={onResizeEnd}
-        onPointerCancel={onResizeEnd}
-        onKeyDown={onResizeKeyDown}
-      />
-    </Sidebar>
   )
 }
