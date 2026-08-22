@@ -1,0 +1,119 @@
+resume the session where we worked on fake endpoint for call_e
+
+---
+
+list the endpoints that has been build rn, and which one is for fake endpoint, which one for real
+
+---
+
+is the fake output in Quote structure?
+
+---
+
+give me curl to try it out
+
+---
+
+ohh so we dispatch outreach first and then case_id?
+
+---
+
+ohh so outreach doesnt give Quote structure?
+
+---
+
+ok so whats the endpoint flow?
+
+---
+
+I thought outreach make the call_e agent starts the call?
+
+---
+
+creates a python script for the fake endpoint test till I get the Quote
+
+---
+
+if I understand correctly, call outreach endpoint to get all the datas and quotes endpoint will print it out in Quote structure?
+
+---
+
+I dont understand, when is the call_e agent being called
+
+---
+
+yeah I was asking in real mode. outreach will make the call_e agent call and then quote output in structure
+
+---
+
+where is it saved then after outreach?
+
+---
+
+do task 5
+
+---
+
+complete the plan then
+
+---
+
+is calle.py the core of call_e?
+
+---
+
+have you updated the plans md yet on what has been done
+
+---
+
+why cant call e save the ouput in my local device?
+
+---
+
+instead of webhook_url ngrok, can I use devin from Cognition?
+
+---
+
+https://docs.devin.ai/get-started/devin-intro. this is the capability of devin
+
+---
+
+add ngrok on my device
+
+---
+
+now set it up with call e
+
+---
+
+dont do anything, js tell me the steps how to use the ngrok to get the link
+
+---
+
+PS C:\Users\davin\Desktop\python\ehl_hack> python test/try_real_outreach.py
+health: {'ok': True, 'fake_calls': False}
+
+LIVE CALL ABOUT TO BE PLACED to supplier 'SUP-ATLAS'.
+dispatching outreach task...
+Traceback (most recent call last):
+  File "C:\Users\davin\Desktop\python\ehl_hack\test\try_real_outreach.py", line 86, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\davin\Desktop\python\ehl_hack\test\try_real_outreach.py", line 65, in main
+    receipt = client.post("/tools/outreach", json={"tasks": [task]}).json()
+  File "C:\Users\davin\AppData\Local\Python\pythoncore-3.13-64\Lib\site-packages\httpx\_models.py", line 832, in json
+    return jsonlib.loads(self.content, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\davin\AppData\Local\Python\pythoncore-3.13-64\Lib\json\__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\davin\AppData\Local\Python\pythoncore-3.13-64\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\davin\AppData\Local\Python\pythoncore-3.13-64\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+---
+
+proceed
