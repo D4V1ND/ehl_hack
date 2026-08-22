@@ -1,10 +1,16 @@
 # MVP flow — target sequence
 
-Target end-to-end loop for the Cognition submission (Plan 2). This diagram is the **mock MVP**: fixtures behind tool URLs, a seeded candidate list, a saved Claim from outreach, then real policy/cost/PR logic on that data. Live CALL-E, live web crawl, SQLite, detector, and email RFQ stay out of the happy path.
+Target end-to-end loop for the Cognition submission (Plan 2). This diagram is the **mock MVP**: fixtures behind tool URLs, then policy/cost/PR logic on that data.
 
-**Trigger (for now):** human over CLI — e.g. `python -m orchestrator.run --case CASE-001`. The shortage detector (B4) is the same handoff later. Do not build it first.
+**Not in the MVP path:** live web search, email RFQ, shortage detector, SQLite, China channel. **Outreach** is already on the teammate CALL-E branch. Do not implement or inspect it now. Wire it when that slice is next.
 
-Devin never talks to SQLite or the system of record directly. It only calls `/tools/...` on the Core API. Those tools return fixture JSON now. Later they can sit on SQLite or a real adapter behind the same URLs.
+**Trigger (for now):** human over CLI against the deployed backend — e.g. `python -m orchestrator.run --case CASE-001 --api https://<backend>.vercel.app`.
+
+**Deploy:** frontend and backend on **Vercel**. They talk over HTTPS. Devin also calls that public backend. ERP access is HTTP on the backend (`/tools/part`, `/tools/stock`, `/tools/suppliers`, and later more). Devin never talks to SQLite or an ERP directly.
+
+Those tools return fixture JSON now. Later they can sit on SQLite or a real adapter behind the same URLs. Serverless has no durable local disk. Serve fixtures from the repo. Put case events in something the API can read across requests (JSON in-repo, KV, or files Devin commits).
+
+Web search is skipped. If we add it later, it is Devin following the system prompt, not a Core API feature.
 
 Slices to implement: [`mvp-slices.md`](mvp-slices.md). Vocabulary: [`../CONTEXT.md`](../CONTEXT.md). Decisions behind this shape: [`adr/`](adr/) — real Devin sessions from the first slice, proposed ([ADR-0004](adr/0004-devin-sessions-are-real-from-the-first-skeleton.md)), the system of record is mocked rather than ERPNext ([ADR-0003](adr/0003-mock-system-of-record-behind-an-adapter.md)), and merging the PR is the approval ([ADR-0005](adr/0005-recommend-not-purchase.md)). Related: [`PLAN.md`](PLAN.md), [`specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md).
 
@@ -27,32 +33,26 @@ sequenceDiagram
     autonumber
     actor Human
     participant CLI as CLI launch
-    participant API as Core API plus stubs (B)
+    participant API as Vercel backend ERP tools (B)
     participant Devin as Devin session (D)
-    participant List as Seeded candidate list
     participant GH as GitHub
-    participant UI as Cockpit (A)
+    participant UI as Vercel frontend (A)
 
-    Human->>CLI: python -m orchestrator.run --case CASE-001
-    CLI->>API: create case from Incident fixture · Event(stage="created")
-    API->>Devin: POST /v1/sessions {case_id}
+    Human->>CLI: python -m orchestrator.run --case CASE-001 --api https://backend.vercel.app
+    CLI->>API: POST /cases from Incident fixture · Event(stage="created")
+    API->>Devin: POST /v1/sessions {case_id, backend_base_url}
     Note over Devin: no human input from here on
-    Note over Human,CLI: Later alternate: shortage detector (B4) calls the same create-case + session launch
+    Note over Human,CLI: Later alternate: shortage detector (B4) or UI button, same POST /cases
 
     Devin->>API: GET /tools/part /tools/stock /tools/suppliers
-    Note right of API: stub fixture — part number, size, qty, allowed countries, SupplierRecord[]
+    Note right of API: public ERP stubs — part number, size, qty, allowed countries, SupplierRecord[]
     API-->>Devin: Part + Incident context + SupplierRecord[]
-
-    Devin->>List: match exact part against seeded shortlist
-    List-->>Devin: Candidate[] (why_matched, channel)
-    Note over Devin,List: Candidates are who to ask, not Claims. No live site crawl in MVP.
+    Note over Devin: Web search skipped in MVP. Later: system prompt tells Devin to search. Not a Core API.
 
     Devin->>Devin: policy rules (D3) → reject by name + rule (fixture data)
-    Devin->>API: POST /tools/outreach (surviving candidates · demo company preferred)
-    API->>API: replay saved Claim fixture · Event(stage="claim_received")
-    Note over API: Never raises. Garbage in → confidence 0. Pitch swap: same URL, CALL-E dials teammate number.
+    Note over Devin,API: Outreach later. Connect teammate CALL-E branch on Slice 4. Do not build or inspect it now.
+    Note over Devin,API: Until then Slice 5 may read Claim fixtures the API serves.
 
-    API-->>Devin: Claim[]
     Devin->>API: GET /tools/* verify claims vs records (D6)
     Note right of Devin: claimed price vs contract · lead time vs standard<br/>qty vs known_allocations · cert vs expiry
     Devin->>Devin: cost_model.py → landed cost per option (fixture prices)
@@ -63,7 +63,7 @@ sequenceDiagram
 
     loop throughout
         UI->>API: GET /cases/{id}/events
-        API-->>UI: stages · candidates · claims vs records · cost · decision · pr_url
+        API-->>UI: stages · suppliers · claims vs records · cost · decision · pr_url
     end
     Note over UI,GH: human approves by merging the PR
 ```
@@ -72,10 +72,12 @@ sequenceDiagram
 
 | Step | MVP (this diagram) | Later |
 | --- | --- | --- |
-| Trigger | CLI `--case CASE-001` | Shortage detector (B4) |
-| SoR tools | Fixture JSON behind `/tools/*` | SQLite or real adapter, same URLs |
-| Candidates | Seeded shortlist file | Live browse of supplier sites |
-| Outreach | Saved Claim fixture on `POST /tools/outreach` | CALL-E to teammate phone, same Claim shape |
+| Host | Frontend + backend on Vercel. Public HTTPS | Unchanged |
+| Trigger | CLI `--case CASE-001` against the Vercel API | Shortage detector (B4) or UI button |
+| ERP / SoR | Public `/tools/part`, `/stock`, `/suppliers` on the backend | SQLite or real adapter, same URLs |
+| Web search | Skipped | System prompt. Devin searches. Not a Core API |
+| Outreach | Skip for now | Wire existing CALL-E branch (Slice 4). Do not inspect until then |
+| Claims until Slice 4 | Fixture JSON the API serves | Real Claims from CALL-E |
 | Verify / cost / policy | Real functions on fixture data | Same, richer seed |
 | PR | Real GitHub PR with case artifacts | Unchanged |
 | UI | Reads event log (can be ugly) | Full cockpit polish |
@@ -93,7 +95,8 @@ Keep these three visible. Seed the fixtures so they happen:
 
 - [x] Trigger: human CLI. Detector later
 - [x] Mock vs live arrows for the MVP path
-- [x] Tail: rehearsal Claim, no email RFQ, no live crawl, UI reads events only
-- [x] Five implementation slices: [`mvp-slices.md`](mvp-slices.md)
+- [x] No email RFQ. No web-search slice. Outreach deferred to teammate CALL-E branch
+- [x] Implementation slices: [`mvp-slices.md`](mvp-slices.md)
+- [x] Vercel host. Devin and UI call public backend. ERP is `/tools/*`
 - [ ] Devin setup detail when you implement the launch slice
 - [ ] **Demo scale — blocks the seed data.** The foundation spec's fixture is a shortfall of 8 units, at which there are no price breaks, no freight trade-off and no split order, so the cost model in slice 5 has nothing to compute and stage beat 3 cannot happen. Proposal: same 4-supplier fixture shape scaled to ~40 000 pcs against the 12-day line stop, with price-break tiers per supplier. Settle before slice 2 seeds fixtures.
