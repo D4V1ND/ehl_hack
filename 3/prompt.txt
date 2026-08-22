@@ -1,0 +1,9 @@
+I want to create some kind of loop so that after each session our agent checks if it changed anything that updates the respective docs, if yes updates them. Maybe a /session-end skill? or what else do we have? I don't know if a AGENTS.md is enough. A skill may be more descriptive and more certain to run. Or how else would you manage keepig our docs up to date? Actually, check the entire sessions to see if agents currently regularly use the DeepWiki, for the dogs. And if no, we should instruct them further. And do you know if the wiki updates itself, and when does it do that?
+
+---
+
+Continue
+
+---
+
+Don't implement. Give suggestions
