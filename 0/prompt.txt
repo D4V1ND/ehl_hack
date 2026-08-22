@@ -179,3 +179,7 @@ https://docs.heycall-e.com/calls. can we use this instead of ngrok? the goal is 
 ---
 
 add on the prompt, always use english and if the product is name, pronounce it slowly
+
+---
+
+update the test_real_outreach. also where is the logic that saves the output, it should be using result_schema right?
