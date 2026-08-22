@@ -112,7 +112,7 @@ The task is incomplete until every affected document is updated or the no-change
 
 - `docs/PLAN.md` — before changing product scope, architecture, contracts, case artifacts, orchestration, or the demo flow.
 - `docs/design.md` — before changing Cockpit layout, Candidate cards or panel, call modal, status rail, Decision bar, or design references.
-- `docs/agents/devin-mcp.md` — before using Devin MCP for repository research, Sessions, Knowledge, playbooks, schedules, or integrations.
+- **Devin Wiki:** read `docs/agents/devin-mcp.md` before broad architecture, unfamiliar-module, or cross-repository research. Query Wiki, then verify against the current branch. Also read it before managing Devin Sessions, Knowledge, playbooks, schedules, or integrations.
 - `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` — when creating, reading, or labeling GitHub issues.
 - `docs/agents/domain.md` — when changing domain vocabulary or architectural decisions.
 
