@@ -23,6 +23,7 @@ import { IncidentPanel } from "@/components/cockpit/incident-panel"
 import { ShortageStrip } from "@/components/cockpit/shortage-strip"
 import { StageRail } from "@/components/cockpit/stage-rail"
 import { SupplierTable } from "@/components/cockpit/supplier-table"
+import { CallsPanel } from "@/components/cockpit/calls-panel"
 import { cn } from "@/lib/utils"
 
 const SECTIONS = [
@@ -210,10 +211,10 @@ export default function CockpitPage() {
             kicker="Outreach"
             title="What the suppliers actually said"
           >
-            <AwaitingSlice
-              owner="CALL-E outreach"
-              what="One card per call: masked number, live status, and the claim it produced — including whether stock is free or already allocated to someone else. Nothing here is treated as fact; it sits beside our own records for comparison."
-              endpoint="GET /cases/{id} → claims[]"
+            <CallsPanel
+              caseId={snapshot.case_id}
+              suppliers={snapshot.supplier_records ?? []}
+              qty={snapshot.incident.qty_required}
             />
           </Section>
 

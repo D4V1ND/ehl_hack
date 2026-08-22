@@ -11,10 +11,17 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from backend.outreach.provider import get_provider
+from backend.settings import FAKE_CALLS
+from backend.store import STORE
 
 from backend.api.deps import erp, settings, store
 from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
+    Channel,
+    Quote,
     Candidate,
     Claim,
     Event,
@@ -31,7 +38,21 @@ from packages.contracts.safe import claim_from_result
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
 
+def call_mode() -> str:
+    """Rehearsal unless Slice C's FAKE_CALLS switch is explicitly turned off."""
+    return "rehearsal" if FAKE_CALLS else "live"
+
+
 router = APIRouter(prefix="/tools", tags=["devin-tools"])
+
+
+class OutreachDispatch(BaseModel):
+    """What the cockpit gets back the instant it presses "call the suppliers"."""
+
+    case_id: str
+    provider: str = Field(description='"fake" in rehearsal, the CALL-E provider when live')
+    mode: str = Field(description='"rehearsal" or "live"')
+    tasks: list[OutreachTask]
 
 
 @router.get("/part/{part_id}", response_model=Part, summary="One part, with its spec, weight and HS code")
@@ -127,7 +148,7 @@ def post_candidates(
     return candidates
 
 
-@router.post("/outreach", response_model=list[OutreachTask], summary="Turn compliant candidates into outreach tasks")
+@router.post("/outreach", response_model=OutreachDispatch, summary="Brief the suppliers and start outreach")
 def post_outreach(
     case_id: str,
     supplier_ids: list[str],
@@ -135,12 +156,20 @@ def post_outreach(
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
     config=Depends(settings),
-) -> list[OutreachTask]:
-    """Build the tasks. Placing the calls is Slice C's job.
+) -> OutreachDispatch:
+    """Build briefs from the system of record, then hand them to Slice C.
+
+    Slice B knows the part, the quantity and which suppliers exist; Slice C knows
+    how to reach them. So this builds the `OutreachTask`s and dispatches them
+    through Slice C's `OutreachProvider` seam -- the same call whether that seam
+    is the rehearsal provider or a real CALL-E line. Nothing here places a call
+    itself.
+
+    Dispatch is asynchronous by design: it returns a receipt immediately and the
+    claims land later, because that is the shape a real phone call has.
 
     The channel is chosen by geography, not preference: CALL-E has no CN region,
-    so a Chinese supplier routes to email rather than voice. Same `Claim` comes
-    back either way.
+    so a Chinese supplier routes to email rather than voice.
     """
     incident = records.get_incident(case_id)
     if incident is None:
@@ -172,14 +201,31 @@ def post_outreach(
         )
 
     cases.write_outreach_tasks(case_id, tasks)
+
+    provider = get_provider()
+    receipt = provider.dispatch(tasks)
+
     cases.append_event(
         case_id,
         actor=Actor.SYSTEM,
         stage=Stage.CALLING,
-        message=f"{len(tasks)} outreach tasks queued in {config.call_mode} mode",
-        payload={"mode": config.call_mode, "channels": [t.channel.value for t in tasks]},
+        message=(
+            f"{len(tasks)} supplier(s) briefed via the {provider.name} provider "
+            f"({call_mode()} mode)"
+        ),
+        payload={
+            "mode": call_mode(),
+            "provider": provider.name,
+            "channels": [t.channel.value for t in tasks],
+            "task_ids": receipt.task_ids,
+        },
     )
-    return tasks
+    return OutreachDispatch(
+        case_id=case_id,
+        provider=provider.name,
+        mode=call_mode(),
+        tasks=tasks,
+    )
 
 
 @router.post("/claims", response_model=Claim, summary="File what a supplier said. Never raises.")
@@ -230,3 +276,13 @@ def post_event(
     return cases.append_event(
         case_id, actor=actor, stage=stage, message=message, level=level, payload=payload
     )
+
+
+@router.get("/quotes", response_model=list[Quote], summary="What the calls have returned so far")
+def get_quotes(case_id: str = Query(...)) -> list[Quote]:
+    """Reads Slice C's live working set.
+
+    Dispatch is asynchronous, so the cockpit polls this while calls are in
+    flight. Empty is a normal answer, not an error.
+    """
+    return STORE.quotes_for(case_id)

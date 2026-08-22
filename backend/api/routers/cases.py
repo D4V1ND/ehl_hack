@@ -11,6 +11,8 @@ from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.api.deps import erp, store
+from backend.store import STORE
+from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
     CaseSnapshot,
     CaseSummary,
@@ -141,11 +143,56 @@ def get_case(case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseSt
     )
 
 
+# Slice C names its stages for its own flow; the cockpit only has the five.
+# Anything from an outreach provider is part of the calling stage.
+SLICE_C_STAGES = {
+    "outreach_dispatched": Stage.CALLING,
+    "quote_received": Stage.CALLING,
+    "call_started": Stage.CALLING,
+    "call_failed": Stage.CALLING,
+}
+
+
+def _adopt(raw: dict, seq: int) -> Event | None:
+    """Turn one of Slice C's in-memory events into a cockpit Event.
+
+    Defensive on purpose: a shape we do not recognise is dropped from the feed
+    rather than breaking the endpoint the whole cockpit polls.
+    """
+    try:
+        return Event(
+            seq=seq,
+            case_id=raw["case_id"],
+            ts=datetime.fromisoformat(raw["ts"]),
+            actor=Actor(raw.get("actor", "system")),
+            stage=SLICE_C_STAGES.get(raw.get("stage", ""), Stage.CALLING),
+            level=Level(raw.get("level", "info")),
+            message=raw.get("message", ""),
+            payload=raw.get("payload") or {},
+        )
+    except (KeyError, ValueError, TypeError):
+        return None
+
+
 @router.get("/cases/{case_id}/events", response_model=list[Event], summary="Append-only feed. Poll with ?since=")
 def get_events(case_id: str, since: int = Query(default=0, ge=0), cases: CaseStore = Depends(store)) -> list[Event]:
+    """One feed, two sources.
+
+    Slice B's events are durable, in `cases/<id>/events.jsonl`. Slice C's live in
+    memory for the length of a run, because a call in flight is not an artifact
+    yet. The cockpit should not have to know that, so they are merged here in
+    time order and given a single monotonic `seq` for `?since=` polling.
+    """
     if not cases.exists(case_id):
         raise HTTPException(status_code=404, detail=f"no case {case_id}")
-    return cases.read_events(case_id, since=since)
+
+    filed = cases.read_events(case_id)
+    live = [e for e in (_adopt(raw, 0) for raw in STORE.events_for(case_id)) if e]
+
+    merged = sorted([*filed, *live], key=lambda e: e.ts)
+    for index, event in enumerate(merged, start=1):
+        event.seq = index
+    return [e for e in merged if e.seq > since]
 
 
 @router.get("/cases/{case_id}/artifacts", summary="The files this case has produced")
