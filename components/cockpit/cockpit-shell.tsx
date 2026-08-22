@@ -109,18 +109,18 @@ function WorkspacePanels({
   children: ReactNode
   rightSidebar?: ReactNode
 }) {
-  const [isWide, setIsWide] = useState(false)
+  const [showsCandidatePanel, setShowsCandidatePanel] = useState(false)
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 80rem)")
-    const update = () => setIsWide(media.matches)
+    const media = window.matchMedia("(min-width: 48rem)")
+    const update = () => setShowsCandidatePanel(media.matches)
 
     update()
     media.addEventListener("change", update)
     return () => media.removeEventListener("change", update)
   }, [])
 
-  if (!isWide || !rightSidebar) return children
+  if (!showsCandidatePanel || !rightSidebar) return children
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
@@ -128,7 +128,7 @@ function WorkspacePanels({
       <ResizableHandle withHandle />
       <ResizablePanel
         defaultSize="26rem"
-        minSize="10vw"
+        minSize="15vw"
         maxSize="50vw"
       >
         {rightSidebar}
@@ -150,7 +150,8 @@ function CockpitSidebar({
   onResizeEnd: (event: PointerEvent<HTMLButtonElement>) => void
   onResizeKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
 }) {
-  const [activeSession, setActiveSession] = useState(INCIDENTS[0].caseId)
+  const [activeSession, setActiveSession] =
+    useState<(typeof INCIDENTS)[number]["caseId"]>(INCIDENTS[0].caseId)
 
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">

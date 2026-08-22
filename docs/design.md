@@ -21,7 +21,9 @@ How the approved Cockpit looks and behaves. Product name on this surface is **St
 
 Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Stockout opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
 
-Both sidebars use the muted surface; the conversation and its light top header use the background surface. The left Session sidebar resizes between 5% and 15% of the viewport. The Candidate sidebar resizes between 10% and 50% of the viewport. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The linked Incident is a compact primary-colour mention inside the first user message. A darker composer with a stronger input outline stays at the bottom. Separators remain quiet but visible.
+Both sidebars use the muted surface; the conversation and its light top header use the background surface. The left Session sidebar resizes between 5% and 15% of the viewport. The Candidate sidebar resizes between 15% and 50% of the viewport. The header spans only the conversation column, expands Incident properties in place, and reveals its chevron on hover or keyboard focus. Replay controls sit directly below it, above the conversation. The linked Incident is a compact primary-colour mention inside the first user message. A darker composer with a stronger input outline stays at the bottom. Separators remain quiet but visible.
+
+Responsive adaptation is not an MVP priority. Keep the Candidate sidebar visible on tablet and desktop widths. Hide it only below the `md` phone breakpoint.
 
 | Route | File | What you see |
 |---|---|---|
