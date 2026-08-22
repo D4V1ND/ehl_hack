@@ -1,0 +1,25 @@
+I mean to say don't build it on PAPER
+
+---
+
+Good
+
+But you're not done yet, create multiple subagents to complete the rest of the website based on what we talked about in file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/app/prototype/cockpit-screens.html.
+
+Also create a design.md website in docs that talks about the design references here and how our UI currently is structured. Then give me a prompt I can paste into a new chat so I can using /grill-with-docs to finalize the design on how it would look like in the end using the current designs then as a baseline
+
+---
+
+Give me a list of all UI screens, where can I for eaxmple access the call UI?
+
+---
+
+I don't see the sidebar though... it's not there...
+
+---
+
+Yeah fix,it should fit dynamically to the window width
+
+---
+
+Yeah fix,it should fit dynamically to the window width

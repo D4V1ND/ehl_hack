@@ -1,0 +1,129 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NC4Z8D45WMQNAJEHS80DSD",
+  "session_id": "3814dd24-f001-473a-88da-c00cce60878d",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T18:36:24.524831Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 4,
+  "save_step_count": 4,
+  "files_touched": [
+    ".agents/skills/teach/GLOSSARY-FORMAT.md",
+    ".agents/skills/teach/LEARNING-RECORD-FORMAT.md",
+    ".agents/skills/teach/MISSION-FORMAT.md",
+    ".agents/skills/teach/RESOURCES-FORMAT.md",
+    ".agents/skills/teach/SKILL.md",
+    ".agents/skills/teach/agents/openai.yaml",
+    "AGENTS.md",
+    "app/page.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "docs/agents/devin-mcp.md",
+    "docs/design.md",
+    "lib/case-001.ts",
+    "skills-lock.json"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "d37e60a3b5e9",
+  "checkpoint_transcript_start": 49,
+  "transcript_lines_at_start": 49,
+  "compact_transcript_start": 9,
+  "token_usage": {
+    "input_tokens": 127756,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 3993472,
+    "output_tokens": 15798,
+    "api_call_count": 4
+  },
+  "session_metrics": {
+    "turn_count": 6,
+    "context_tokens": 235166,
+    "context_window_size": 256000
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 539,
+      "user_lines_removed": 97,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/dashboard/page.tsx": 96,
+        "components/cockpit/cockpit-chat.tsx": 74,
+        "components/cockpit/cockpit-shell.tsx": 62,
+        "components/cockpit/working-pane.tsx": 240,
+        "lib/case-001.ts": 67
+      },
+      "user_removed_per_file": {
+        "components/cockpit/cockpit-chat.tsx": 97
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 535,
+      "agent_lines_removed": 100
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 502,
+      "user_lines_removed": 125,
+      "agent_lines_added": 626,
+      "agent_lines_removed": 100,
+      "user_added_per_file": {
+        "AGENTS.md": 1,
+        "components/cockpit/call-result.tsx": 60,
+        "components/cockpit/cockpit-chat.tsx": 53,
+        "components/cockpit/working-pane.tsx": 310,
+        "docs/design.md": 10,
+        "lib/case-001.ts": 68
+      },
+      "user_removed_per_file": {
+        "AGENTS.md": 8,
+        "components/cockpit/cockpit-chat.tsx": 22,
+        "components/cockpit/working-pane.tsx": 78,
+        "docs/agents/devin-mcp.md": 2,
+        "docs/design.md": 10,
+        "lib/case-001.ts": 5
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 2372,
+      "user_lines_removed": 335,
+      "agent_lines_added": 740,
+      "agent_lines_removed": 129,
+      "user_added_per_file": {
+        ".agents/skills/address-findings/SKILL.md": 155,
+        ".agents/skills/explain/SKILL.md": 34,
+        ".agents/skills/recall/SKILL.md": 123,
+        ".agents/skills/replay/SKILL.md": 141,
+        ".agents/skills/review/SKILL.md": 220,
+        ".agents/skills/review/references/review-rules.md": 87,
+        ".agents/skills/search/SKILL.md": 105,
+        ".agents/skills/session-crosslink/SKILL.md": 141,
+        ".agents/skills/session-handoff/SKILL.md": 137,
+        ".agents/skills/session-to-skill/SKILL.md": 210,
+        ".agents/skills/teach/SKILL.md": 85,
+        ".agents/skills/using-entire/SKILL.md": 152,
+        ".agents/skills/what-happened/SKILL.md": 333,
+        "components/cockpit/call-result.tsx": 60,
+        "components/cockpit/working-pane.tsx": 310,
+        "docs/design.md": 10,
+        "skills-lock.json": 69
+      },
+      "user_removed_per_file": {
+        ".agents/skills/teach/GLOSSARY-FORMAT.md": 35,
+        ".agents/skills/teach/LEARNING-RECORD-FORMAT.md": 46,
+        ".agents/skills/teach/MISSION-FORMAT.md": 31,
+        ".agents/skills/teach/RESOURCES-FORMAT.md": 32,
+        ".agents/skills/teach/SKILL.md": 95,
+        ".agents/skills/teach/agents/openai.yaml": 5,
+        "components/cockpit/working-pane.tsx": 78,
+        "docs/design.md": 10,
+        "skills-lock.json": 3
+      }
+    }
+  ]
+}
