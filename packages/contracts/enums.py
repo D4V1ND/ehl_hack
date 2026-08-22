@@ -31,12 +31,8 @@ class StockStatus(str, Enum):
     UNCLEAR = "unclear"
 
 
-class Channel(str, Enum):
-    """How we reach a supplier. Chosen by geography, not by preference."""
-
-    VOICE = "voice"
-    EMAIL = "email"
-    MARKETPLACE = "marketplace"
+# Channel and Currency are Slice C's and live in models.py alongside Quote.
+# Importing them from there keeps one definition rather than two that drift.
 
 
 class FreightMode(str, Enum):

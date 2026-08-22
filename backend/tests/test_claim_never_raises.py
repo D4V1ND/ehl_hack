@@ -14,7 +14,7 @@ import pytest
 from packages.contracts.enums import Answer, StockStatus
 from packages.contracts.safe import claim_from_result
 
-KW = {"task_id": "T-1", "case_id": "CASE-001", "supplier_id": "SUP-KBY"}
+KW = {"task_id": "T-1", "case_id": "CASE-001", "supplier_ref": "SUP-KBY"}
 
 GARBAGE = [
     None,

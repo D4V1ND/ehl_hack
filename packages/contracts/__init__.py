@@ -12,7 +12,6 @@ from packages.contracts.enums import (
     Actor,
     Answer,
     AuditStatus,
-    Channel,
     Criticality,
     FreightMode,
     Level,
@@ -23,6 +22,9 @@ from packages.contracts.enums import (
 )
 from packages.contracts.models import (
     Candidate,
+    Channel,
+    Currency,
+    Quote,
     CaseSnapshot,
     CaseSummary,
     ComplianceResult,
@@ -49,13 +51,13 @@ from packages.contracts.money import Money, quantize_total, quantize_unit, to_de
 from packages.contracts.phone import InvalidPhoneNumber, is_e164, mask, validate_e164
 
 __all__ = [
-    "Actor", "Answer", "AuditStatus", "Channel", "Criticality", "FreightMode",
+    "Actor", "Answer", "AuditStatus", "Channel", "Criticality", "Currency", "FreightMode",
     "Level", "PartClass", "PolicyRule", "Stage", "StockStatus",
     "Candidate", "CaseSnapshot", "CaseSummary", "Claim", "CompanyProfile",
     "ComplianceResult", "Decision", "Event", "ExpediteOption", "Incident",
     "LandedCost", "OpenPurchaseOrder", "OrderLine", "OutreachBrief",
     "OutreachTask", "Part", "PriceBreak", "ShortageAlert", "StockLevel",
-    "Strategy", "SupplierPriceRecord", "SupplierRecord",
+    "Quote", "Strategy", "SupplierPriceRecord", "SupplierRecord",
     "Money", "quantize_total", "quantize_unit", "to_decimal",
     "InvalidPhoneNumber", "is_e164", "mask", "validate_e164",
 ]

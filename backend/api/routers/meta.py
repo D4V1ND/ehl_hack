@@ -5,6 +5,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.api.deps import erp, settings
+from pydantic import BaseModel
+
 from packages.contracts import models as contract_models
 from packages.contracts.models import CompanyProfile
 from backend.record.ports import SystemOfRecord
@@ -15,8 +17,10 @@ EXPORTABLE = {
     name: obj
     for name, obj in vars(contract_models).items()
     if isinstance(obj, type)
-    and issubclass(obj, contract_models.Contract)
+    and issubclass(obj, BaseModel)
+    and obj is not BaseModel
     and obj is not contract_models.Contract
+    and obj.__module__ == contract_models.__name__
 }
 
 

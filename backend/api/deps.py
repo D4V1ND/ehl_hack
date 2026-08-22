@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from backend.api.settings import Settings, get_settings
 from backend.record.ports import SystemOfRecord
-from backend.store.case_store import CaseStore, get_case_store
+from backend.casestore.case_store import CaseStore, get_case_store
 
 
 def erp() -> SystemOfRecord:

@@ -1,28 +1,32 @@
-"""Every model in the system. One file, reviewed once, then frozen.
+"""Shared data shapes. Frozen in hour 1 — see test/sourcing_agent_plan_v3.md §4.
 
-Two conventions worth knowing before you read:
+Adding a NEW model to this file is fine. Editing an existing one needs a
+group ping, because every slice builds against these.
 
-* **Claim vs. record.** A `SupplierRecord` is what *our* files say — the trusted
-  baseline. A `Claim` is what a supplier *said* on a phone call. They are never
-  merged. Everything downstream depends on being able to tell them apart.
-* **No raw phone numbers.** `SupplierRecord` carries `phone_masked` and there is
-  no field anywhere for an unmasked one. The raw number lives inside the system
-  of record and is handed only to the code that literally places the call.
+Slice C owns: Currency, Channel, PriceBreak, ExpediteOption, OutreachBrief,
+OutreachTask, Quote. Other slices append Part, Shortage, Supplier,
+Candidate, LandedCost, OrderLine, Strategy, Decision, Event.
+
+Slice B appended everything below the divider: the system-of-record shapes
+(Part, StockLevel, OpenPurchaseOrder, SupplierPriceRecord, SupplierRecord,
+Incident, CompanyProfile), the decision shapes (ComplianceResult, Candidate,
+LandedCost, OrderLine, Strategy, Decision), the Event log, and the read models
+the cockpit fetches. Nothing above the divider was edited.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
+from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from packages.contracts.enums import (
     Actor,
     Answer,
     AuditStatus,
-    Channel,
     Criticality,
     FreightMode,
     Level,
@@ -34,14 +38,137 @@ from packages.contracts.enums import (
 from packages.contracts.money import Money
 
 
+class Currency(str, Enum):
+    EUR = "EUR"
+    USD = "USD"
+    GBP = "GBP"
+    UNKNOWN = "unknown"
+
+
+class Channel(str, Enum):
+    VOICE = "voice"
+    EMAIL = "email"
+    MARKETPLACE = "marketplace"
+
+
+class PriceBreak(BaseModel):
+    """Buy at least `min_qty` and each unit costs `unit_price`."""
+
+    min_qty: int
+    unit_price: Decimal
+
+
+class ExpediteOption(BaseModel):
+    """Pay `surcharge` total to pull delivery in by `days`."""
+
+    days: int
+    surcharge: Decimal
+
+
+class OutreachBrief(BaseModel):
+    part_spec: str
+    qty: int
+    needed_by: date
+    target_price: Decimal | None = None
+    floor_price: Decimal | None = None
+    must_ask: list[str] = Field(
+        default_factory=lambda: [
+            "price_breaks",
+            "moq",
+            "lead_time",
+            "incoterm",
+            "cert",
+        ]
+    )
+
+
+class OutreachTask(BaseModel):
+    task_id: str
+    case_id: str
+    supplier_ref: str
+    channel: Channel
+    brief: OutreachBrief
+
+
+class Quote(BaseModel):
+    """What one supplier said. Every judgement field may be unknown.
+
+    A garbled or missing call result becomes a Quote with these defaults
+    and confidence 0.0 — never an exception.
+    """
+
+    task_id: str
+    case_id: str
+    supplier_ref: str
+
+    available: bool = False
+    qty_offered: int = 0
+    unit_price: Decimal | None = None
+    price_breaks: list[PriceBreak] = Field(default_factory=list)
+    currency: Currency = Currency.UNKNOWN
+    moq: int | None = None
+    lead_time_days: int | None = None
+    expedite_option: ExpediteOption | None = None
+    incoterm: str | None = None
+    certs_claimed: list[str] = Field(default_factory=list)
+    payment_terms: str | None = None
+    notes: str = ""
+
+    transcript_url: str | None = None
+    recording_url: str | None = None
+    confidence: float = 0.0
+    raw: dict = Field(default_factory=dict)
+
+    @field_validator("price_breaks")
+    @classmethod
+    def _sorted_by_qty(cls, v: list[PriceBreak]) -> list[PriceBreak]:
+        return sorted(v, key=lambda pb: pb.min_qty)
+
+
+# ===========================================================================
+# Slice B appends from here down. Nothing above this line was edited.
+# ===========================================================================
+
+
 class Contract(BaseModel):
-    """Base for every contract model: unknown fields are a bug, not a shrug."""
+    """Base for the models below: unknown fields are a bug, not a shrug."""
 
     model_config = ConfigDict(extra="forbid", use_enum_values=False)
 
 
+class Claim(Quote):
+    """A Quote, plus what the call could and could not establish.
+
+    `Quote` is what a supplier offered. A `Claim` is the same offer carrying the
+    foundation spec's answer sheet: whether stock is actually free or already
+    promised elsewhere, whether the certification and part number were confirmed
+    or merely asserted, and the evidence for each. Every added judgement field
+    admits `unknown`, and building one never raises -- a garbled call becomes a
+    confidence-0 claim, because one bad call must not kill a five-supplier case.
+
+    Subclassing rather than duplicating on purpose: a Claim *is* a Quote, so
+    anything Slice C hands back fits wherever a Quote is expected, and the shared
+    fields cannot drift apart.
+    """
+
+    round: int = 1
+    call_id: str | None = None
+    earliest_ready_text: str = ""
+
+    # The sharpest field we have: "yes, we have some" frequently means
+    # "yes, but it is already promised to someone else".
+    stock_status: StockStatus = StockStatus.UNCLEAR
+
+    price_quoted: Answer = Answer.UNKNOWN
+    part_number_confirmed: Answer = Answer.UNKNOWN
+    certification_current: Answer = Answer.UNKNOWN
+
+    evidence: list[str] = Field(default_factory=list)
+    received_at: datetime | None = None
+
+
 # ---------------------------------------------------------------------------
-# System of record — what our own files say. ERPNext-shaped field names, so
+# System of record -- what our own files say. ERPNext-shaped field names, so
 # "swap in a real ERPNext" is one adapter class and not a rename of everything.
 # ---------------------------------------------------------------------------
 
@@ -90,13 +217,6 @@ class OpenPurchaseOrder(Contract):
         return self.revised_date is not None and self.revised_date > self.promised_date
 
 
-class PriceBreak(Contract):
-    """A quantity tier. The step function the cost engine integrates over."""
-
-    min_qty: int = Field(ge=1)
-    unit_price: Money
-
-
 class SupplierPriceRecord(Contract):
     """Historical price paid, from our own purchase history."""
 
@@ -105,7 +225,7 @@ class SupplierPriceRecord(Contract):
     as_of: date
     unit_price: Money
     qty: int
-    currency: str = "EUR"
+    currency: Currency = Currency.EUR
 
 
 class SupplierRecord(Contract):
@@ -149,7 +269,7 @@ class Incident(Contract):
     needed_by: date
     line_stop_at: datetime
     line_stop_cost_per_hour: Money
-    currency: str = "EUR"
+    currency: Currency = Currency.EUR
     incumbent_supplier_id: str | None = None
     reason: str = ""
 
@@ -177,7 +297,7 @@ class CompanyProfile(Contract):
 
 
 # ---------------------------------------------------------------------------
-# The sourcing run
+# The decision
 # ---------------------------------------------------------------------------
 
 
@@ -192,105 +312,18 @@ class ComplianceResult(Contract):
 
 class Candidate(Contract):
     case_id: str
-    supplier_id: str
+    supplier_ref: str
     supplier_name: str
     country: str
     confidence: float = Field(ge=0, le=1)
     why_matched: str
     channel: Channel
-    source: str = Field(default="erp", description='"erp" for an approved supplier, "web" for one Devin researched')
+    source: str = Field(default="erp", description='"erp" for an approved supplier, "web" for one researched online')
     compliance: ComplianceResult
 
 
-class OutreachBrief(Contract):
-    """What the caller must accomplish. The must-ask list is not optional."""
-
-    part_spec: str
-    qty: int
-    needed_by: date
-    target_price: Money | None = None
-    floor_price: Money | None = None
-    must_ask: list[str] = Field(
-        default_factory=lambda: [
-            "price_breaks",
-            "moq",
-            "lead_time",
-            "incoterm",
-            "certification",
-            "stock_status",
-        ]
-    )
-
-
-class OutreachTask(Contract):
-    task_id: str
-    case_id: str
-    supplier_id: str
-    channel: Channel
-    brief: OutreachBrief
-    created_at: datetime
-
-
-class ExpediteOption(Contract):
-    days: int
-    surcharge: Money
-
-
-class Claim(Contract):
-    """What a supplier said. Never a fact.
-
-    This model is also CALL-E's `recipient_result_schema` — the same definition,
-    exported as JSON Schema, so the answer sheet and our type cannot drift apart.
-
-    Every judgement field admits `unknown`, and building one of these must never
-    raise: a garbled call becomes a confidence-0 claim with fields defaulted,
-    because one bad call must not kill a five-supplier case mid-run.
-    """
-
-    task_id: str
-    case_id: str
-    supplier_id: str
-    round: int = 1
-    call_id: str | None = None
-
-    # Availability, as claimed
-    qty_offered: int = 0
-    earliest_ready_text: str = ""
-    stock_status: StockStatus = StockStatus.UNCLEAR
-    lead_time_days: int | None = None
-
-    # Commercials, as claimed
-    price_quoted: Answer = Answer.UNKNOWN
-    unit_price: Money | None = None
-    price_breaks: list[PriceBreak] = Field(default_factory=list)
-    moq: int | None = None
-    currency: str = "EUR"
-    expedite_option: ExpediteOption | None = None
-    incoterm: str | None = None
-    payment_terms: str | None = None
-
-    # Conformance, as claimed
-    part_number_confirmed: Answer = Answer.UNKNOWN
-    certification_current: Answer = Answer.UNKNOWN
-    certs_claimed: list[str] = Field(default_factory=list)
-
-    # Provenance
-    notes: str = ""
-    transcript_url: str | None = None
-    recording_url: str | None = None
-    confidence: float = Field(default=0.0, ge=0, le=1)
-    evidence: list[str] = Field(default_factory=list)
-    raw: dict[str, Any] = Field(default_factory=dict)
-    received_at: datetime | None = None
-
-
-# ---------------------------------------------------------------------------
-# The decision
-# ---------------------------------------------------------------------------
-
-
 class LandedCost(Contract):
-    supplier_id: str
+    supplier_ref: str
     qty: int
     mode: FreightMode
     goods_cost: Money
@@ -305,7 +338,7 @@ class LandedCost(Contract):
 
 
 class OrderLine(Contract):
-    supplier_id: str
+    supplier_ref: str
     supplier_name: str
     qty: int
     mode: FreightMode
@@ -315,7 +348,7 @@ class OrderLine(Contract):
 
 class Strategy(Contract):
     strategy_id: str
-    label: str = Field(description='Human name, e.g. "Split: SKF air + Rulmenti road"')
+    label: str = Field(description='Human name, e.g. "Split: fast bridge + cheap bulk"')
     lines: list[OrderLine]
     total_cost: Money
     unit_effective: Money
@@ -339,7 +372,7 @@ class Decision(Contract):
 
 
 # ---------------------------------------------------------------------------
-# The event log — what makes the UI feel alive and debugging possible
+# The event log -- what makes the UI feel alive and debugging possible
 # ---------------------------------------------------------------------------
 
 
@@ -355,8 +388,8 @@ class Event(Contract):
 
 
 # ---------------------------------------------------------------------------
-# UI read models — shapes the cockpit fetches, assembled server-side so the
-# frontend never has to join anything.
+# Read models the cockpit fetches, assembled server-side so the frontend never
+# has to join anything.
 # ---------------------------------------------------------------------------
 
 

@@ -19,7 +19,7 @@ import yaml
 
 from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import Candidate, Claim, Decision, Event, OutreachTask
-from backend.store import events as event_log
+from backend.casestore import events as event_log
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CASES_DIR = REPO_ROOT / "cases"
@@ -107,7 +107,7 @@ class CaseStore:
         return [Candidate(**row) for row in self._read_json(self.case_dir(case_id) / "candidates.json", [])]
 
     def write_claim(self, claim: Claim) -> Path:
-        path = self.case_dir(claim.case_id) / "claims" / f"{claim.supplier_id}-r{claim.round}.json"
+        path = self.case_dir(claim.case_id) / "claims" / f"{claim.supplier_ref}-r{claim.round}.json"
         _atomic_write(path, claim.model_dump_json(indent=2) + "\n")
         return path
 

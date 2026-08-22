@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.api.deps import erp, settings, store
-from packages.contracts.enums import Actor, Channel, Level, Stage
+from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
     Candidate,
     Claim,
@@ -29,7 +29,7 @@ from packages.contracts.models import (
 )
 from packages.contracts.safe import claim_from_result
 from backend.record.ports import SystemOfRecord
-from backend.store.case_store import CaseStore
+from backend.casestore.case_store import CaseStore
 
 router = APIRouter(prefix="/tools", tags=["devin-tools"])
 
@@ -119,7 +119,7 @@ def post_candidates(
         message=f"{len(candidates)} candidates, {len(rejected)} rejected by policy",
         payload={
             "rejected": [
-                {"supplier_id": c.supplier_id, "rules": [r.value for r in c.compliance.failed_rules]}
+                {"supplier_ref": c.supplier_ref, "rules": [r.value for r in c.compliance.failed_rules]}
                 for c in rejected
             ]
         },
@@ -159,7 +159,7 @@ def post_outreach(
             OutreachTask(
                 task_id=f"OUT-{case_id}-{supplier_id}-{uuid.uuid4().hex[:6]}",
                 case_id=case_id,
-                supplier_id=supplier_id,
+                supplier_ref=supplier_id,
                 channel=channel,
                 brief=OutreachBrief(
                     part_spec=f"{part.item_code} — {part.description}" if part else incident.part_id,
@@ -168,7 +168,6 @@ def post_outreach(
                     target_price=supplier.contract_unit_price,
                     floor_price=None,
                 ),
-                created_at=datetime.now(timezone.utc),
             )
         )
 
@@ -187,7 +186,7 @@ def post_outreach(
 def post_claim(
     case_id: str,
     task_id: str,
-    supplier_id: str,
+    supplier_ref: str,
     result: dict | None = None,
     call_id: str | None = None,
     round_: int = 1,
@@ -200,7 +199,7 @@ def post_claim(
     case mid-run.
     """
     claim = claim_from_result(
-        result, task_id=task_id, case_id=case_id, supplier_id=supplier_id,
+        result, task_id=task_id, case_id=case_id, supplier_ref=supplier_ref,
         call_id=call_id, round_=round_,
     )
     cases.write_claim(claim)
@@ -210,10 +209,10 @@ def post_claim(
         stage=Stage.CALLING,
         level=Level.WARN if claim.confidence < 0.4 else Level.INFO,
         message=(
-            f"{supplier_id}: {claim.stock_status.value}, "
+            f"{supplier_ref}: {claim.stock_status.value}, "
             f"{claim.qty_offered} pcs, confidence {claim.confidence:.0%}"
         ),
-        payload={"supplier_id": supplier_id, "stock_status": claim.stock_status.value},
+        payload={"supplier_ref": supplier_ref, "stock_status": claim.stock_status.value},
     )
     return claim
 

@@ -12,6 +12,7 @@ export type Answer = "yes" | "no" | "unknown"
 export type AuditStatus = "audited" | "audit_expired" | "never_audited"
 export type Channel = "voice" | "email" | "marketplace"
 export type Criticality = "low" | "medium" | "high" | "critical"
+export type Currency = "EUR" | "USD" | "GBP" | "unknown"
 export type FreightMode = "air" | "sea" | "road"
 export type Level = "info" | "warn" | "error"
 export type PartClass = "rolling_bearing" | "fastener" | "seal" | "electronic_component"
@@ -21,13 +22,13 @@ export type StockStatus = "free_in_stock" | "in_stock_allocated" | "to_be_made" 
 
 export interface Candidate {
   case_id: string
-  supplier_id: string
+  supplier_ref: string
   supplier_name: string
   country: string
   confidence: number
   why_matched: string
   channel: Channel
-  /** "erp" for an approved supplier, "web" for one Devin researched */
+  /** "erp" for an approved supplier, "web" for one researched online */
   source?: string
   compliance: ComplianceResult
 }
@@ -59,34 +60,35 @@ export interface CaseSummary {
   pr_url?: string | null
 }
 
-/** What a supplier said. Never a fact. */
+/** A Quote, plus what the call could and could not establish. */
 export interface Claim {
   task_id: string
   case_id: string
-  supplier_id: string
-  round?: number
-  call_id?: string | null
+  supplier_ref: string
+  available?: boolean
   qty_offered?: number
-  earliest_ready_text?: string
-  stock_status?: StockStatus
-  lead_time_days?: number | null
-  price_quoted?: Answer
   unit_price?: string | null
   price_breaks?: PriceBreak[]
+  currency?: Currency
   moq?: number | null
-  currency?: string
+  lead_time_days?: number | null
   expedite_option?: ExpediteOption | null
   incoterm?: string | null
-  payment_terms?: string | null
-  part_number_confirmed?: Answer
-  certification_current?: Answer
   certs_claimed?: string[]
+  payment_terms?: string | null
   notes?: string
   transcript_url?: string | null
   recording_url?: string | null
   confidence?: number
+  raw?: unknown
+  round?: number
+  call_id?: string | null
+  earliest_ready_text?: string
+  stock_status?: StockStatus
+  price_quoted?: Answer
+  part_number_confirmed?: Answer
+  certification_current?: Answer
   evidence?: string[]
-  raw?: Record<string, unknown>
   received_at?: string | null
 }
 
@@ -141,6 +143,7 @@ export interface Event {
   payload?: Record<string, unknown>
 }
 
+/** Pay `surcharge` total to pull delivery in by `days`. */
 export interface ExpediteOption {
   days: number
   surcharge: string
@@ -157,13 +160,13 @@ export interface Incident {
   needed_by: string
   line_stop_at: string
   line_stop_cost_per_hour: string
-  currency?: string
+  currency?: Currency
   incumbent_supplier_id?: string | null
   reason?: string
 }
 
 export interface LandedCost {
-  supplier_id: string
+  supplier_ref: string
   qty: number
   mode: FreightMode
   goods_cost: string
@@ -189,7 +192,7 @@ export interface OpenPurchaseOrder {
 }
 
 export interface OrderLine {
-  supplier_id: string
+  supplier_ref: string
   supplier_name: string
   qty: number
   mode: FreightMode
@@ -197,7 +200,6 @@ export interface OrderLine {
   landed: LandedCost
 }
 
-/** What the caller must accomplish. The must-ask list is not optional. */
 export interface OutreachBrief {
   part_spec: string
   qty: number
@@ -210,10 +212,9 @@ export interface OutreachBrief {
 export interface OutreachTask {
   task_id: string
   case_id: string
-  supplier_id: string
+  supplier_ref: string
   channel: Channel
   brief: OutreachBrief
-  created_at: string
 }
 
 export interface Part {
@@ -234,10 +235,33 @@ export interface Part {
   standard_cost: string
 }
 
-/** A quantity tier. The step function the cost engine integrates over. */
+/** Buy at least `min_qty` and each unit costs `unit_price`. */
 export interface PriceBreak {
   min_qty: number
   unit_price: string
+}
+
+/** What one supplier said. Every judgement field may be unknown. */
+export interface Quote {
+  task_id: string
+  case_id: string
+  supplier_ref: string
+  available?: boolean
+  qty_offered?: number
+  unit_price?: string | null
+  price_breaks?: PriceBreak[]
+  currency?: Currency
+  moq?: number | null
+  lead_time_days?: number | null
+  expedite_option?: ExpediteOption | null
+  incoterm?: string | null
+  certs_claimed?: string[]
+  payment_terms?: string | null
+  notes?: string
+  transcript_url?: string | null
+  recording_url?: string | null
+  confidence?: number
+  raw?: unknown
 }
 
 /** One row on the shortage dashboard. */
@@ -272,7 +296,7 @@ export interface StockLevel {
 
 export interface Strategy {
   strategy_id: string
-  /** Human name, e.g. "Split: SKF air + Rulmenti road" */
+  /** Human name, e.g. "Split: fast bridge + cheap bulk" */
   label: string
   lines: OrderLine[]
   total_cost: string
@@ -291,7 +315,7 @@ export interface SupplierPriceRecord {
   as_of: string
   unit_price: string
   qty: number
-  currency?: string
+  currency?: Currency
 }
 
 /** What our files say about a supplier. The baseline a claim is checked against. */

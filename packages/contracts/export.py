@@ -33,17 +33,25 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = Path(__file__).resolve().parent
 UI_LIB = REPO_ROOT / "ui" / "lib"
 
-MODELS: dict[str, type[Contract]] = {
+MODELS: dict[str, type[BaseModel]] = {
     name: obj
     for name, obj in vars(contract_models).items()
-    if isinstance(obj, type) and issubclass(obj, Contract) and obj is not Contract
+    if isinstance(obj, type)
+    and issubclass(obj, BaseModel)
+    and obj is not BaseModel
+    and obj is not Contract
+    and obj.__module__ == contract_models.__name__
 }
+# Enums live in two places now: Slice B's in enums.py, Slice C's (Channel,
+# Currency) alongside Quote in models.py. Scan both so the generated TypeScript
+# covers the whole contract.
 ENUMS: dict[str, type[Enum]] = {
     name: obj
-    for name, obj in vars(contract_enums).items()
+    for module in (contract_enums, contract_models)
+    for name, obj in vars(module).items()
     if isinstance(obj, type)
     and issubclass(obj, Enum)
-    and obj.__module__ == contract_enums.__name__
+    and obj.__module__ == module.__name__
 }
 
 

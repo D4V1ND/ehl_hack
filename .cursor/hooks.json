@@ -1,40 +1,40 @@
 {
+  "version": 1,
   "hooks": {
     "beforeSubmitPrompt": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor before-submit-prompt'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 before-submit-prompt"
       }
     ],
     "preCompact": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor pre-compact'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 pre-compact"
       }
     ],
     "sessionEnd": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor session-end'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 session-end"
       }
     ],
     "sessionStart": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor session-start'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 session-start"
       }
     ],
     "stop": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor stop'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 stop"
       }
     ],
     "subagentStart": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor subagent-start'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 subagent-start"
       }
     ],
     "subagentStop": [
       {
-        "command": "sh -c 'if ! command -v entire >/dev/null 2>&1; then exit 0; fi; exec entire hooks cursor subagent-stop'"
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 subagent-stop"
       }
     ]
-  },
-  "version": 1
+  }
 }

@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from packages.contracts.enums import Answer, StockStatus
+from packages.contracts.models import Currency
 from packages.contracts.models import Claim, ExpediteOption, PriceBreak
 from packages.contracts.money import to_decimal
 
@@ -65,6 +66,18 @@ def _money(value: Any):
     if not parsed.is_finite():
         return None
     return parsed
+
+
+def _currency(value: Any) -> Currency:
+    """An unrecognised currency is `unknown`, not a crash and not a guessed EUR."""
+    if isinstance(value, Currency):
+        return value
+    if isinstance(value, str):
+        try:
+            return Currency(value.strip().upper())
+        except ValueError:
+            return Currency.UNKNOWN
+    return Currency.UNKNOWN
 
 
 def _confidence(value: Any) -> float:
@@ -119,7 +132,7 @@ def claim_from_result(
     *,
     task_id: str,
     case_id: str,
-    supplier_id: str,
+    supplier_ref: str,
     call_id: str | None = None,
     round_: int = 1,
 ) -> Claim:
@@ -135,7 +148,7 @@ def claim_from_result(
     return Claim(
         task_id=task_id,
         case_id=case_id,
-        supplier_id=supplier_id,
+        supplier_ref=supplier_ref,
         round=round_,
         call_id=call_id,
         qty_offered=_int(payload.get("qty_offered"), 0) or 0,
@@ -146,7 +159,7 @@ def claim_from_result(
         unit_price=_money(payload.get("unit_price")),
         price_breaks=_price_breaks(payload.get("price_breaks")),
         moq=_int(payload.get("moq")),
-        currency=_text(payload.get("currency"), "EUR") or "EUR",
+        currency=_currency(payload.get("currency")),
         expedite_option=_expedite(payload.get("expedite_option")),
         incoterm=_text(payload.get("incoterm")) or None,
         payment_terms=_text(payload.get("payment_terms")) or None,

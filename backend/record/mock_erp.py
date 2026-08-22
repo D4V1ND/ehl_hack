@@ -22,7 +22,7 @@ from typing import Any
 
 import yaml
 
-from packages.contracts.enums import Channel
+from packages.contracts.models import Channel
 from packages.contracts.models import (
     CompanyProfile,
     Incident,

@@ -25,7 +25,7 @@ from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import Incident
 from backend.api.deps import erp as default_record
 from backend.record.ports import SystemOfRecord
-from backend.store.case_store import CaseStore, get_case_store
+from backend.casestore.case_store import CaseStore, get_case_store
 
 TODAY = date(2026, 8, 22)  # the demo's "now". A real deployment reads the clock.
 

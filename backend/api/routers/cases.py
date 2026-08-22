@@ -18,7 +18,7 @@ from packages.contracts.models import (
     ShortageAlert,
 )
 from backend.record.ports import SystemOfRecord
-from backend.store.case_store import CaseStore
+from backend.casestore.case_store import CaseStore
 
 router = APIRouter(tags=["cockpit"])
 
