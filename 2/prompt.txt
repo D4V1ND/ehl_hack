@@ -1,0 +1,37 @@
+Create a new branch called lorenzkrinner/mvp-ui, in there then /grill-with-docs about how the UI should work based on docs/PLAN.md and also what kind of libraries we'll use. Install the
+
+---
+
+Create a new branch called lorenzkrinner/mvp-ui, in there then /grill-with-docs about how the UI should work based on docs/PLAN.md and also what kind of libraries we'll use. Install the
+
+---
+
+Q1 - Ignore the marketing landing, it's just mock right now. I would say one screen is enoguh, it's like chatgpt just one flow. But we can generate multiple variatiosn of the UI
+Q2 - I will ask the person responsible for the JSON fixtures, who exactly should I ask of the vertical slices? But for now we can go with hardcoded happy path by simulating a real conversation
+Q3 - Looks good. Realtime skip for now.
+Q4 - Tech stack is outdated and shold be removed right?
+Q5 - Yeah it's a deterministic flow that uses all the tools and simulates one run, weÄll later spin up devin to it
+
+---
+
+Q1 - Ignore the marketing landing, it's just mock right now. I would say one screen is enoguh, it's like chatgpt just one flow. But we can generate multiple variatiosn of the UI
+Q2 - I will ask the person responsible for the JSON fixtures, who exactly should I ask of the vertical slices? But for now we can go with hardcoded happy path by simulating a real conversation
+Q3 - Looks good. Realtime skip for now.
+Q4 - Tech stack is outdated and shold be removed right?
+Q5 - Yeah it's a deterministic flow that uses all the tools and simulates one run, weÄll later spin up devin to it
+
+Btw, before you do that already use /canvas to create 3 visual prototypes using /prototype skill on how this could look like, alwys make it simulate the tool calls, spawn one subagent per prototype
+
+---
+
+Chat flow definitely the best
+
+Q2 - Okay. what should I ask them specifically
+Q4 - it's already deleted I though? Check again
+Q6 - chat
+Q7 - use plan, overrite test, store this decision somewhere
+Q8  - Honestly, remoev that doc, instead just use the colors only defined in globals.css
+
+---
+
+Yeah build that it should live  under /chat , use shadcn components (download if needed) and the prvided design skills

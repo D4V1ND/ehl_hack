@@ -3,13 +3,33 @@
   "checkpoint_id": "01M0N7FJ4TP40T6C80DZWCH78B",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/mvp-ui",
-  "checkpoints_count": 2,
+  "checkpoints_count": 7,
   "files_touched": [
     "AGENTS.md",
+    "CONTEXT.md",
     "DESIGN.md",
+    "app/chat/page.tsx",
     "app/layout.tsx",
     "app/page.tsx",
+    "components/cockpit/cockpit-chat.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/attachment.tsx",
+    "components/ui/avatar.tsx",
+    "components/ui/bubble.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/field.tsx",
+    "components/ui/input-group.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/marker.tsx",
+    "components/ui/message-scroller.tsx",
+    "components/ui/message.tsx",
+    "components/ui/spinner.tsx",
+    "components/ui/table.tsx",
+    "components/ui/textarea.tsx",
     "docs/PLAN.md",
+    "docs/adr/0001-claim-stock-status-enum.md",
+    "lib/case-001.ts",
     "package-lock.json",
     "package.json",
     "test/test_calle.py"
@@ -28,6 +48,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 386278,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9133824,
+    "output_tokens": 46804,
+    "api_call_count": 4
+  }
 }
