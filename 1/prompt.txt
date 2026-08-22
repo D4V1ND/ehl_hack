@@ -1,0 +1,44 @@
+Adjust the overall strucutre of our UI in [@page.tsx](file:///Users/lorenzkrinner/Dev/hackathons/ehl_hack/app/chat/page.tsx)  to look more like this:
+
+- A sidebar using the shadcn primitives
+- The top bar with the title on the top right
+- A sidebar that spans the full height (just like the chat)
+- Light separators, not too bold
+
+In the sidebar skip storing the different sessions for now, just display a mock UI for that.
+
+We will do this as soon as we wire up sql into it.
+
+of course the sidebar buttons right now should just be:
+1. New session
+2. Open incidents (it's a link to our ERP system) – this should display a arrow on the right side pointing to the top right which appears on hover
+
+In the siderbar just display a temporary message when content gets displayed.
+
+---
+
+COntinue
+
+---
+
+Don't make it ocnfigurable, just don't link anywhere, we'll add this later
+
+---
+
+The sidebar should span the full widht and have the same background color as the rest
+
+---
+
+Actualyl I'm wrong, both sidebars should be slightly lighet, for that use the muted color, and the middle (the chat + chat top bar) should use the background color. All good?
+
+---
+
+good, but the chat top bar should only span the chat widht, the right sidebar should span the full height of the screen, then we're done here!
+
+---
+
+Oh yeah, and in our sidebar, remove the separators,
+
+---
+
+Commit anything left of your changes
