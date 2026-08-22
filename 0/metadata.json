@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NTP5XYB9FGH0CXGWCCZ885",
+  "session_id": "01a02b79-4957-72c1-ae73-44bbc10449d8",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T22:50:32.795332Z",
+  "branch": "lorenzkrinner/keep-sidebar-visible",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/cockpit/cockpit-shell.tsx",
+    "docs/PLAN.md",
+    "docs/design.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "9b0893f2d4f7",
+  "checkpoint_transcript_start": 484,
+  "transcript_lines_at_start": 484,
+  "compact_transcript_start": 92,
+  "token_usage": {
+    "input_tokens": 48116,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1262720,
+    "output_tokens": 6510,
+    "api_call_count": 17
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T22:50:32.715372Z",
+    "agent_lines": 27,
+    "agent_removed": 22,
+    "human_added": 124,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 151,
+    "total_lines_changed": 263,
+    "agent_percentage": 18.631178707224336,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 42,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".conductor/settings.local.toml": 11,
+        ".context/attachments/123M7O/PR instructions.md": 15,
+        ".context/attachments/dPaK3l/Branch continued.md": 1,
+        ".context/attachments/mvh84M/PR instructions.md": 15
+      }
+    }
+  ]
+}

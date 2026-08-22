@@ -1,0 +1,1 @@
+Merge the remote branch (lorenzkrinner/mvp-ui) into your branch and resolve conflicts. Then, commit and push your changes.
