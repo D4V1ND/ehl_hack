@@ -12,7 +12,7 @@ Those tools return fixture JSON now. Later they can sit on SQLite or a real adap
 
 Web search is skipped. If we add it later, it is Devin following the system prompt, not a Core API feature.
 
-Slices to implement: [`mvp-slices.md`](mvp-slices.md). Related: [`PLAN.md`](PLAN.md), [`specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md).
+Slices to implement: [`mvp-slices.md`](mvp-slices.md). Vocabulary: [`../CONTEXT.md`](../CONTEXT.md). Decisions behind this shape: [`adr/`](adr/) — real Devin sessions from the first slice, proposed ([ADR-0004](adr/0004-devin-sessions-are-real-from-the-first-skeleton.md)), the system of record is mocked rather than ERPNext ([ADR-0003](adr/0003-mock-system-of-record-behind-an-adapter.md)), and merging the PR is the approval ([ADR-0005](adr/0005-recommend-not-purchase.md)). Related: [`PLAN.md`](PLAN.md), [`specs/supplyguard-plan-1-foundation-spec.md`](specs/supplyguard-plan-1-foundation-spec.md).
 
 ## Input
 
@@ -99,3 +99,4 @@ Keep these three visible. Seed the fixtures so they happen:
 - [x] Implementation slices: [`mvp-slices.md`](mvp-slices.md)
 - [x] Vercel host. Devin and UI call public backend. ERP is `/tools/*`
 - [ ] Devin setup detail when you implement the launch slice
+- [ ] **Demo scale — blocks the seed data.** The foundation spec's fixture is a shortfall of 8 units, at which there are no price breaks, no freight trade-off and no split order, so the cost model in slice 5 has nothing to compute and stage beat 3 cannot happen. Proposal: same 4-supplier fixture shape scaled to ~40 000 pcs against the 12-day line stop, with price-break tiers per supplier. Settle before slice 2 seeds fixtures.
