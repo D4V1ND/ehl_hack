@@ -1,0 +1,32 @@
+based on what we're building, search mobbin via the mcp Mobbin  and provde me a list of the best candidates we can base our design on based on docs/PLAN.md
+
+---
+
+based on what we're building, search mobbin via the mcp Mobbin  and provde me a list of the best candidates we can base our design on based on docs/PLAN.md
+
+---
+
+For the deilverables on the right, in our app, would content would be on the right?
+
+Linkdy could be the inspiration for our calling UI too.
+
+I don'T think we need this, we are just a plugin on top of a ERP system, the ERP displays that.
+
+Copliot - no, don't like this, skip.
+
+Devin - bascially same strucutre as writer but better design.
+
+Vapi  -A bit overkill, we could add a scaled down version of this in the lindy transcript UI.
+
+Manus - yes.
+
+Cursor
+
+Grok - nice addition to the call screen
+
+
+What do you think of this? Let's ideate hwo the UI should look like. 
+
+By the way, can you access the paper MCP? If yes, then as soon as I give you the remote, you can already start creating a small prototype here for the multiple screens.
+
+You can now already send off a sub-agent before you respond. That creates all the different screens we need, a way of frame of all the different screens we will need for this very basic prototype.

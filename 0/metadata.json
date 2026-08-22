@@ -1,0 +1,126 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NA9DMF52J00SZM5SR0PJ0S",
+  "session_id": "3814dd24-f001-473a-88da-c00cce60878d",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T18:03:53.137101Z",
+  "branch": "lorenzkrinner/mvp-ui",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    ".env.example",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "app/globals.css",
+    "app/layout.tsx",
+    "components.json",
+    "components/cockpit/cockpit-chat.tsx",
+    "docs/PLAN.md",
+    "docs/agents/tech-stack.md",
+    "eslint.config.mjs",
+    "package.json"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high",
+  "turn_id": "545fb09610ac",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 96961,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 649984,
+    "output_tokens": 13259,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T18:03:53.12574Z",
+    "agent_lines": 0,
+    "agent_removed": 118,
+    "human_added": 732,
+    "human_modified": 174,
+    "human_removed": 0,
+    "total_committed": 762,
+    "total_lines_changed": 1024,
+    "agent_percentage": 11.5234375,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 16356,
+      "user_lines_removed": 163,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".env.example": 4,
+        ".gemini/settings.json": 9,
+        ".mcp.json": 11,
+        "CLAUDE.md": 1,
+        "app/globals.css": 157,
+        "components.json": 4,
+        "components/ai-elements/code-block.tsx": 562,
+        "components/ai-elements/conversation.tsx": 168,
+        "components/ai-elements/message.tsx": 360,
+        "components/ai-elements/prompt-input.tsx": 1459,
+        "components/ai-elements/task.tsx": 87,
+        "components/ai-elements/tool.tsx": 173,
+        "components/dotmatrix-loader.css": 1228,
+        "components/ui/button-group.tsx": 87,
+        "components/ui/command.tsx": 196,
+        "components/ui/dialog.tsx": 160,
+        "components/ui/dotm-square-9.tsx": 136,
+        "components/ui/dropdown-menu.tsx": 268,
+        "components/ui/hover-card.tsx": 51,
+        "components/ui/select.tsx": 201,
+        "components/ui/tooltip.tsx": 66,
+        "docs/agents/devin-mcp.md": 49,
+        "lib/dotmatrix-core.tsx": 1650,
+        "lib/dotmatrix-hooks.ts": 224,
+        "package.json": 11,
+        "pnpm-lock.yaml": 9017,
+        "pnpm-workspace.yaml": 3
+      },
+      "user_removed_per_file": {
+        "CLAUDE.md": 34,
+        "app/globals.css": 113,
+        "components.json": 1,
+        "docs/agents/tech-stack.md": 14,
+        "package.json": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 23,
+      "user_lines_removed": 0,
+      "agent_lines_added": 16364,
+      "agent_lines_removed": 277,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 27,
+      "user_lines_removed": 10,
+      "agent_lines_added": 14036,
+      "agent_lines_removed": 282,
+      "user_added_per_file": {
+        ".codex/config.toml": 4,
+        ".cursor/mcp.json": 10,
+        ".gemini/settings.json": 9,
+        "AGENTS.md": 1,
+        "components/cockpit/dot-loader.tsx": 3
+      },
+      "user_removed_per_file": {
+        "AGENTS.md": 1,
+        "components/cockpit/dot-loader.tsx": 9
+      }
+    }
+  ]
+}
