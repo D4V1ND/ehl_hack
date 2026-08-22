@@ -1,6 +1,6 @@
 # We do not build an Entire adapter for Devin during the jam
 
-Entire captures agent work through per-agent-CLI hooks, and Devin is not one of its registered agents (`claude-code`, `codex`, `copilot-cli`, `cursor`, `factoryai-droid`, `gemini`, `opencode`, `pi`). We verified that `checkpoints.primary.type = "git-refs"` is only the checkpoint *storage* backend and does not reconstruct sessions from commits: a throwaway commit followed by `entire hooks git post-commit` produced no checkpoint, no ref and no commit trailer, and `entire session attach --agent devin` fails with `unknown agent: devin`.
+Entire captures agent work through per-agent-CLI hooks, and Devin is not one of its registered agents (`claude-code`, `codex`, `copilot-cli`, `cursor`, `factoryai-droid`, `gemini`, `opencode`, `pi`). We verified that `checkpoints.primary.type = "git-refs"` is only the checkpoint *storage* backend and does not reconstruct sessions from commits: a throwaway commit followed by `entire hooks git post-commit` produced no checkpoint, no ref and no commit trailer, and `entire session attach --agent devin` fails with `unknown agent: devin`. Commit `ac406ca` on `mvp-stub` shows the other half of the picture: a Cursor session on this repo does carry an `Entire-Checkpoint:` trailer, so capture works — for the agents Entire has hooks for.
 
 ## Considered options
 

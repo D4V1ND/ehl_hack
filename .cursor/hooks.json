@@ -1,40 +1,61 @@
 {
-  "version": 1,
   "hooks": {
     "beforeSubmitPrompt": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 before-submit-prompt"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor before-submit-prompt)\""
       }
     ],
     "preCompact": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 pre-compact"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor pre-compact)\""
       }
     ],
     "sessionEnd": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 session-end"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor session-end)\""
       }
     ],
     "sessionStart": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 session-start"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor session-start)\""
       }
     ],
     "stop": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 stop"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor stop)\""
       }
     ],
     "subagentStart": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 subagent-start"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor subagent-start)\""
       }
     ],
     "subagentStop": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/entire-cursor.ps1 subagent-stop"
+      },
+      {
+        "command": "cmd.exe /d /s /c \"where.exe entire >nul 2>nul & if errorlevel 1 (ver>nul) else (entire hooks cursor subagent-stop)\""
       }
     ]
-  }
+  },
+  "version": 1
 }
