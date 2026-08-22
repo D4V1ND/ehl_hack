@@ -28,6 +28,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { LogoIcon } from "@/components/logo"
 import { INCIDENTS } from "@/lib/case-001"
 
 const LEFT_SIDEBAR_MIN = 10
@@ -162,8 +163,11 @@ function CockpitSidebar({
 
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">
-      <SidebarHeader className="h-11 justify-center px-4 py-0">
-        <span className="text-sm font-medium">Stockout</span>
+      <SidebarHeader className="h-11 items-start justify-center border-b border-border/70 px-4 py-0">
+        <LogoIcon
+          aria-label="SupplyOS"
+          className="size-5 text-sidebar-foreground"
+        />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="flex-1 py-3">

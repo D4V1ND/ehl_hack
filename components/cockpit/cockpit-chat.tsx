@@ -711,8 +711,8 @@ function MessageComposer({
       >
         <PromptInputBody>
           <PromptInputTextarea
-            aria-label="Message Stockout"
-            placeholder="Message Stockout"
+            aria-label="Message SupplyOS"
+            placeholder="Message SupplyOS"
             value={value}
             onChange={(event) => onChange(event.currentTarget.value)}
           />

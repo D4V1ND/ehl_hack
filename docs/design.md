@@ -1,33 +1,34 @@
-# Stockout UI design
+# SupplyOS UI design
 
-How the approved Cockpit looks and behaves. Product name on this surface is **Stockout**. Planning documents may still say SupplyGuard.
+How the approved Cockpit looks and behaves. Product name on every surface is **SupplyOS**. Planning documents may still say SupplyGuard.
 
-**Scenario:** Stockout supports a German automotive manufacturer resolving a bearing shortage across its Munich and Stuttgart plants. ERP owns the live stock picture. Stockout owns one sourcing run at `/chat`.
+**Scenario:** SupplyOS supports a German automotive manufacturer resolving a bearing shortage across its Munich and Stuttgart plants. ERP owns the live stock picture. SupplyOS owns one sourcing run at `/chat`.
 
 ## Settled (do not reopen unless Lorenz says so)
 
-1. The product has one Cockpit route: `/chat`. The private-beta landing stays at `/`. There is no `/dashboard` route or Dashboard navigation.
+1. The product has one Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard` route or Dashboard navigation.
 2. `/chat` has the main conversation and one closable **Candidate** panel. It has no file tree and no **Files | Results** tabs.
 3. Candidate rows in the fixed panel are compact and stable. More than one row can stay expanded.
 4. Outreach Tasks run in parallel. Call details open as a large modal through `?call=<id>`.
 5. One fixed conversation header holds Incident context, run status, Replay, and the Candidate-panel restore control. A fixed bottom dock holds the expandable **Decision** bar and composer. Only the conversation between them scrolls.
-6. The agent recommends. A human marks the Decision approved in Stockout. **Approved** is the final state. There is no PR card or merge approval.
+6. The agent recommends. A human marks the Decision approved in SupplyOS. **Approved** is the final state. There is no PR card or merge approval.
 7. Rehearsal is the default. Phone numbers are masked. Claims remain distinct from trusted Supplier Records.
 8. SQLite is the intended operational datastore. This implementation remains fixture-driven. Supabase is explicitly ignored.
 9. Colours come only from `app/globals.css`. Dark mode is the app default. Build in Next.js; do not use Paper and do not add a route.
 10. Use Tabler icons through `components/icons.tsx`. Product and primitive components do not import an icon library directly.
+11. `components/logo.tsx` owns the SupplyOS wordmark and current-colour icon. The Cockpit sidebar shows the icon at 20 × 20 pixels.
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. Stockout opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
+Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. SupplyOS opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
 
-Both sidebars use the muted surface; the conversation and its fixed top header use the background surface. The left Session sidebar resizes between 10% and 20% of the viewport. The Candidate sidebar resizes between 20% and 50% of the viewport. Its header has an X Button instead of a count. Closing it reveals a Tabler sidebar-open Button at the right end of the conversation header. Toggling the Candidate panel keeps the conversation mounted and preserves its scroll position. The single conversation header expands Incident properties in place, reveals its chevron on hover or keyboard focus, and places run status and Replay together at the top-right. The status is a ghost Button with one small state-coloured pebble; its background-colour tooltip shows all five stages as size-2 pebbles joined by hairline connectors. The linked Incident is a compact primary-colour mention inside the first user message. Only the top header spans the conversation width. Thread text, Task cards, Tool calls, the borderless Decision card, and the composer share one consistent horizontal gutter inside a centred `w-full` column capped at 50% of the viewport. Only the conversation content scrolls, using a right-edge muted thumb on a transparent track. The fixed bottom dock has no separating rules. Its Decision card expands upward above its compact row, and the darker composer keeps an outline matching the quiet structural separators elsewhere.
+Both sidebars use the muted surface; the conversation and its fixed top header use the background surface. The left Session sidebar resizes between 10% and 20% of the viewport. Its logo header and separator align with the conversation top header. The Candidate sidebar resizes between 20% and 50% of the viewport. Its header has an X Button instead of a count. Closing it reveals a Tabler sidebar-open Button at the right end of the conversation header. Toggling the Candidate panel keeps the conversation mounted and preserves its scroll position. The single conversation header expands Incident properties in place, reveals its chevron on hover or keyboard focus, and places run status and Replay together at the top-right. The status is a ghost Button with one small state-coloured pebble; its background-colour tooltip shows all five stages as size-2 pebbles joined by hairline connectors. The linked Incident is a compact primary-colour mention inside the first user message. Only the top header spans the conversation width. Thread text, Task cards, Tool calls, the borderless Decision card, and the composer share one consistent horizontal gutter inside a centred `w-full` column capped at 50% of the viewport. Only the conversation content scrolls, using a right-edge muted thumb on a transparent track. The fixed bottom dock has no separating rules. Its Decision card expands upward above its compact row, and the darker composer keeps an outline matching the quiet structural separators elsewhere.
 
 Responsive adaptation is not an MVP priority. Keep the Candidate sidebar visible on tablet and desktop widths. Hide it only below the `md` phone breakpoint.
 
 | Route | File | What you see |
 |---|---|---|
-| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. CTA goes to `/chat` |
+| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. A white SupplyOS logo and `Open chat` CTA link to `/chat`; no email field is shown |
 | `/chat` | `components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one closable Candidate panel |
 
 The target `/chat` composition is:
@@ -48,7 +49,7 @@ Rehearsal data is scripted CASE-001. No backend is required for this implementat
 2. Shenzhen is rejected by `blocked_origin_country`.
 3. Munich Motion reports `in_stock_allocated`: in stock is not ours.
 4. The cheapest unit price is not the Decision. The winning Strategy splits 20% SKF air and 80% FAG sea.
-5. Policy and landed-cost checks pass before a human approves the Decision in Stockout.
+5. Policy and landed-cost checks pass before a human approves the Decision in SupplyOS.
 
 ## Design references (structure only)
 
