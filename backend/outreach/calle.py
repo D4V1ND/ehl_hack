@@ -306,10 +306,16 @@ def _flatten(record: dict) -> dict:
 
 def _load_supplier_phones(supplier_refs: list[str]) -> dict[str, str]:
     """Slice B owns supplier data. Until its adapter lands, read the demo
-    fixture. Every number here is from a reserved fictional range."""
-    fixture = settings.REPO_ROOT / "backend" / "fixtures" / "supplier_phones.json"
+    fixture. Every committed number is from a reserved fictional range, so a
+    live call needs a real one from the gitignored `.local.json` beside it,
+    which wins per supplier."""
+    fixtures = settings.REPO_ROOT / "backend" / "fixtures"
+    fixture = fixtures / "supplier_phones.json"
     if not fixture.exists():
         raise RuntimeError(f"no supplier phone fixture at {fixture}")
 
-    data = json.loads(fixture.read_text(encoding="utf-8"))
+    data: dict[str, str] = json.loads(fixture.read_text(encoding="utf-8"))
+    override = fixtures / "supplier_phones.local.json"
+    if override.exists():
+        data.update(json.loads(override.read_text(encoding="utf-8")))
     return {ref: data[ref] for ref in supplier_refs if ref in data}

@@ -1,0 +1,25 @@
+# Enough BOM structure to answer "which line stops, and what does it build".
+- bom_id: BOM-EDU-4
+  item_name: eDrive unit EDU-4
+  plant_id: PLANT-MUC
+  production_line: ASSY-3
+  lines:
+    - {part_id: PRT-6204, qty_per_unit: 2}
+    - {part_id: PRT-SIM20X47X7, qty_per_unit: 2}
+    - {part_id: PRT-DIN912M8X30A2, qty_per_unit: 8}
+- bom_id: BOM-EDU-6
+  item_name: eDrive unit EDU-6
+  plant_id: PLANT-MUC
+  production_line: ASSY-4
+  lines:
+    - {part_id: PRT-62062RS, qty_per_unit: 2}
+    - {part_id: PRT-SIM30X52X7, qty_per_unit: 2}
+    - {part_id: PRT-DIN933M10X30A2, qty_per_unit: 6}
+- bom_id: BOM-CHS-2
+  item_name: Chassis subframe CHS-2
+  plant_id: PLANT-LEI
+  production_line: ASSY-1
+  lines:
+    - {part_id: PRT-M8X40, qty_per_unit: 24}
+    - {part_id: PRT-DIN934M8A2, qty_per_unit: 24}
+    - {part_id: PRT-DIN125M8A2, qty_per_unit: 48}

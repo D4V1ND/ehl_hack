@@ -1,6 +1,7 @@
 {
-  "SUP-ATLAS": "+4917680060979", 
-  "supplier-acme": "+4917680060979", 
-  "supplier-globex": "+4917680060979",
-  "supplier-umbrella": "+4917680060979"
+  "_comment": "Drama numbers only (BNetzA Mitteilung 148/2021). A real number for a live call goes in supplier_phones.local.json, which is gitignored.",
+  "SUP-ATLAS": "+4915228817386",
+  "supplier-acme": "+4915228817387",
+  "supplier-globex": "+4915228817388",
+  "supplier-umbrella": "+4915228817389"
 }
