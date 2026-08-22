@@ -45,3 +45,6 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Saved call results: real phone numbers and call transcripts, never committed.
+/data/quotes/

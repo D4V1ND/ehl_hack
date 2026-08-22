@@ -40,5 +40,10 @@ FAKE_MAX_DELAY: float = float(os.environ.get("FAKE_MAX_DELAY", "2.5"))
 
 # Seconds. A real call sits queued and then runs for a few minutes, so the
 # live provider polls CALL-E for the result rather than waiting on a webhook.
+# Polling is an outbound request, so it needs no public URL and no tunnel.
 CALLE_POLL_INTERVAL: float = float(os.environ.get("CALLE_POLL_INTERVAL", "10"))
 CALLE_POLL_TIMEOUT: float = float(os.environ.get("CALLE_POLL_TIMEOUT", "900"))
+
+# Where finished quotes are written. STORE only lives as long as the
+# process, so without this a completed call leaves nothing behind.
+QUOTES_DIR: Path = Path(os.environ.get("QUOTES_DIR", str(REPO_ROOT / "data" / "quotes")))

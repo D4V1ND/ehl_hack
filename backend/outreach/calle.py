@@ -15,6 +15,7 @@ import httpx
 
 from backend import settings
 from backend.outreach.normalize import normalize_result
+from backend.persistence import save_quote
 from backend.outreach.prompts import build_task_text
 from backend.outreach.protocol import DispatchReceipt
 from backend.store import STORE
@@ -81,7 +82,12 @@ def build_calle_payload(
         "task": build_task_text(first, buyer_name=buyer_name),
         "recipients": recipients,
         "recipient_result_schema": quote_result_schema(),
-        "webhook_url": f"{settings.PUBLIC_BASE_URL}/calle/webhook",
+        # No webhook_url on purpose. Results are pulled via GET /v1/calls/{id}
+        # (see _watch_call), which is an outbound request and so needs no
+        # public URL and no tunnel. CALL-E does deliver terminal webhooks, but
+        # wrapped in an {id, type, created_at, data} envelope that the
+        # /calle/webhook route does not unwrap -- and requiring a tunnel to
+        # collect a result the API will hand us on request is not worth it.
         "metadata": {
             "case_id": first.case_id,
             "task_id": first.task_id,
@@ -217,13 +223,33 @@ def _watch_call(call_id: str, task: OutreachTask) -> None:
             task.task_id, task.case_id, task.supplier_ref, _flatten(record)
         )
         STORE.add_quote(quote)
+
+        # Save before announcing: a quote the cockpit can see but that never
+        # reached disk would be lost on the next restart.
+        saved_to = None
+        try:
+            saved_to = str(save_quote(quote))
+        except OSError as exc:
+            STORE.append_event(
+                task.case_id,
+                actor="calle",
+                stage="quote_not_saved",
+                level="error",
+                message=f"{task.supplier_ref}: quote could not be written to disk: {exc}",
+                payload={"task_id": task.task_id},
+            )
+
         STORE.append_event(
             task.case_id,
             actor="calle",
             stage="quote_received",
             message=f"{task.supplier_ref}: "
             + ("quoted" if quote.available else "no quote"),
-            payload={"task_id": task.task_id, "confidence": quote.confidence},
+            payload={
+                "task_id": task.task_id,
+                "confidence": quote.confidence,
+                "saved_to": saved_to,
+            },
         )
     except Exception as exc:  # noqa: BLE001 - a dead thread must still say why
         STORE.append_event(
