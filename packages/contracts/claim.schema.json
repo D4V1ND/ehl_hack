@@ -1,0 +1,303 @@
+{
+  "$defs": {
+    "Answer": {
+      "description": "A three-state answer. `UNKNOWN` is legal everywhere `YES`/`NO` are.",
+      "enum": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "title": "Answer",
+      "type": "string"
+    },
+    "ExpediteOption": {
+      "additionalProperties": false,
+      "properties": {
+        "days": {
+          "title": "Days",
+          "type": "integer"
+        },
+        "surcharge": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Surcharge"
+        }
+      },
+      "required": [
+        "days",
+        "surcharge"
+      ],
+      "title": "ExpediteOption",
+      "type": "object"
+    },
+    "PriceBreak": {
+      "additionalProperties": false,
+      "description": "A quantity tier. The step function the cost engine integrates over.",
+      "properties": {
+        "min_qty": {
+          "minimum": 1,
+          "title": "Min Qty",
+          "type": "integer"
+        },
+        "unit_price": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Unit Price"
+        }
+      },
+      "required": [
+        "min_qty",
+        "unit_price"
+      ],
+      "title": "PriceBreak",
+      "type": "object"
+    },
+    "StockStatus": {
+      "description": "What the supplier says about the stock they hold.\n\n`IN_STOCK_ALLOCATED` is the whole point of asking: \"yes, we have some\"\nfrequently means \"yes, but it is already promised to someone else.\"",
+      "enum": [
+        "free_in_stock",
+        "in_stock_allocated",
+        "to_be_made",
+        "unavailable",
+        "unclear"
+      ],
+      "title": "StockStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "What a supplier said. Never a fact.\n\nThis model is also CALL-E's `recipient_result_schema` \u2014 the same definition,\nexported as JSON Schema, so the answer sheet and our type cannot drift apart.\n\nEvery judgement field admits `unknown`, and building one of these must never\nraise: a garbled call becomes a confidence-0 claim with fields defaulted,\nbecause one bad call must not kill a five-supplier case mid-run.",
+  "properties": {
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "supplier_id": {
+      "title": "Supplier Id",
+      "type": "string"
+    },
+    "round": {
+      "default": 1,
+      "title": "Round",
+      "type": "integer"
+    },
+    "call_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Call Id"
+    },
+    "qty_offered": {
+      "default": 0,
+      "title": "Qty Offered",
+      "type": "integer"
+    },
+    "earliest_ready_text": {
+      "default": "",
+      "title": "Earliest Ready Text",
+      "type": "string"
+    },
+    "stock_status": {
+      "$ref": "#/$defs/StockStatus",
+      "default": "unclear"
+    },
+    "lead_time_days": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lead Time Days"
+    },
+    "price_quoted": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "unit_price": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unit Price"
+    },
+    "price_breaks": {
+      "items": {
+        "$ref": "#/$defs/PriceBreak"
+      },
+      "title": "Price Breaks",
+      "type": "array"
+    },
+    "moq": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Moq"
+    },
+    "currency": {
+      "default": "EUR",
+      "title": "Currency",
+      "type": "string"
+    },
+    "expedite_option": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExpediteOption"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "incoterm": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Incoterm"
+    },
+    "payment_terms": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Payment Terms"
+    },
+    "part_number_confirmed": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "certification_current": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "certs_claimed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Certs Claimed",
+      "type": "array"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "transcript_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transcript Url"
+    },
+    "recording_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recording Url"
+    },
+    "confidence": {
+      "default": 0.0,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "raw": {
+      "additionalProperties": true,
+      "title": "Raw",
+      "type": "object"
+    },
+    "received_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Received At"
+    }
+  },
+  "required": [
+    "task_id",
+    "case_id",
+    "supplier_id"
+  ],
+  "title": "Claim",
+  "type": "object"
+}

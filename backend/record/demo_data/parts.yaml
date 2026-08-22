@@ -1,0 +1,660 @@
+# ERPNext `Item`-shaped. `part_class` is the seam: it selects which policy rules
+# and which cost parameters apply, so nothing below this line is bearing-specific.
+#
+# The first two entries are the story parts. Everything after them is catalogue
+# depth, so the ERP looks like an ERP and not like a fixture.
+
+- part_id: PRT-6204
+  item_code: 6204-2RS
+  item_name: Deep-groove ball bearing 6204-2RS
+  description: Single-row deep-groove ball bearing, 20x47x14 mm, rubber-sealed both sides, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '20'
+    outer_diameter_mm: '47'
+    width_mm: '14'
+    seal: 2RS (contact rubber, both sides)
+    clearance: C3
+    dynamic_load_rating_kn: '12.7'
+    max_speed_rpm: '14000'
+  stock_uom: Nos
+  criticality: high
+  part_class: rolling_bearing
+  weight_kg: 0.102
+  hs_code: '8482.10.10'
+  standard_cost: '1.42'
+
+- part_id: PRT-M8X40
+  item_code: DIN933-M8x40-A2
+  item_name: Hex head bolt M8x40 A2-70
+  description: Fully threaded hex head bolt, M8 x 40 mm, stainless A2-70, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M8
+    length_mm: '40'
+    material: A2-70 stainless
+    drive: hex
+  stock_uom: Nos
+  criticality: medium
+  part_class: fastener
+  weight_kg: 0.022
+  hs_code: '7318.15.69'
+  standard_cost: '0.18'
+
+# --- catalogue depth ---
+
+- part_id: PRT-60002RS
+  item_code: 6000-2RS
+  item_name: Deep-groove ball bearing 6000-2RS
+  description: Single-row deep-groove ball bearing, 10x26x8 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '10'
+    outer_diameter_mm: '26'
+    width_mm: '8'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.019
+  hs_code: '8482.10.10'
+  standard_cost: '0.86'
+
+- part_id: PRT-60012RS
+  item_code: 6001-2RS
+  item_name: Deep-groove ball bearing 6001-2RS
+  description: Single-row deep-groove ball bearing, 12x28x8 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '12'
+    outer_diameter_mm: '28'
+    width_mm: '8'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.022
+  hs_code: '8482.10.10'
+  standard_cost: '0.91'
+
+- part_id: PRT-60022RS
+  item_code: 6002-2RS
+  item_name: Deep-groove ball bearing 6002-2RS
+  description: Single-row deep-groove ball bearing, 15x32x9 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '15'
+    outer_diameter_mm: '32'
+    width_mm: '9'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.03
+  hs_code: '8482.10.10'
+  standard_cost: '0.98'
+
+- part_id: PRT-60032RS
+  item_code: 6003-2RS
+  item_name: Deep-groove ball bearing 6003-2RS
+  description: Single-row deep-groove ball bearing, 17x35x10 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '17'
+    outer_diameter_mm: '35'
+    width_mm: '10'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.039
+  hs_code: '8482.10.10'
+  standard_cost: '1.06'
+
+- part_id: PRT-60042RS
+  item_code: 6004-2RS
+  item_name: Deep-groove ball bearing 6004-2RS
+  description: Single-row deep-groove ball bearing, 20x42x12 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '20'
+    outer_diameter_mm: '42'
+    width_mm: '12'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.069
+  hs_code: '8482.10.10'
+  standard_cost: '1.24'
+
+- part_id: PRT-60052RS
+  item_code: 6005-2RS
+  item_name: Deep-groove ball bearing 6005-2RS
+  description: Single-row deep-groove ball bearing, 25x47x12 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '25'
+    outer_diameter_mm: '47'
+    width_mm: '12'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.08
+  hs_code: '8482.10.10'
+  standard_cost: '1.33'
+
+- part_id: PRT-6204ZZ
+  item_code: 6204-ZZ
+  item_name: Deep-groove ball bearing 6204-ZZ
+  description: Single-row deep-groove ball bearing, 20x47x14 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '20'
+    outer_diameter_mm: '47'
+    width_mm: '14'
+    seal: ZZ
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.102
+  hs_code: '8482.10.10'
+  standard_cost: '1.31'
+
+- part_id: PRT-62052RS
+  item_code: 6205-2RS
+  item_name: Deep-groove ball bearing 6205-2RS
+  description: Single-row deep-groove ball bearing, 25x52x15 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '25'
+    outer_diameter_mm: '52'
+    width_mm: '15'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.128
+  hs_code: '8482.10.10'
+  standard_cost: '1.58'
+
+- part_id: PRT-62062RS
+  item_code: 6206-2RS
+  item_name: Deep-groove ball bearing 6206-2RS
+  description: Single-row deep-groove ball bearing, 30x62x16 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '30'
+    outer_diameter_mm: '62'
+    width_mm: '16'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.2
+  hs_code: '8482.10.10'
+  standard_cost: '2.04'
+
+- part_id: PRT-62072RS
+  item_code: 6207-2RS
+  item_name: Deep-groove ball bearing 6207-2RS
+  description: Single-row deep-groove ball bearing, 35x72x17 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '35'
+    outer_diameter_mm: '72'
+    width_mm: '17'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.288
+  hs_code: '8482.10.10'
+  standard_cost: '2.71'
+
+- part_id: PRT-62082RS
+  item_code: 6208-2RS
+  item_name: Deep-groove ball bearing 6208-2RS
+  description: Single-row deep-groove ball bearing, 40x80x18 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '40'
+    outer_diameter_mm: '80'
+    width_mm: '18'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.368
+  hs_code: '8482.10.10'
+  standard_cost: '3.35'
+
+- part_id: PRT-63012RS
+  item_code: 6301-2RS
+  item_name: Deep-groove ball bearing 6301-2RS
+  description: Single-row deep-groove ball bearing, 12x37x12 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '12'
+    outer_diameter_mm: '37'
+    width_mm: '12'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.06
+  hs_code: '8482.10.10'
+  standard_cost: '1.19'
+
+- part_id: PRT-63022RS
+  item_code: 6302-2RS
+  item_name: Deep-groove ball bearing 6302-2RS
+  description: Single-row deep-groove ball bearing, 15x42x13 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '15'
+    outer_diameter_mm: '42'
+    width_mm: '13'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.082
+  hs_code: '8482.10.10'
+  standard_cost: '1.36'
+
+- part_id: PRT-63032RS
+  item_code: 6303-2RS
+  item_name: Deep-groove ball bearing 6303-2RS
+  description: Single-row deep-groove ball bearing, 17x47x14 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '17'
+    outer_diameter_mm: '47'
+    width_mm: '14'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.11
+  hs_code: '8482.10.10'
+  standard_cost: '1.52'
+
+- part_id: PRT-63042RS
+  item_code: 6304-2RS
+  item_name: Deep-groove ball bearing 6304-2RS
+  description: Single-row deep-groove ball bearing, 20x52x15 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '20'
+    outer_diameter_mm: '52'
+    width_mm: '15'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.145
+  hs_code: '8482.10.10'
+  standard_cost: '1.74'
+
+- part_id: PRT-63052RS
+  item_code: 6305-2RS
+  item_name: Deep-groove ball bearing 6305-2RS
+  description: Single-row deep-groove ball bearing, 25x62x17 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '25'
+    outer_diameter_mm: '62'
+    width_mm: '17'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.232
+  hs_code: '8482.10.10'
+  standard_cost: '2.28'
+
+- part_id: PRT-63062RS
+  item_code: 6306-2RS
+  item_name: Deep-groove ball bearing 6306-2RS
+  description: Single-row deep-groove ball bearing, 30x72x19 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '30'
+    outer_diameter_mm: '72'
+    width_mm: '19'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: medium
+  part_class: rolling_bearing
+  weight_kg: 0.348
+  hs_code: '8482.10.10'
+  standard_cost: '3.02'
+
+- part_id: PRT-68022RS
+  item_code: 6802-2RS
+  item_name: Deep-groove ball bearing 6802-2RS
+  description: Single-row deep-groove ball bearing, 15x24x5 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '15'
+    outer_diameter_mm: '24'
+    width_mm: '5'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.01
+  hs_code: '8482.10.10'
+  standard_cost: '1.44'
+
+- part_id: PRT-68032RS
+  item_code: 6803-2RS
+  item_name: Deep-groove ball bearing 6803-2RS
+  description: Single-row deep-groove ball bearing, 17x26x5 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '17'
+    outer_diameter_mm: '26'
+    width_mm: '5'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.011
+  hs_code: '8482.10.10'
+  standard_cost: '1.51'
+
+- part_id: PRT-69002RS
+  item_code: 6900-2RS
+  item_name: Deep-groove ball bearing 6900-2RS
+  description: Single-row deep-groove ball bearing, 10x22x6 mm, DIN 625-1.
+  spec:
+    standard: DIN 625-1
+    bore_mm: '10'
+    outer_diameter_mm: '22'
+    width_mm: '6'
+    seal: 2RS
+  stock_uom: Nos
+  criticality: low
+  part_class: rolling_bearing
+  weight_kg: 0.011
+  hs_code: '8482.10.10'
+  standard_cost: '1.28'
+
+- part_id: PRT-DIN933M6X25A2
+  item_code: DIN933-M6x25-A2
+  item_name: Hex head bolt M6x25 A2-70
+  description: Hex head bolt M6x25 A2-70, stainless A2, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M6
+    length_mm: '25'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.008
+  hs_code: '7318.15.69'
+  standard_cost: '0.11'
+
+- part_id: PRT-DIN933M8X25A2
+  item_code: DIN933-M8x25-A2
+  item_name: Hex head bolt M8x25 A2-70
+  description: Hex head bolt M8x25 A2-70, stainless A2, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M8
+    length_mm: '25'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.016
+  hs_code: '7318.15.69'
+  standard_cost: '0.15'
+
+- part_id: PRT-DIN933M10X30A2
+  item_code: DIN933-M10x30-A2
+  item_name: Hex head bolt M10x30 A2-70
+  description: Hex head bolt M10x30 A2-70, stainless A2, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M10
+    length_mm: '30'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.031
+  hs_code: '7318.15.69'
+  standard_cost: '0.26'
+
+- part_id: PRT-DIN933M10X50A2
+  item_code: DIN933-M10x50-A2
+  item_name: Hex head bolt M10x50 A2-70
+  description: Hex head bolt M10x50 A2-70, stainless A2, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M10
+    length_mm: '50'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.048
+  hs_code: '7318.15.69'
+  standard_cost: '0.34'
+
+- part_id: PRT-DIN933M12X40A2
+  item_code: DIN933-M12x40-A2
+  item_name: Hex head bolt M12x40 A2-70
+  description: Hex head bolt M12x40 A2-70, stainless A2, DIN 933.
+  spec:
+    standard: DIN 933
+    thread: M12
+    length_mm: '40'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.062
+  hs_code: '7318.15.69'
+  standard_cost: '0.47'
+
+- part_id: PRT-DIN912M6X20A2
+  item_code: DIN912-M6x20-A2
+  item_name: Socket head cap screw M6x20 A2
+  description: Socket head cap screw M6x20 A2, stainless A2, DIN 912.
+  spec:
+    standard: DIN 912
+    thread: M6
+    length_mm: '20'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.007
+  hs_code: '7318.15.69'
+  standard_cost: '0.13'
+
+- part_id: PRT-DIN912M8X30A2
+  item_code: DIN912-M8x30-A2
+  item_name: Socket head cap screw M8x30 A2
+  description: Socket head cap screw M8x30 A2, stainless A2, DIN 912.
+  spec:
+    standard: DIN 912
+    thread: M8
+    length_mm: '30'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.019
+  hs_code: '7318.15.69'
+  standard_cost: '0.21'
+
+- part_id: PRT-DIN912M10X40A2
+  item_code: DIN912-M10x40-A2
+  item_name: Socket head cap screw M10x40 A2
+  description: Socket head cap screw M10x40 A2, stainless A2, DIN 912.
+  spec:
+    standard: DIN 912
+    thread: M10
+    length_mm: '40'
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.04
+  hs_code: '7318.15.69'
+  standard_cost: '0.38'
+
+- part_id: PRT-DIN934M8A2
+  item_code: DIN934-M8-A2
+  item_name: Hex nut M8 A2-70
+  description: Hex nut M8 A2-70, stainless A2, DIN 934.
+  spec:
+    standard: DIN 934
+    thread: M8
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.005
+  hs_code: '7318.15.69'
+  standard_cost: '0.07'
+
+- part_id: PRT-DIN934M10A2
+  item_code: DIN934-M10-A2
+  item_name: Hex nut M10 A2-70
+  description: Hex nut M10 A2-70, stainless A2, DIN 934.
+  spec:
+    standard: DIN 934
+    thread: M10
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.01
+  hs_code: '7318.15.69'
+  standard_cost: '0.11'
+
+- part_id: PRT-DIN125M8A2
+  item_code: DIN125-M8-A2
+  item_name: Flat washer M8 A2
+  description: Flat washer M8 A2, stainless A2, DIN 125.
+  spec:
+    standard: DIN 125
+    thread: M8
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.002
+  hs_code: '7318.15.69'
+  standard_cost: '0.03'
+
+- part_id: PRT-DIN125M10A2
+  item_code: DIN125-M10-A2
+  item_name: Flat washer M10 A2
+  description: Flat washer M10 A2, stainless A2, DIN 125.
+  spec:
+    standard: DIN 125
+    thread: M10
+    material: A2-70 stainless
+  stock_uom: Nos
+  criticality: low
+  part_class: fastener
+  weight_kg: 0.004
+  hs_code: '7318.15.69'
+  standard_cost: '0.04'
+
+- part_id: PRT-SIM20X47X7
+  item_code: SIM-20x47x7
+  item_name: Rotary shaft seal 20x47x7 NBR
+  description: Rotary shaft seal 20x47x7 NBR.
+  spec:
+    bore_mm: '20'
+    outer_diameter_mm: '47'
+    width_mm: '7'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.014
+  hs_code: '4016.93.00'
+  standard_cost: '0.94'
+
+- part_id: PRT-SIM25X52X7
+  item_code: SIM-25x52x7
+  item_name: Rotary shaft seal 25x52x7 NBR
+  description: Rotary shaft seal 25x52x7 NBR.
+  spec:
+    bore_mm: '25'
+    outer_diameter_mm: '52'
+    width_mm: '7'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.018
+  hs_code: '4016.93.00'
+  standard_cost: '1.02'
+
+- part_id: PRT-SIM30X52X7
+  item_code: SIM-30x52x7
+  item_name: Rotary shaft seal 30x52x7 NBR
+  description: Rotary shaft seal 30x52x7 NBR.
+  spec:
+    bore_mm: '30'
+    outer_diameter_mm: '52'
+    width_mm: '7'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.02
+  hs_code: '4016.93.00'
+  standard_cost: '1.09'
+
+- part_id: PRT-SIM35X62X8
+  item_code: SIM-35x62x8
+  item_name: Rotary shaft seal 35x62x8 NBR
+  description: Rotary shaft seal 35x62x8 NBR.
+  spec:
+    bore_mm: '35'
+    outer_diameter_mm: '62'
+    width_mm: '8'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.029
+  hs_code: '4016.93.00'
+  standard_cost: '1.27'
+
+- part_id: PRT-SIM40X62X8
+  item_code: SIM-40x62x8
+  item_name: Rotary shaft seal 40x62x8 FKM
+  description: Rotary shaft seal 40x62x8 FKM.
+  spec:
+    bore_mm: '40'
+    outer_diameter_mm: '62'
+    width_mm: '8'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.031
+  hs_code: '4016.93.00'
+  standard_cost: '2.18'
+
+- part_id: PRT-ORING25X3
+  item_code: ORING-25x3
+  item_name: O-ring 25x3 NBR 70 Shore
+  description: O-ring 25x3 NBR 70 Shore.
+  spec:
+    bore_mm: '25'
+  stock_uom: Nos
+  criticality: low
+  part_class: seal
+  weight_kg: 0.001
+  hs_code: '4016.93.00'
+  standard_cost: '0.06'

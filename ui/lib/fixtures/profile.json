@@ -1,0 +1,60 @@
+{
+  "legal_entity": "Meridian Motors GmbH",
+  "country": "DE",
+  "blocked_origin_countries": [
+    "CN",
+    "RU",
+    "BY",
+    "IR",
+    "KP"
+  ],
+  "required_certifications": {
+    "rolling_bearing": [
+      "ISO_9001",
+      "DIN_625_CONFORMITY"
+    ],
+    "fastener": [
+      "ISO_9001"
+    ],
+    "seal": [
+      "ISO_9001"
+    ],
+    "electronic_component": [
+      "ISO_9001",
+      "ROHS",
+      "REACH"
+    ]
+  },
+  "audit_required_above_criticality": "high",
+  "single_po_budget_eur": "75000.00",
+  "requires_second_quote_above_eur": "25000.00",
+  "wacc": 0.089,
+  "warehousing_eur_per_pallet_month": "14.50",
+  "pieces_per_pallet": 12000,
+  "duty_rates": {
+    "DE": 0.0,
+    "RO": 0.0,
+    "DK": 0.0,
+    "IT": 0.0,
+    "PL": 0.0,
+    "CZ": 0.0,
+    "AT": 0.0,
+    "SE": 0.0,
+    "TR": 0.0,
+    "GB": 0.027,
+    "CN": 0.082,
+    "IN": 0.082,
+    "JP": 0.027,
+    "US": 0.045
+  },
+  "freight_eur_per_kg": {
+    "air": "4.85",
+    "sea": "0.42",
+    "road": "1.15"
+  },
+  "transit_days": {
+    "air": 2,
+    "sea": 32,
+    "road": 4
+  }
+}
