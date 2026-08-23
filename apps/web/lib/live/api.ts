@@ -1,5 +1,10 @@
 import { API_BASE } from "@/lib/live/config";
-import type { CaseEvent, CaseSnapshot, SessionInfo } from "@/lib/live/types";
+import type {
+  CaseEvent,
+  CaseSnapshot,
+  LiveFlowState,
+  SessionInfo,
+} from "@/lib/live/types";
 
 async function readError(
   response: Response,
@@ -16,7 +21,9 @@ async function readError(
 export async function fetchCase(caseId: string): Promise<CaseSnapshot | null> {
   const response = await fetch(
     `${API_BASE}/cases/${encodeURIComponent(caseId)}`,
-    { cache: "no-store" },
+    {
+      cache: "no-store",
+    },
   );
   if (response.status === 404) return null;
   if (!response.ok) {
@@ -44,6 +51,27 @@ export async function fetchEvents(
     );
   }
   return (await response.json()) as CaseEvent[];
+}
+
+/** The latest priced buyer package and flow progress, if pricing has started. */
+export async function fetchFlowState(
+  caseId: string,
+): Promise<LiveFlowState | null> {
+  const response = await fetch(
+    `${API_BASE}/flow/state?case_id=${encodeURIComponent(caseId)}`,
+    { cache: "no-store" },
+  );
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(
+      await readError(response, `GET /flow/state -> ${response.status}`),
+    );
+  }
+  return (await response.json()) as LiveFlowState;
+}
+
+export function caseArtifactUrl(caseId: string, name: string): string {
+  return `${API_BASE}/cases/${encodeURIComponent(caseId)}/artifacts/${encodeURIComponent(name)}`;
 }
 
 export function sessionFromEvents(events: CaseEvent[]): SessionInfo | null {

@@ -89,6 +89,19 @@ def test_no_transcript_is_an_empty_list_not_a_crash():
     assert _norm({}).transcript == []
 
 
+def test_provider_yes_no_availability_and_comma_separated_certs_are_normalized():
+    q = _norm(
+        {
+            "structured_result": {
+                "part_available": "yes",
+                "certs_claimed": "ISO 9001, IATF 16949",
+            }
+        }
+    )
+    assert q.available is True
+    assert q.certs_claimed == ["ISO 9001", "IATF 16949"]
+
+
 def test_the_raw_payload_is_always_kept():
     payload = {"structured_result": {"available": True}, "anything": "else"}
     assert _norm(payload).raw == payload

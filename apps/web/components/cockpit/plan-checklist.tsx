@@ -101,12 +101,12 @@ export function PlanChecklist({ plan }: { plan: LivePlan | null }) {
 
 function StepRow({ step }: { step: LivePlanStep }) {
   const calling = Boolean(step.supplier_ref && step.group === "outreach");
-  const Icon = iconFor(step.status, calling);
 
   return (
     <li className="flex items-start gap-2.5 py-1.5">
-      <Icon
-        aria-hidden="true"
+      <StepIcon
+        status={step.status}
+        calling={calling}
         className={cn(
           "mt-0.5 size-3.5 shrink-0",
           toneFor(step.status),
@@ -140,12 +140,28 @@ function StepRow({ step }: { step: LivePlanStep }) {
   );
 }
 
-function iconFor(status: LiveStepStatus, calling: boolean) {
-  if (status === "active" && calling) return Phone;
-  if (status === "active") return Loader2Icon;
-  if (status === "done") return CheckIcon;
-  if (status === "failed") return XIcon;
-  return CircleIcon;
+function StepIcon({
+  status,
+  calling,
+  className,
+}: {
+  status: LiveStepStatus;
+  calling: boolean;
+  className: string;
+}) {
+  if (status === "active" && calling) {
+    return <Phone aria-hidden="true" className={className} />;
+  }
+  if (status === "active") {
+    return <Loader2Icon aria-hidden="true" className={className} />;
+  }
+  if (status === "done") {
+    return <CheckIcon aria-hidden="true" className={className} />;
+  }
+  if (status === "failed") {
+    return <XIcon aria-hidden="true" className={className} />;
+  }
+  return <CircleIcon aria-hidden="true" className={className} />;
 }
 
 function toneFor(status: LiveStepStatus): string {

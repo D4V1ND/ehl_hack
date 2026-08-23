@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { fetchCase, fetchEvents, sessionFromEvents } from "@/lib/live/api";
+import {
+  fetchCase,
+  fetchEvents,
+  fetchFlowState,
+  sessionFromEvents,
+} from "@/lib/live/api";
 import { resolveChecklist } from "@/lib/live/checklist";
 import { EVENT_POLL_MS } from "@/lib/live/config";
 import { fetchPlan, type LivePlan } from "@/lib/live/plan";
@@ -10,6 +15,8 @@ import type {
   CaseEvent,
   CaseSnapshot,
   LiveCandidate,
+  LiveDecision,
+  LiveFlowState,
   SessionInfo,
 } from "@/lib/live/types";
 
@@ -23,6 +30,8 @@ type DevinCaseState = {
   events: CaseEvent[];
   plan: LivePlan | null;
   session: SessionInfo | null;
+  decision: LiveDecision | null;
+  flow: LiveFlowState | null;
 };
 
 const EMPTY: DevinCaseState = {
@@ -33,6 +42,8 @@ const EMPTY: DevinCaseState = {
   events: [],
   plan: null,
   session: null,
+  decision: null,
+  flow: null,
 };
 
 function statusFromSession(session: SessionInfo | null): DevinCaseStatus {
@@ -45,10 +56,11 @@ export function useDevinCase(caseIdFromUrl: string | null) {
 
   const loadCase = useCallback(
     async (caseId: string): Promise<DevinCaseState> => {
-      const [snapshot, events, plan] = await Promise.all([
+      const [snapshot, events, plan, flow] = await Promise.all([
         fetchCase(caseId),
         fetchEvents(caseId),
         fetchPlan(caseId),
+        fetchFlowState(caseId).catch(() => null),
       ]);
       const session = sessionFromEvents(events);
       return {
@@ -59,18 +71,16 @@ export function useDevinCase(caseIdFromUrl: string | null) {
         events,
         plan,
         session,
+        decision: flow?.decision ?? null,
+        flow,
       };
     },
     [],
   );
 
   useEffect(() => {
-    if (!caseIdFromUrl) {
-      setState(EMPTY);
-      return;
-    }
+    if (!caseIdFromUrl) return;
     let cancelled = false;
-    setState({ ...EMPTY, status: "loading", caseId: caseIdFromUrl });
 
     const load = async () => {
       try {
@@ -80,7 +90,12 @@ export function useDevinCase(caseIdFromUrl: string | null) {
         if (cancelled) return;
         const message =
           cause instanceof Error ? cause.message : "Could not load the case";
-        setState({ ...EMPTY, status: "error", error: message });
+        setState({
+          ...EMPTY,
+          status: "error",
+          error: message,
+          caseId: caseIdFromUrl,
+        });
       }
     };
 
@@ -91,22 +106,24 @@ export function useDevinCase(caseIdFromUrl: string | null) {
   }, [caseIdFromUrl, loadCase]);
 
   const eventsRef = useRef<CaseEvent[]>([]);
-  eventsRef.current = state.events;
+  useEffect(() => {
+    eventsRef.current = state.events;
+  }, [state.events]);
 
   useEffect(() => {
     const caseId = state.caseId;
-    if (!caseId || state.status === "error" || state.status === "loading") {
+    if (!caseId || state.status === "error" || state.status === "loading")
       return;
-    }
     let cancelled = false;
 
     const tick = async () => {
       try {
         const since = eventsRef.current.at(-1)?.seq ?? 0;
-        const [snapshot, fresh, plan] = await Promise.all([
+        const [snapshot, fresh, plan, flow] = await Promise.all([
           fetchCase(caseId),
           fetchEvents(caseId, since),
           fetchPlan(caseId),
+          fetchFlowState(caseId).catch(() => null),
         ]);
         if (cancelled) return;
         setState((current) => {
@@ -120,12 +137,14 @@ export function useDevinCase(caseIdFromUrl: string | null) {
             events,
             plan,
             session,
+            decision: flow?.decision ?? current.decision,
+            flow: flow ?? current.flow,
             status: statusFromSession(session),
             error: session?.error ?? current.error,
           };
         });
       } catch {
-        // Keep the last good feed. The next tick retries.
+        // Preserve the last good view. The next polling interval retries.
       }
     };
 
@@ -136,13 +155,19 @@ export function useDevinCase(caseIdFromUrl: string | null) {
     };
   }, [state.caseId, state.status]);
 
-  const candidates: readonly LiveCandidate[] = state.snapshot?.candidates ?? [];
-  const checklist = state.plan
-    ? resolveChecklist(state.plan, candidates)
+  const visibleState: DevinCaseState = !caseIdFromUrl
+    ? EMPTY
+    : state.caseId === caseIdFromUrl
+      ? state
+      : { ...EMPTY, status: "loading", caseId: caseIdFromUrl };
+  const candidates: readonly LiveCandidate[] =
+    visibleState.snapshot?.candidates ?? [];
+  const checklist = visibleState.plan
+    ? resolveChecklist(visibleState.plan, candidates)
     : null;
 
   return {
-    ...state,
+    ...visibleState,
     candidates,
     checklist,
   };

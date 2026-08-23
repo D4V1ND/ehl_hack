@@ -40,6 +40,10 @@ from packages.contracts.models import OutreachBrief, OutreachTask
 
 router = APIRouter(prefix="/flow", tags=["launcher"])
 
+# (case_id, supplier_ref) pairs already promised to a live call. A rehearsal for
+# the same pair would answer first and be priced instead of the real call.
+_reserved_for_live: set[tuple[str, str]] = set()
+
 TODAY = date(2026, 8, 22)
 
 
@@ -180,6 +184,28 @@ def post_call(
         from supplyos_api.outreach.calle import CalleOutreachProvider
 
         provider = CalleOutreachProvider()
+        _reserved_for_live.add((case_id, supplier_ref))
+    elif (case_id, supplier_ref) in _reserved_for_live:
+        # Someone is on the phone as this supplier right now. Rehearsing it would
+        # file invented numbers before they finish answering.
+        cases.append_event(
+            case_id,
+            actor=Actor.DEVIN,
+            stage=Stage.CALLING,
+            message=(
+                f"skipped the rehearsal for {supplier.supplier_name}: "
+                "a live call is already in flight"
+            ),
+            payload={"supplier_ref": supplier_ref, "live": False, "skipped": True},
+        )
+        return {
+            "case_id": case_id,
+            "supplier_ref": supplier_ref,
+            "task_id": None,
+            "provider": "skipped",
+            "live": False,
+            "note": "a live call holds this supplier; its answer will be the claim",
+        }
     else:
         provider = RehearsalOutreachProvider(records)
 

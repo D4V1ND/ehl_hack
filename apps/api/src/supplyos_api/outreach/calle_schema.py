@@ -1,55 +1,85 @@
-"""JSON Schema export for CALL-E's `recipient_result_schema`.
+"""Restricted JSON Schemas accepted by CALL-E's plan compiler.
 
-This provider DTO is intentionally separate from the canonical `Quote` domain
-model: CALL-E's schema validator supports a restricted JSON Schema subset and
-rejects `anyOf`. Pydantic renders every `X | None` and Decimal field as
-`anyOf`, so that output cannot be reused as-is. Optional fields are omitted
-from `required`; a supplier who does not know an answer leaves the key out,
-which `normalize_result` already treats as unknown.
+Pydantic's full ``Quote`` schema contains ``anyOf`` and nested structures that
+CALL-E rejects. The provider needs a small, flat answer sheet with explicit
+unknown values and required fields; normalization then maps that transport DTO
+into the richer domain model.
 """
 
 from __future__ import annotations
 
+_YES_NO = {"type": "string", "enum": ["yes", "no", "unknown"]}
 
-def call_result_schema() -> dict:
+
+def call_task_schema() -> dict:
+    """Minimal task-level schema without CALL-E's reserved field names."""
     return {
         "type": "object",
+        "required": ["sourcing_complete"],
         "properties": {
-            "available": {"type": "boolean"},
-            "qty_offered": {"type": "integer"},
-            "unit_price": {"type": "number"},
-            "price_breaks": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "min_qty": {"type": "integer"},
-                        "unit_price": {"type": "number"},
-                    },
-                    "required": ["min_qty", "unit_price"],
-                },
+            "sourcing_complete": {
+                **_YES_NO,
+                "description": (
+                    "yes if the recipient answered the sourcing questions, "
+                    "no if they refused or the call did not connect, "
+                    "unknown if the evidence is unclear."
+                ),
             },
-            "currency": {"type": "string", "enum": ["EUR", "USD", "GBP", "unknown"]},
-            "moq": {"type": "integer"},
-            "lead_time_days": {"type": "integer"},
-            "expedite_option": {
-                "type": "object",
-                "properties": {
-                    "days": {"type": "integer"},
-                    "surcharge": {"type": "number"},
-                },
-                "required": ["days", "surcharge"],
-            },
-            "incoterm": {"type": "string"},
-            "certs_claimed": {"type": "array", "items": {"type": "string"}},
-            "payment_terms": {"type": "string"},
         },
-        # Nothing is required. A supplier who never states availability or a
-        # lead time is normal, and CALL-E returns NO structured_result at all
-        # when it cannot satisfy `required` — losing every field it did
-        # capture. "Unknown is a first-class answer" (CLAUDE.md), and
-        # normalize_result already defaults missing fields to unknown/zero
-        # with confidence 0, so a partial answer is worth more than nothing.
-        "required": [],
+        "additionalProperties": False,
+    }
+
+
+def call_result_schema() -> dict:
+    """The flat supplier answer sheet sent as CALL-E's ``result_schema``."""
+    return {
+        "type": "object",
+        "required": ["part_available", "qty_offered", "unit_price", "lead_time_days"],
+        "properties": {
+            "part_available": {
+                **_YES_NO,
+                "description": (
+                    "Whether they have this part to sell. unknown if they did not say."
+                ),
+            },
+            "qty_offered": {
+                "type": "integer",
+                "description": "Units offered. Use 0 if they did not state a quantity.",
+            },
+            "unit_price": {
+                "type": "string",
+                "description": (
+                    "Unit price as stated, or an empty string if they did not quote a price."
+                ),
+            },
+            "currency": {
+                "type": "string",
+                "enum": ["EUR", "USD", "GBP", "unknown"],
+                "description": "Currency of the unit price. unknown if they did not say.",
+            },
+            "moq": {
+                "type": "integer",
+                "description": "Minimum order quantity. Use 0 if they did not state one.",
+            },
+            "lead_time_days": {
+                "type": "integer",
+                "description": "Lead time in days. Use 0 if they did not state one.",
+            },
+            "incoterm": {
+                "type": "string",
+                "description": "Incoterm they named, or an empty string if none.",
+            },
+            "certs_claimed": {
+                "type": "string",
+                "description": (
+                    "Quality certifications they claimed, comma-separated, "
+                    "or an empty string if none."
+                ),
+            },
+            "payment_terms": {
+                "type": "string",
+                "description": "Payment terms they named, or an empty string if none.",
+            },
+        },
         "additionalProperties": False,
     }

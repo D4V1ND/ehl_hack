@@ -9,6 +9,7 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { CockpitShell } from "@/components/cockpit/cockpit-shell";
+import { DecisionPanel } from "@/components/cockpit/decision-panel";
 import { IncidentHeader } from "@/components/cockpit/incident-header";
 import { LiveCandidatePanel } from "@/components/cockpit/live-candidate-panel";
 import { PlanChecklist } from "@/components/cockpit/plan-checklist";
@@ -51,7 +52,7 @@ function DevinCockpit() {
           part={part}
           sessionUrl={devin.session?.session_url ?? null}
           stubbed={devin.status === "stubbed"}
-          showOpenCandidates={!candidatesOpen}
+          showOpenCandidates={Boolean(caseFromUrl) && !candidatesOpen}
           onOpenCandidates={() => setCandidatesOpen(true)}
         />
         <Conversation className="min-h-0">
@@ -65,7 +66,17 @@ function DevinCockpit() {
               error={devin.error}
               sessionUrl={devin.session?.session_url ?? null}
             />
-            {caseFromUrl ? <PlanChecklist plan={devin.checklist} /> : null}
+            {caseFromUrl ? (
+              <>
+                <PlanChecklist plan={devin.checklist} />
+                <DecisionPanel
+                  decision={devin.decision}
+                  flow={devin.flow}
+                  candidates={devin.candidates}
+                  caseId={devin.caseId}
+                />
+              </>
+            ) : null}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>

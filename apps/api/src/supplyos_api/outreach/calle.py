@@ -80,7 +80,8 @@ def build_calle_payload(
 ) -> dict:
     """Pure. The ONLY place a raw phone number is allowed to appear.
 
-    CALL-E's real API rejects a `metadata` field on recipient objects
+    One recipient per request. CALL-E's real API rejects a `metadata`
+    field on recipient objects
     (confirmed: 422 "Extra inputs are not permitted" at
     recipients[0].metadata). There is no verified way to tell, from a
     webhook result, which recipient of a multi-recipient request it
@@ -92,25 +93,21 @@ def build_calle_payload(
     if not tasks:
         raise ValueError("no tasks to dispatch")
 
-    if len(tasks) != 1:
-        raise ValueError("CALL-E payloads require exactly one task per recipient")
-
     first = tasks[0]
     raw = phones_by_supplier.get(first.supplier_ref)
     if raw is None:
         raise InvalidPhoneNumber(f"no phone number for {first.supplier_ref}")
+
     return {
         "task": build_task_text(first, buyer_name=buyer_name),
-        "recipient": {
-            "phones": [validate_e164(raw)],
-            "region": settings.CALLE_REGION,
-            "locale": settings.CALLE_LOCALE,
-        },
-        "recipient_result_schema": call_result_schema(),
-        # No webhook_url on purpose. Results are pulled via GET /v1/calls/{id}
-        # (see _watch_call), which is an outbound request and so needs no
-        # public URL and no tunnel. The result can be collected through the
-        # provider API, so exposing a webhook would add a second ingestion path.
+        # Singular `recipient`. The plural `recipients` array is refused with
+        # provider_unavailable/503, which reads like a CALL-E outage rather than
+        # the schema mismatch it is.
+        "recipient": {"phones": [validate_e164(raw)]},
+        # One recipient, so the task-level schema is the answer sheet.
+        # Sending both result_schema and recipient_result_schema made CALL-E
+        # 503 the plan compiler (provider_unavailable).
+        "result_schema": call_result_schema(),
         "metadata": {
             "case_id": first.case_id,
             "task_id": first.task_id,
@@ -169,6 +166,54 @@ def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask)
         ) from exc
 
 
+MAX_LIVE_CALLS = int(os.environ.get("MAX_LIVE_CALLS", "0") or 0)
+
+_placed: dict[str, int] = {}
+_placed_lock = threading.Lock()
+
+
+def live_calls_placed(case_id: str) -> int:
+    """How many real calls this case has placed."""
+    with _placed_lock:
+        return _placed.get(case_id, 0)
+
+
+class LiveCallBudgetSpent(RuntimeError):
+    """Raised instead of dialling once MAX_LIVE_CALLS is used up."""
+
+
+def _check_call_budget(task: OutreachTask) -> None:
+    """Refuse the dial when this case has already had its real call.
+
+    A demo has one phone on stage and every supplier is redirected to it, so a
+    caller that loops over suppliers would ring that phone once per supplier.
+    The cap lives here, at the last point before the network, so it holds no
+    matter who asks -- the API, a script, or an agent driving the flow.
+
+    It counts per case rather than per process: a session usually runs several
+    cases one after another, and each of those deserves its live moment.
+
+    Unset or 0 means no cap, which keeps existing behaviour the default.
+    """
+    if not MAX_LIVE_CALLS:
+        return
+    spent = live_calls_placed(task.case_id)
+    if spent >= MAX_LIVE_CALLS:
+        raise LiveCallBudgetSpent(
+            f"refusing to dial {task.supplier_ref}: MAX_LIVE_CALLS={MAX_LIVE_CALLS} "
+            f"already spent on {spent} call(s) for {task.case_id}"
+        )
+
+
+def _record_call_placed(case_id: str) -> None:
+    """Spend the budget only once CALL-E has accepted the call.
+
+    Counting the attempt instead would let one upstream 503 burn the single
+    call a case gets, and the phone would never ring.
+    """
+    with _placed_lock:
+        _placed[case_id] = _placed.get(case_id, 0) + 1
+
 class CalleOutreachProvider:
     name = "calle"
 
@@ -204,20 +249,18 @@ class CalleOutreachProvider:
                     idempotency_key=f"{case_id}:{task.task_id}",
                 )
             except CalleAPIError as exc:
-                # The SDK has already parsed CALL-E's error body, which is
-                # where the reason for a rejected payload lives — the status
-                # code alone is not enough to fix one.
-                OUTREACH_BUFFER.append_event(
-                    case_id,
-                    actor="calle",
-                    stage="outreach_failed",
-                    level="error",
-                    message=f"CALL-E rejected the call: {exc}",
-                    payload={"task_id": task.task_id},
-                )
-                raise
+                if exc.code == "provider_unavailable":
+                    # Retry a planner failure with CALL-E's documented minimal
+                    # answer sheet. The same number and script are preserved.
+                    accepted = _create_with_minimal_schema(payload, case_id, task)
+                else:
+                    _record_calle_failure(case_id, task, exc)
+                    raise RuntimeError(
+                        f"{exc} (code={exc.code} status={exc.status_code} "
+                        f"details={exc.details})"
+                    ) from exc
 
-            _record_call_placed()
+            _record_call_placed(case_id)
 
             call_id = accepted.get("id")
             OUTREACH_BUFFER.append_event(

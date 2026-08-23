@@ -26,6 +26,7 @@ from supplyos_api.flow.workflow import run_case
 from supplyos_api.flow.rehearsal import rehearsed_quote
 from supplyos_api.record.mock_erp import get_mock_erp
 from supplyos_api.outreach.buffer import OUTREACH_BUFFER
+from supplyos_api.routers import flow as flow_router
 from packages.contracts.enums import Answer, StockStatus
 from packages.contracts.models import Channel, OutreachBrief, OutreachTask, Quote
 
@@ -36,8 +37,10 @@ TODAY = date(2026, 8, 22)
 def quote_buffer():
     """The in-process quote buffer is global, so a rehearsed call here would
     otherwise show up in another module's case."""
+    flow_router._reserved_for_live.clear()
     yield
     OUTREACH_BUFFER.clear_quotes("CASE-001")
+    flow_router._reserved_for_live.clear()
 
 
 @pytest.fixture
@@ -241,6 +244,20 @@ def test_a_live_call_cannot_be_triggered_by_a_query_parameter(client):
     assert response.status_code == 409
     assert "LIVE_CALLS" in response.json()["detail"]
     assert cases_.read_claims("CASE-001") == []
+
+
+def test_a_reserved_live_supplier_cannot_be_replaced_by_a_rehearsal(client):
+    test_client, cases_ = client
+    flow_router._reserved_for_live.add(("CASE-001", "SUP-KBY"))
+
+    body = test_client.post(
+        "/flow/call", params={"case_id": "CASE-001", "supplier_ref": "SUP-KBY"}
+    ).json()
+
+    assert body["provider"] == "skipped"
+    assert body["task_id"] is None
+    assert OUTREACH_BUFFER.quotes_for("CASE-001") == []
+    assert cases_.read_events("CASE-001")[-1].payload["skipped"] is True
 
 
 def test_a_call_answered_later_is_collected_into_the_case(client):

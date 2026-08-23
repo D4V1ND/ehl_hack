@@ -8,10 +8,36 @@ that quietly makes a test depend on one backend's behaviour fails immediately.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 import pytest
+
+
+def _live_run_requested() -> bool:
+    """Return whether pytest explicitly selected the live marker."""
+    for index, argument in enumerate(sys.argv):
+        if argument == "-m" and index + 1 < len(sys.argv):
+            expression = sys.argv[index + 1]
+        elif argument.startswith("-m") and len(argument) > 2:
+            expression = argument[2:]
+        else:
+            continue
+        if "live" in expression and "not live" not in expression:
+            return True
+    return False
+
+
+# A developer's armed .env must never make the ordinary suite dial CALL-E or
+# launch a real Devin session. Explicit `pytest -m live` remains the opt-in.
+if not _live_run_requested():
+    os.environ.update(
+        FAKE_CALLS="1",
+        LIVE_CALLS="",
+        MAX_LIVE_CALLS="0",
+        DEVIN_API_KEY="",
+    )
 
 # Keep the tests runnable directly from a clean checkout without requiring an
 # editable install first. The API uses a src layout, while contracts remain a
