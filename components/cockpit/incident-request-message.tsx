@@ -7,10 +7,13 @@ export function IncidentRequestMessage() {
       <MessageContent>
         <p className="leading-6">
           Resolve{" "}
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/30 px-1 py-[1px] align-baseline text-xs font-medium text-primary">
-            @
-            <span className="text-foreground">
-              {INCIDENT.caseId} · {INCIDENT.partId}
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-1.5 py-[1px] align-baseline text-xs font-medium text-foreground">
+            <span
+              aria-hidden="true"
+              className="size-1.5 rounded-full bg-accent-foreground"
+            />
+            <span>
+              @{INCIDENT.caseId} · {INCIDENT.partId}
             </span>
           </span>{" "}
           by finding Candidates, gathering Claims, and recommending a Decision.

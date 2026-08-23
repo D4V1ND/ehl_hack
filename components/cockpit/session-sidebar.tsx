@@ -15,6 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { INCIDENTS } from "@/lib/case-001"
+import { cn } from "@/lib/utils"
 
 type SessionSidebarProps = {
   width: number
@@ -48,25 +49,38 @@ export function SessionSidebar({
           <SidebarGroupLabel>Sessions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {INCIDENTS.map((incident) => (
-                <SidebarMenuItem key={incident.caseId}>
-                  <SidebarMenuButton
-                    size="lg"
-                    isActive={incident.caseId === activeSession}
-                    onClick={() => setActiveSession(incident.caseId)}
-                    className="mb-px hover:bg-accent/30"
-                  >
-                    <span className="min-w-0">
-                      <span className="block font-mono text-xs">
-                        {incident.caseId}
+              {INCIDENTS.map((incident) => {
+                const hasUpdate = incident.stage === "decided"
+
+                return (
+                  <SidebarMenuItem key={incident.caseId}>
+                    <SidebarMenuButton
+                      size="lg"
+                      isActive={incident.caseId === activeSession}
+                      onClick={() => setActiveSession(incident.caseId)}
+                      className={cn(
+                        "mb-px text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted data-active:bg-muted data-active:font-normal data-active:text-foreground",
+                        hasUpdate &&
+                          "font-semibold text-foreground data-active:font-semibold"
+                      )}
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-mono text-xs">
+                          {incident.caseId}
+                        </span>
+                        <span
+                          className={cn(
+                            "block truncate text-xs text-muted-foreground",
+                            hasUpdate && "text-foreground"
+                          )}
+                        >
+                          {incident.partLabel}
+                        </span>
                       </span>
-                      <span className="block truncate text-xs text-sidebar-foreground/60">
-                        {incident.partLabel}
-                      </span>
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

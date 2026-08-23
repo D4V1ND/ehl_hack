@@ -47,7 +47,7 @@ export function CandidatePanel({
       className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-sidebar text-foreground"
     >
       <header className="flex min-h-11 shrink-0 items-center justify-between border-b border-border px-3">
-          <h2 className="text-sm font-medium">Candidates</h2>
+        <h2 className="text-sm font-medium">Candidates</h2>
         <Button
           type="button"
           size="icon-sm"
@@ -97,7 +97,7 @@ function CandidateRow({
 
   return (
     <Collapsible className="border-b border-border">
-      <CollapsibleTrigger className="group flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
+      <CollapsibleTrigger className="group flex min-h-10 w-full items-center gap-2 px-3 py-1.5 text-left outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="truncate text-sm font-medium">
@@ -116,7 +116,7 @@ function CandidateRow({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="border-t border-border bg-background/50 px-3 py-3">
+        <div className="border-t border-border bg-background/50 px-3 py-2.5">
           {rejected ? (
             <RejectedCandidate candidate={candidate} />
           ) : (

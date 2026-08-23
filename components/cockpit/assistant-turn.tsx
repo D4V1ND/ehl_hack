@@ -115,7 +115,7 @@ function OutreachTasks() {
         {candidates.map((candidate) => (
           <TaskItem
             key={candidate.name}
-            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border px-2.5 py-2"
+            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border px-2.5 py-1.5"
           >
             <span className="min-w-0">
               <span className="block truncate text-foreground">

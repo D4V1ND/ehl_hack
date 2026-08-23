@@ -251,9 +251,9 @@ The prototype enters an existing Session, matching an external ERP link. The sid
 
 | # | Deliverable |
 |---|---|
-| A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists icon-free fixture Sessions that all render the same CASE-001 rehearsal |
-| A1 | **Incident context** — the first user message contains an inline primary-colour CASE-001 mention, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
-| A2 | **Run status** — a small state-coloured pebble, current stage, and Replay live in the single conversation header; a background-colour tooltip shows all five connected stages |
+| A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists icon-free fixture Sessions that all render the same CASE-001 rehearsal. Selected Sessions use a muted background and foreground text. Unselected Sessions use muted text only. Completed Sessions use bold foreground text in either state |
+| A1 | **Incident context** — the first user message contains an inline gray CASE-001 mention with foreground text and one accent pebble, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
+| A2 | **Run status** — a neutral pebble, current stage, and secondary Replay Button live in the single conversation header; a popover shows all five connected stages with foreground completed pebbles and muted pending pebbles |
 | A3 | **Candidate panel** — one closable panel contains stable multi-expand Candidate rows with matched, compliance-passed, claimed, or rejected status and the exact rejection rule; a top-right header icon restores it |
 | A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows timestamped call activity, a System-first transcript with bubbles only for Candidate turns, masked call state, animated voice activity, and an expandable Claim with Evidence. `?mock=true` opens the first fixture directly |
 | A5 | **Claim versus Supplier Record** — Candidate detail keeps the separation explicit, then shows Landed Cost and the selected split Strategy |
