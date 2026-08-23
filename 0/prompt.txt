@@ -1,1 +1,5 @@
 For as long as devin is working display a loading spinner + loading text at the bottom left of our chat content, so its alwas the last component.
+
+---
+
+Commit that.
