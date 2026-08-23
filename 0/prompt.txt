@@ -54,3 +54,7 @@ okay, now just make sure the sidebar is up to date with the mvp ui branch change
 ---
 
 Oh yeah, also adjust the send button to be foreground instead of primary
+
+---
+
+commit
