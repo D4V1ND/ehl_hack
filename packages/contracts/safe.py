@@ -127,6 +127,28 @@ def _text(value: Any, default: str = "") -> str:
     return value.strip() if isinstance(value, str) else default
 
 
+UNAVAILABLE_STATUSES = (StockStatus.UNAVAILABLE, StockStatus.UNCLEAR)
+
+
+def _available(value: Any, *, stock_status: StockStatus, qty_offered: int) -> bool:
+    """Whether they can supply at all — the field the rest of the system spends.
+
+    An explicit answer wins. When the result is silent, availability follows the
+    stock status and the quantity actually offered, because a claim that says
+    "free in stock, 6,300 pcs" and `available=False` is a contradiction that
+    silently zeroes the supplier out of every plan.
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        answer = value.strip().lower()
+        if answer in ("true", "yes", "y", "1"):
+            return True
+        if answer in ("false", "no", "n", "0"):
+            return False
+    return qty_offered > 0 and stock_status not in UNAVAILABLE_STATUSES
+
+
 def claim_from_result(
     result: Any,
     *,
@@ -145,15 +167,21 @@ def claim_from_result(
     payload: dict[str, Any] = result if isinstance(result, dict) else {}
     unparsed = {} if isinstance(result, dict) else {"unparsed_result": repr(result)[:2000]}
 
+    stock_status = _stock_status(payload.get("stock_status"))
+    qty_offered = _int(payload.get("qty_offered"), 0) or 0
+
     return Claim(
         task_id=task_id,
         case_id=case_id,
         supplier_ref=supplier_ref,
         round=round_,
         call_id=call_id,
-        qty_offered=_int(payload.get("qty_offered"), 0) or 0,
+        available=_available(
+            payload.get("available"), stock_status=stock_status, qty_offered=qty_offered
+        ),
+        qty_offered=qty_offered,
         earliest_ready_text=_text(payload.get("earliest_ready_text")),
-        stock_status=_stock_status(payload.get("stock_status")),
+        stock_status=stock_status,
         lead_time_days=_int(payload.get("lead_time_days")),
         price_quoted=_answer(payload.get("price_quoted")),
         unit_price=_money(payload.get("unit_price")),

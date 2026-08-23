@@ -25,6 +25,7 @@ from backend.cost.strategy import Option, StrategyBuilder
 from backend.decide import artifacts
 from backend.policy.rules import check_lead_time
 from backend.policy.screen import screen
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 
 # How many alternatives the reports carry. Enough to show the trade-off, few
@@ -48,7 +49,7 @@ def run(
     today: date | None = None,
     devin_session_url: str | None = None,
 ) -> DecisionOutcome:
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise ValueError(f"no incident {case_id}")
     part = records.get_part(incident.part_id)
@@ -189,7 +190,7 @@ def single_source_blockers(
     here rather than in `Candidate.compliance`. The policy report shows it as the
     reason single-sourcing is off the table.
     """
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records)
     if incident is None:
         return {}
     blockers: dict[str, list[str]] = {}

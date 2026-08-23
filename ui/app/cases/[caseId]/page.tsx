@@ -1,7 +1,18 @@
 "use client"
 
+/**
+ * The case feed: what the session is doing, right now.
+ *
+ * Deliberately plain — the cockpit is the presentation surface. This page exists
+ * so a case opened from the inventory screen can be watched from the moment it
+ * is created, including the derived cases the cockpit has no fixture for.
+ */
+
 import { use, useEffect, useState } from "react"
-import type { CaseEvent } from "@/lib/cases/types"
+import Link from "next/link"
+
+import { getEvents } from "@/lib/api/client"
+import type { Event } from "@/lib/contracts"
 
 export default function CaseEventsPage({
   params,
@@ -9,7 +20,7 @@ export default function CaseEventsPage({
   params: Promise<{ caseId: string }>
 }) {
   const { caseId } = use(params)
-  const [events, setEvents] = useState<CaseEvent[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -17,18 +28,12 @@ export default function CaseEventsPage({
 
     async function poll() {
       try {
-        const response = await fetch(`/api/cases/${caseId}/events`, {
-          cache: "no-store",
-        })
-        const data = (await response.json()) as {
-          events?: CaseEvent[]
-          error?: string
-        }
+        const next = await getEvents(caseId)
         if (cancelled) return
-        setEvents(data.events ?? [])
-        setError(response.ok ? null : (data.error ?? `HTTP ${response.status}`))
-      } catch (err) {
-        if (!cancelled) setError(String(err))
+        setEvents(next)
+        setError(null)
+      } catch (cause) {
+        if (!cancelled) setError((cause as Error).message)
       }
     }
 
@@ -43,6 +48,9 @@ export default function CaseEventsPage({
   return (
     <main style={{ fontFamily: "monospace", padding: 24 }}>
       <h1>{caseId} events</h1>
+      <p>
+        <Link href="/inventory">inventory</Link> · <Link href="/cockpit">cockpit</Link>
+      </p>
       {error ? <p>waiting: {error}</p> : null}
       <ol>
         {events.map((event, index) => (

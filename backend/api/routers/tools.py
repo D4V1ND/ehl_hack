@@ -29,6 +29,7 @@ from packages.contracts.models import (
     SupplierRecord,
 )
 from packages.contracts.safe import claim_from_result
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
 
@@ -93,8 +94,10 @@ def get_open_pos(part_id: str | None = Query(default=None), records: SystemOfRec
 
 
 @router.get("/incident/{case_id}", response_model=Incident, summary="The shortage, as our own records see it")
-def get_incident(case_id: str, records: SystemOfRecord = Depends(erp)) -> Incident:
-    incident = records.get_incident(case_id)
+def get_incident(
+    case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)
+) -> Incident:
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     return incident
@@ -143,7 +146,7 @@ def post_outreach(
     so a Chinese supplier routes to email rather than voice. Same `Claim` comes
     back either way.
     """
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     part = records.get_part(incident.part_id)

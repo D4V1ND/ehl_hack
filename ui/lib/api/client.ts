@@ -1,4 +1,12 @@
-import type { CaseSnapshot, CaseSummary, CompanyProfile, Event, ShortageAlert } from "@/lib/contracts"
+import type {
+  CaseSnapshot,
+  CaseSummary,
+  CompanyProfile,
+  Event,
+  InventoryRow,
+  OpenedCase,
+  ShortageAlert,
+} from "@/lib/contracts"
 
 import caseOne from "@/lib/fixtures/CASE-001.json"
 import caseOneEvents from "@/lib/fixtures/CASE-001.events.json"
@@ -83,6 +91,30 @@ export async function getArtifacts(caseId: string): Promise<Record<string, strin
       }),
   )
   return Object.fromEntries(entries)
+}
+
+/**
+ * The trigger list: every part we could open a case for.
+ *
+ * Live only — there is nothing to trigger without a backend, so in fixtures
+ * mode the inventory screen says so rather than offering a dead button.
+ */
+export async function getInventory(): Promise<InventoryRow[]> {
+  if (DATA_SOURCE === "fixtures") return []
+  return live<InventoryRow[]>("/inventory")
+}
+
+export async function openCase(partId: string): Promise<OpenedCase> {
+  const response = await fetch(`${API_BASE}/cases`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ part_id: partId }),
+    cache: "no-store",
+  })
+  if (!response.ok) {
+    throw new Error(((await response.json()) as { detail?: string }).detail ?? `HTTP ${response.status}`)
+  }
+  return (await response.json()) as OpenedCase
 }
 
 export async function getProfile(): Promise<CompanyProfile> {

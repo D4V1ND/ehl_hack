@@ -14,6 +14,22 @@ from pathlib import Path
 
 LIVE_CALLS_CONFIRMATION = "yes-place-real-calls"
 
+# The dev UI moves to :3001 whenever :3000 is taken, and a demo laptop cannot
+# afford a CORS surprise. Both local ports are trusted by default; anything else
+# is opt-in through CASES_ALLOWED_ORIGINS. Never "*": these routes start Devin
+# sessions and place calls.
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]
+
+
+def cors_origins_from_env(raw: str | None) -> list[str]:
+    origins = [origin.strip() for origin in (raw or "").split(",") if origin.strip()]
+    return origins or DEFAULT_CORS_ORIGINS.copy()
+
 
 def _load_dotenv(path: Path) -> None:
     if not path.exists():
@@ -40,7 +56,7 @@ class Settings:
     github_token: str | None = None
     github_repo: str | None = None
     github_base_branch: str = "main"
-    cors_origins: list[str] = field(default_factory=lambda: ["http://localhost:3000", "http://127.0.0.1:3000"])
+    cors_origins: list[str] = field(default_factory=lambda: DEFAULT_CORS_ORIGINS.copy())
 
     @property
     def call_mode(self) -> str:
@@ -60,4 +76,5 @@ def get_settings() -> Settings:
         github_token=os.environ.get("GITHUB_TOKEN", "").strip() or None,
         github_repo=os.environ.get("GITHUB_REPO", "").strip() or None,
         github_base_branch=os.environ.get("GITHUB_BASE_BRANCH", "main").strip() or "main",
+        cors_origins=cors_origins_from_env(os.environ.get("CASES_ALLOWED_ORIGINS")),
     )

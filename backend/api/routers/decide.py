@@ -22,6 +22,7 @@ from backend.casestore.case_store import CaseStore
 from backend.decide.run import run, single_source_blockers
 from backend.policy.screen import screen
 from backend.publish.github_pr import publish
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from packages.contracts.models import Candidate, Decision
 
@@ -43,7 +44,7 @@ def post_screen(
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
 ) -> list[Candidate]:
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     part = records.get_part(incident.part_id)
