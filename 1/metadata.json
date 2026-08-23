@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NZYEAH81A4SMVMFKP19063",
+  "session_id": "01a02bf0-1b0a-7af1-92ed-81ebd118d4a5",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T00:22:24.231707Z",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "pyproject.toml",
+    "run.py"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "31e2ff12fd09",
+  "checkpoint_transcript_start": 336,
+  "transcript_lines_at_start": 336,
+  "compact_transcript_start": 70,
+  "token_usage": {
+    "input_tokens": 21085,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2379264,
+    "output_tokens": 2614,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T00:22:24.173384Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 1,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 1,
+    "total_lines_changed": 2,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
