@@ -64,6 +64,40 @@ export async function fetchEvents(
   return (await response.json()) as CaseEvent[]
 }
 
+const dialedCases = new Set<string>()
+const dialing = new Set<string>()
+
+export function alreadyLiveDialed(events: CaseEvent[]): boolean {
+  return events.some((event) => event.payload.live === true)
+}
+
+/** One live CALL-E dial. Every supplier number is overridden by DEMO_CALL_DESTINATION. */
+export async function placeLiveCall(
+  caseId: string,
+  supplierRef: string
+): Promise<void> {
+  if (dialedCases.has(caseId) || dialing.has(caseId)) return
+  dialing.add(caseId)
+  try {
+    const query = new URLSearchParams({
+      case_id: caseId,
+      supplier_ref: supplierRef,
+      live: "true",
+    })
+    const response = await fetch(`${API_BASE}/flow/call?${query}`, {
+      method: "POST",
+      cache: "no-store",
+    })
+    if (!response.ok) {
+      dialedCases.add(caseId)
+      throw new Error(await readError(response, `POST /flow/call -> ${response.status}`))
+    }
+    dialedCases.add(caseId)
+  } finally {
+    dialing.delete(caseId)
+  }
+}
+
 export function sessionFromEvents(events: CaseEvent[]): SessionInfo | null {
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const payload = events[index].payload

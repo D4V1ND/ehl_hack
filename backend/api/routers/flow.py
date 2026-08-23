@@ -206,7 +206,7 @@ def post_call(
 
     try:
         receipt = provider.dispatch([task])
-    except (RuntimeError, ValueError) as exc:
+    except Exception as exc:
         plan.upsert(
             case_id,
             cases,

@@ -3,13 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
+  alreadyLiveDialed,
   fetchCase,
   fetchEvents,
   openCase,
+  placeLiveCall,
   sessionFromEvents,
 } from "@/lib/live/api"
-import { resolveChecklist } from "@/lib/live/checklist"
-import { EVENT_POLL_MS, PART_ID } from "@/lib/live/config"
+import {
+  outreachIsLive,
+  pickLiveCallSupplier,
+  resolveChecklist,
+} from "@/lib/live/checklist"
+import { EVENT_POLL_MS, HOLD_FOR, PART_ID } from "@/lib/live/config"
 import { fetchPlan, type LivePlan } from "@/lib/live/plan"
 import type {
   CaseEvent,
@@ -165,6 +171,24 @@ export function useDevinCase(caseIdFromUrl: string | null) {
   const checklist = state.plan
     ? resolveChecklist(state.plan, candidates)
     : null
+
+  useEffect(() => {
+    const caseId = state.caseId
+    if (!caseId || !checklist) return
+    if (!outreachIsLive(checklist)) return
+    if (alreadyLiveDialed(state.events)) return
+    const supplierRef = pickLiveCallSupplier(checklist, candidates, HOLD_FOR)
+    if (!supplierRef) return
+    void placeLiveCall(caseId, supplierRef).catch((cause) => {
+      const message =
+        cause instanceof Error ? cause.message : "Live call failed"
+      setState((current) =>
+        current.caseId === caseId
+          ? { ...current, error: message }
+          : current
+      )
+    })
+  }, [candidates, checklist, state.caseId, state.events])
 
   return {
     ...state,

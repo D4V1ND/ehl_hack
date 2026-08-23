@@ -103,7 +103,7 @@ export function PlanChecklist({
             </ul>
             {section.group === "outreach" && liveCalls.length > 1 ? (
               <p className="ml-6 text-[11px] text-muted-foreground">
-                {liveCalls.length} calls in parallel. Every dial hits the demo
+                {liveCalls.length} shown in parallel. One live dial to the demo
                 number.
               </p>
             ) : null}
