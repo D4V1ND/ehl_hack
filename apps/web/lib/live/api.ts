@@ -68,7 +68,7 @@ const dialedCases = new Set<string>()
 const dialing = new Set<string>()
 
 export function alreadyLiveDialed(events: CaseEvent[]): boolean {
-  return events.some((event) => event.payload.live === true)
+  return events.some((event) => event.stage === "call_accepted")
 }
 
 /** One live CALL-E dial. Every supplier number is overridden by DEMO_CALL_DESTINATION. */
@@ -77,6 +77,7 @@ export async function placeLiveCall(
   supplierRef: string
 ): Promise<void> {
   if (dialedCases.has(caseId) || dialing.has(caseId)) return
+  dialedCases.add(caseId)
   dialing.add(caseId)
   try {
     const query = new URLSearchParams({
@@ -89,7 +90,6 @@ export async function placeLiveCall(
       cache: "no-store",
     })
     if (!response.ok) {
-      dialedCases.add(caseId)
       throw new Error(await readError(response, `POST /flow/call -> ${response.status}`))
     }
     dialedCases.add(caseId)
