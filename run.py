@@ -3,6 +3,7 @@
 
     python run.py            build the database, start the API and the cockpit
     python run.py ui         cockpit only (it runs offline; this is the demo path)
+    python run.py web        the apps/web chat cockpit only
     python run.py api        API only
     python run.py test       every test, plus the UI typecheck. Touches no network.
     python run.py db         rebuild the SQL system of record from the seed YAML
@@ -20,8 +21,11 @@ Ctrl-C stops whatever was started.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import json
 import os
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -30,11 +34,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 UI = ROOT / "ui"
+WEB = ROOT / "apps" / "web"
 VENV = ROOT / ".venv"
 WINDOWS = os.name == "nt"
 
 API_PORT_DEFAULT = int(os.environ.get("API_PORT", 8010))
 UI_PORT_DEFAULT = int(os.environ.get("UI_PORT", 3000))
+WEB_PORT_DEFAULT = int(os.environ.get("WEB_PORT", 3001))
 
 MIN_NODE_MAJOR = 20  # Next 16 requires >= 20.9
 
@@ -45,7 +51,19 @@ MIN_NODE_MAJOR = 20  # Next 16 requires >= 20.9
 _COLOUR = sys.stdout.isatty() and (not WINDOWS or os.environ.get("WT_SESSION") or os.environ.get("TERM"))
 
 
+def _safe(text: str) -> str:
+    """Drop what the console cannot encode.
+
+    Next logs box-drawing and arrow characters; a Windows console running
+    cp1252 raises UnicodeEncodeError on them, which turned "a frontend
+    stopped" from a warning into a crash that took the rest down with it.
+    """
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    return text.encode(encoding, "replace").decode(encoding, "replace")
+
+
 def _c(code: str, text: str) -> str:
+    text = _safe(text)
     return f"\033[{code}m{text}\033[0m" if _COLOUR else text
 
 
@@ -97,7 +115,7 @@ def ensure_python() -> Path:
         py = venv_python()
 
     probe = subprocess.run(
-        [str(py), "-c", "import fastapi, pydantic, yaml, uvicorn"],
+        [str(py), "-c", "import calle, fastapi, pydantic, yaml, uvicorn"],
         capture_output=True, env=clean,
     )
     if probe.returncode != 0:
@@ -167,10 +185,11 @@ def ensure_node() -> None:
         die(f"node {version} is too old for Next 16 (ui/.nvmrc pins 22).\n{hint}")
 
 
-def ensure_node_modules() -> None:
-    if not (UI / "node_modules").exists():
-        warn("ui/node_modules missing — installing (this takes a minute)")
-        subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
+def ensure_node_modules(app: Path = UI) -> None:
+    if not (app / "node_modules").exists():
+        rel = app.relative_to(ROOT).as_posix()
+        warn(f"{rel}/node_modules missing — installing (this takes a minute)")
+        subprocess.run([node_cmd("npm"), "install"], cwd=app, check=True)
 
 
 # --- ports ----------------------------------------------------------------
@@ -188,6 +207,23 @@ def pick_port(start: int) -> int:
             return port
     die(f"no free port near {start}")
     return start
+
+
+def next_dev_argv(app: Path, port: int) -> list[str]:
+    """The command that starts Next for `app`, without the npx shim.
+
+    `npx` is a batch file on Windows, so Popen starts cmd.exe and Next ends up a
+    grandchild. terminate() then stops the wrapper while the dev server keeps the
+    port, and the next run dies on Next's "another dev server is already running"
+    check. Calling node with Next's own entry point keeps one process to signal.
+    """
+    entry = app / "node_modules" / "next" / "dist" / "bin" / "next"
+    if not entry.is_file():
+        die(f"next is not installed in {app.relative_to(ROOT).as_posix()} — run `python run.py setup`")
+    node = shutil.which("node")
+    if not node:
+        die("node not found on PATH")
+    return [node, str(entry), "dev", "--port", str(port)]
 
 
 # --- commands -------------------------------------------------------------
@@ -213,6 +249,8 @@ def cmd_setup() -> None:
     ok(f"python ({py})")
     ensure_node()
     subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
+    if WEB.is_dir():
+        subprocess.run([node_cmd("npm"), "install"], cwd=WEB, check=True)
     ok(f"node {subprocess.run([shutil.which('node'), '-v'], capture_output=True, text=True).stdout.strip()}")
     cmd_db(py)
     ok("database")
@@ -254,7 +292,17 @@ def cmd_ui() -> None:
     ensure_node_modules()
     port = pick_port(UI_PORT_DEFAULT)
     bold(f"Cockpit on http://localhost:{port}/cockpit")
-    subprocess.run([node_cmd("npx"), "next", "dev", "--port", str(port)], cwd=UI)
+    subprocess.run(next_dev_argv(UI, port), cwd=UI)
+
+
+def cmd_web() -> None:
+    if not WEB.is_dir():
+        die("apps/web is not in this checkout")
+    ensure_node()
+    ensure_node_modules(WEB)
+    port = pick_port(WEB_PORT_DEFAULT)
+    bold(f"Chat cockpit on http://localhost:{port}/chat")
+    subprocess.run(next_dev_argv(WEB, port), cwd=WEB)
 
 
 def cmd_build() -> None:
@@ -269,16 +317,25 @@ def cmd_all() -> None:
     ensure_node_modules()
     ensure_db(py)
 
+    # apps/web is a second, separate cockpit and is not on every branch.
+    with_web = WEB.is_dir()
+    if with_web:
+        ensure_node_modules(WEB)
+
     api_port = pick_port(API_PORT_DEFAULT)
     ui_port = pick_port(UI_PORT_DEFAULT)
+    web_port = pick_port(max(WEB_PORT_DEFAULT, ui_port + 1)) if with_web else None
+
     logs = ROOT / ".logs"
     logs.mkdir(exist_ok=True)
     api_log = (logs / "api.log").open("w")
     ui_log = (logs / "ui.log").open("w")
+    web_log = (logs / "web.log").open("w") if with_web else None
 
     # A new process group on Windows so Ctrl-C reaches the children the same way
     # a POSIX signal would.
     flags = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if WINDOWS else {}
+    api_base = {"NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}"}
 
     api = subprocess.Popen(
         [str(py), "-m", "uvicorn", "backend.api.main:app", "--port", str(api_port)],
@@ -286,10 +343,17 @@ def cmd_all() -> None:
         stdout=api_log, stderr=subprocess.STDOUT, **flags,
     )
     ui = subprocess.Popen(
-        [node_cmd("npx"), "next", "dev", "--port", str(ui_port)],
-        cwd=UI, env={**os.environ, "NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}"},
+        next_dev_argv(UI, ui_port),
+        cwd=UI, env={**os.environ, **api_base},
         stdout=ui_log, stderr=subprocess.STDOUT, **flags,
     )
+    web = subprocess.Popen(
+        next_dev_argv(WEB, web_port),
+        cwd=WEB, env={**os.environ, **api_base},
+        stdout=web_log, stderr=subprocess.STDOUT, **flags,
+    ) if with_web else None
+
+    children = [p for p in (api, ui, web) if p is not None]
 
     try:
         # Wait for the API rather than guessing with a sleep.
@@ -308,26 +372,43 @@ def cmd_all() -> None:
         print()
         bold("Stockout — Slice B")
         ok(f"cockpit   http://localhost:{ui_port}/cockpit")
+        if with_web:
+            ok(f"chat      http://localhost:{web_port}/chat")
         ok(f"API       http://localhost:{api_port}/docs")
-        dim(f"  logs      {logs / 'api.log'}  {logs / 'ui.log'}")
-        dim("  Ctrl-C to stop both")
+        dim(f"  logs      {logs}")
+        dim("  Ctrl-C to stop everything")
         print()
 
-        while api.poll() is None and ui.poll() is None:
+        # Any child exiting means the run is over; the finally block stops the rest.
+        while all(proc.poll() is None for proc in children):
             time.sleep(0.5)
+
+        for name, proc, log in (
+            ("cockpit", ui, "ui.log"),
+            ("chat cockpit", web, "web.log"),
+            ("API", api, "api.log"),
+        ):
+            if proc is None or proc.poll() is None:
+                continue
+            warn(f"the {name} stopped")
+            with contextlib.suppress(OSError):
+                tail = (logs / log).read_text(encoding="utf-8", errors="replace").strip()
+                if tail:
+                    dim("\n".join(tail.splitlines()[-12:]))
     except KeyboardInterrupt:
         print()
         dim("stopping…")
     finally:
-        for proc in (ui, api):
+        for proc in reversed(children):
             if proc.poll() is None:
                 proc.terminate()
                 try:
                     proc.wait(timeout=8)
                 except subprocess.TimeoutExpired:
                     proc.kill()
-        api_log.close()
-        ui_log.close()
+        for handle in (api_log, ui_log, web_log):
+            if handle is not None:
+                handle.close()
 
 
 def cmd_db_export(dest: str | None) -> None:
@@ -373,6 +454,7 @@ def cmd_db_export(dest: str | None) -> None:
 COMMANDS = {
     "all": lambda a: cmd_all(),
     "ui": lambda a: cmd_ui(),
+    "web": lambda a: cmd_web(),
     "api": lambda a: cmd_api(),
     "test": lambda a: cmd_test(),
     "db": lambda a: cmd_db(),
