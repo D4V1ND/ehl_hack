@@ -12,11 +12,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.api.deps import erp, store
 from packages.contracts.models import (
+    CasePlan,
     CaseSnapshot,
     CaseSummary,
     Event,
     ShortageAlert,
 )
+from backend import plan
 from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
@@ -160,6 +162,13 @@ def get_events(case_id: str, since: int = Query(default=0, ge=0), cases: CaseSto
     if not cases.exists(case_id):
         raise HTTPException(status_code=404, detail=f"no case {case_id}")
     return cases.read_events(case_id, since=since)
+
+
+@router.get("/cases/{case_id}/plan", response_model=CasePlan, summary="The checklist: what the agent has done, is doing, and still owes")
+def get_plan(case_id: str, cases: CaseStore = Depends(store)) -> CasePlan:
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    return plan.read(case_id, cases)
 
 
 @router.get("/cases/{case_id}/artifacts", summary="The files this case has produced")

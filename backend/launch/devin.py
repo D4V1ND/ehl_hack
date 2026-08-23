@@ -62,11 +62,25 @@ def session_prompt(incident: Incident, part: Part, base_url: str) -> str:
             " split plan, then POST /tools/publish_pr to file the review package.",
             "",
             "",
-            f"POST {base}/tools/events (case_id, stage, message) BEFORE and AFTER every step above,"
-            " naming the supplier you are on — \"reading the ERP record for 6204-2RS\","
-            " \"screening Kugellager Bayern\", \"Rulmenti rejected: DIN 625 lapsed\","
-            " \"asking NordBearing\", \"pricing 9 split plans\". A human is watching the cockpit and"
-            " the only thing they can see is what you post here. One line each, no internal detail.",
+            "The cockpit shows a checklist, and a step nobody ticks reads as you being stuck"
+            " there. Keep it current — this is not optional narration, it is the only thing the"
+            " human watching can see:",
+            f"- POST {base}/tools/plan/step?case_id={incident.case_id}&step_id=...&status=active"
+            " before you start a step, and the same call with status=done (or failed) after it,"
+            " optionally with &detail=<one short human sentence>.",
+            "- The steps that already exist, in order: intake:incident, erp:part, erp:stock,"
+            " erp:open_pos, erp:price_history, suppliers:list, screening:policy, outreach:brief,"
+            " claims:normalise, costing:landed, review:package. Use those ids exactly.",
+            "- How many suppliers you research and call is your decision, so those steps do not"
+            " exist yet: create one per supplier with step_id=screening:<SUPPLIER_REF> or"
+            " outreach:<SUPPLIER_REF>, group=screening or outreach, label=\"Screening Kugellager"
+            " Bayern\" / \"Calling Rulmenti\" (the supplier's real name, it is on screen), and"
+            " supplier_ref=<SUPPLIER_REF>.",
+            f"- Calling several suppliers at once: POST {base}/tools/plan/steps?case_id="
+            f"{incident.case_id} with a JSON list of those objects, so they appear together.",
+            "- Repeating a step_id updates that line; it never creates a second one.",
+            f"- Anything worth saying that is not a step transition goes to POST {base}/tools/events"
+            " (case_id, stage, message). One line, no internal detail.",
             "",
             "Bounds, all of them hard:",
             "- This is a procurement case. It is not a coding task: do not read, write or refactor"

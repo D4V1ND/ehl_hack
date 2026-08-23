@@ -17,6 +17,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from backend import plan
 from backend.api.deps import erp, store
 from backend.casestore.case_store import CaseStore
 from backend.launch.devin import start_session
@@ -156,6 +157,9 @@ def open_case(
         raise HTTPException(status_code=404, detail=f"no part {incident.part_id}")
 
     cases.write_incident(incident)
+    # The checklist exists from the first second, all pending: the cockpit shows
+    # the work ahead before anything has happened.
+    plan.seed(incident.case_id, cases)
     cases.append_event(
         case_id=incident.case_id,
         actor=Actor.SYSTEM,

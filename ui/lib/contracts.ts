@@ -16,8 +16,10 @@ export type Currency = "EUR" | "USD" | "GBP" | "unknown"
 export type FreightMode = "air" | "sea" | "road"
 export type Level = "info" | "warn" | "error"
 export type PartClass = "rolling_bearing" | "fastener" | "seal" | "electronic_component"
+export type PlanGroup = "intake" | "erp" | "suppliers" | "screening" | "outreach" | "claims" | "costing" | "review"
 export type PolicyRule = "blocked_origin_country" | "missing_required_certification" | "audit_required_and_not_audited" | "lead_time_after_line_stop"
 export type Stage = "detected" | "researching" | "calling" | "costing" | "decided"
+export type StepStatus = "pending" | "active" | "done" | "failed" | "skipped"
 export type StockStatus = "free_in_stock" | "in_stock_allocated" | "to_be_made" | "unavailable" | "unclear"
 
 export interface Candidate {
@@ -31,6 +33,16 @@ export interface Candidate {
   /** "erp" for an approved supplier, "web" for one researched online */
   source?: string
   compliance: ComplianceResult
+}
+
+/** The whole checklist for a case, ready to render. */
+export interface CasePlan {
+  case_id: string
+  sections?: PlanSection[]
+  active_step_id?: string | null
+  updated_at?: string | null
+  done?: number
+  total?: number
 }
 
 /** Everything the case page needs, in one response. */
@@ -77,6 +89,8 @@ export interface Claim {
   certs_claimed?: string[]
   payment_terms?: string | null
   notes?: string
+  transcript?: TranscriptTurn[]
+  summary?: string
   transcript_url?: string | null
   recording_url?: string | null
   confidence?: number
@@ -235,6 +249,43 @@ export interface Part {
   standard_cost: string
 }
 
+/** A fixed header plus its steps. Status is derived from the steps. */
+export interface PlanSection {
+  group: PlanGroup
+  label: string
+  status: StepStatus
+  steps?: PlanStep[]
+}
+
+/** One line on the checklist. */
+export interface PlanStep {
+  step_id: string
+  case_id: string
+  group: PlanGroup
+  label: string
+  status?: StepStatus
+  /** One line under the label. Optional. */
+  detail?: string | null
+  /** Set on per-supplier steps */
+  supplier_ref?: string | null
+  /** Created during the run, not seeded */
+  dynamic?: boolean
+  /** Order within the group */
+  seq?: number
+  started_at?: string | null
+  completed_at?: string | null
+}
+
+/** One transition, as posted to `/tools/plan/steps`. */
+export interface PlanStepUpdate {
+  step_id: string
+  status: StepStatus
+  label?: string | null
+  group?: PlanGroup | null
+  detail?: string | null
+  supplier_ref?: string | null
+}
+
 /** Buy at least `min_qty` and each unit costs `unit_price`. */
 export interface PriceBreak {
   min_qty: number
@@ -258,6 +309,8 @@ export interface Quote {
   certs_claimed?: string[]
   payment_terms?: string | null
   notes?: string
+  transcript?: TranscriptTurn[]
+  summary?: string
   transcript_url?: string | null
   recording_url?: string | null
   confidence?: number
@@ -346,6 +399,13 @@ export interface SupplierRecord {
   /** Largest order they have actually delivered for us */
   max_historical_fill?: number
   price_breaks?: PriceBreak[]
+}
+
+/** One thing said on the call, in order. */
+export interface TranscriptTurn {
+  offset_seconds?: number
+  speaker?: string
+  text?: string
 }
 
 /** A row on the inventory screen: one part, and whether it can be triggered. */

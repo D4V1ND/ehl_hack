@@ -174,9 +174,12 @@ def test_the_prompt_keeps_the_session_inside_the_case(records):
     assert "pull request" in prompt  # named, so it can be forbidden
     assert "do not dial anyone yourself" in prompt
     assert "unknown" in prompt
-    # It has to narrate, per supplier -- that feed is the whole cockpit.
+    # It has to keep the checklist current, per supplier -- that is the cockpit.
     assert "/tools/events" in prompt
-    assert "before and after every step" in prompt
+    assert "/tools/plan/step" in prompt
+    assert "erp:part" in prompt and "review:package" in prompt
+    assert "outreach:<supplier_ref>" in prompt  # dynamic per-supplier lines
+    assert "status=active" in prompt and "status=done" in prompt
 
 
 def test_the_session_starts_with_no_secrets_and_a_cap(records, monkeypatch):
