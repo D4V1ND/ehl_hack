@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0P05V6GDE8VQTBQE2BBNY0Y",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/consolidate-cockpit-calls",
-  "checkpoints_count": 2,
+  "checkpoints_count": 5,
   "files_touched": [
     "apps/web/components/ai-elements/tool.tsx",
     "apps/web/components/cockpit/assistant-turn.tsx",
@@ -11,7 +11,11 @@
     "apps/web/components/cockpit/cockpit-chat.tsx",
     "apps/web/components/cockpit/decision-bar.tsx",
     "apps/web/components/cockpit/incident-header.tsx",
+    "apps/web/components/cockpit/inline-candidates-prototype.tsx",
+    "apps/web/components/cockpit/prototype-variant-switcher.tsx",
     "apps/web/components/cockpit/session-sidebar.tsx",
+    "apps/web/components/ui/sheet.tsx",
+    "apps/web/lib/case-001/script.ts",
     "docs/PLAN.md",
     "docs/design.md"
   ],
@@ -29,13 +33,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 136817,
+    "input_tokens": 304585,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 2046720,
-    "output_tokens": 17431,
-    "api_call_count": 35
+    "cache_read_tokens": 8130816,
+    "output_tokens": 40194,
+    "api_call_count": 101
   }
 }
