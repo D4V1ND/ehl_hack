@@ -17,6 +17,7 @@ Two things are deliberate:
 
 from __future__ import annotations
 
+import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import date
@@ -104,9 +105,20 @@ def run_case(
     today: date | None = None,
     hold_for: str | None = None,
     rehearse: bool = True,
+    pace: float = 0.0,
 ) -> FlowResult:
-    """The whole procedure. Safe to run again: every step overwrites its own output."""
+    """The whole procedure. Safe to run again: every step overwrites its own output.
+
+    `pace` is seconds of deliberate dwell before each finished step. The work takes
+    well under a second, which reads as a glitch on a screen; a recording needs the
+    checklist to move at the speed of narration.
+    """
     today = today or date.today()
+
+    def _pause() -> None:
+        if pace > 0:
+            time.sleep(pace)
+
     incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise ValueError(f"no incident {case_id}")
@@ -115,9 +127,10 @@ def run_case(
         raise ValueError(f"no part {incident.part_id}")
 
     notes: list[str] = []
-    plan.seed(case_id, cases)  # a case run by hand has no checklist yet
+    plan.reset(case_id, cases)  # a fresh checklist: this run's progress, nobody else's
 
     # 1. What our own records say about the shortage and the part.
+    _pause()
     _tick(cases, case_id, "intake:incident", StepStatus.DONE, detail=incident.reason or None)
     for step_id, detail in (
         ("erp:part", f"{part.item_code}, {part.weight_kg} kg, HS {part.hs_code}"),
@@ -125,6 +138,7 @@ def run_case(
         ("erp:open_pos", incident.reason or "no delivery scheduled in time"),
         ("erp:price_history", "what we paid before, by quarter"),
     ):
+        _pause()
         _tick(cases, case_id, step_id, StepStatus.DONE, detail=detail)
     cases.append_event(
         case_id,
@@ -147,6 +161,7 @@ def run_case(
 
     # 2. Who we are allowed to buy from, and why not the others.
     registered = records.get_suppliers_for_part(incident.part_id)
+    _pause()
     _tick(
         cases,
         case_id,
@@ -167,6 +182,7 @@ def run_case(
     cases.write_candidates(case_id, candidates)
     for candidate in candidates:
         rejected = not candidate.compliance.passed
+        _pause()
         _tick(
             cases,
             case_id,
@@ -202,6 +218,7 @@ def run_case(
         )
 
     compliant = [c for c in candidates if c.compliance.passed]
+    _pause()
     _tick(
         cases,
         case_id,
@@ -267,6 +284,10 @@ def run_case(
         supplier = records.get_supplier(task.supplier_ref)
         if supplier is None:
             continue
+        # The dwell sits before the answer, not before the dial: on screen the
+        # calls all start together and then land one after another.
+        _pause()
+        _pause()
         claim = claim_from_quote(
             rehearsed_quote(task, supplier=supplier, incident=incident, part=part),
             qty_requested=incident.qty_required,
@@ -308,6 +329,7 @@ def run_case(
         )
 
     # 4. Price every plan and write the review package.
+    _pause()
     _tick(
         cases,
         case_id,
@@ -316,6 +338,7 @@ def run_case(
         detail=f"{len(filed)} answers turned into claims",
     )
     _tick(cases, case_id, "costing:landed", StepStatus.ACTIVE)
+    _pause()
     outcome = decide(case_id=case_id, records=records, cases=cases, today=today)
     _tick(
         cases,
@@ -324,6 +347,7 @@ def run_case(
         StepStatus.DONE,
         detail=f"{len(outcome.strategies)} plans priced",
     )
+    _pause()
     _tick(
         cases,
         case_id,

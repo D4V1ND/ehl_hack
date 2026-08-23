@@ -83,6 +83,12 @@ def post_run(
         default=None,
         description="Supplier to leave uncalled, e.g. the one called live on stage.",
     ),
+    pace_ms: int = Query(
+        default=0,
+        ge=0,
+        le=5000,
+        description="Dwell per checklist step, so a screen recording can follow along.",
+    ),
     today: date = Query(default=TODAY),
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
@@ -97,6 +103,7 @@ def post_run(
             cases=cases,
             today=today,
             hold_for=hold_for,
+            pace=pace_ms / 1000,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
