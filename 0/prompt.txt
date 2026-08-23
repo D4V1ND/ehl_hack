@@ -1,0 +1,92 @@
+create another branch that is a copy from https://github.com/D4V1ND/ehl_hack/tree/lorenzkrinner/consolidate-cockpit-calls. UI_graph or something perhaps
+
+---
+
+davin@Maison_DVN MINGW64 ~/Desktop/python/ehl_hack/cases (call_e)
+$ git switch UI_graph
+error: Your local changes to the following files would be overwritten by checkout:
+        .env.example
+Please commit your changes or stash them before you switch branches.
+Aborting
+
+---
+
+what frontend do I have
+
+---
+
+give me steps how do I turn it on
+
+---
+
+install all the stuffs I need
+
+---
+
+try run them and fix what fail
+
+---
+
+how do I run them now
+
+---
+
+the chat rn is boring UI for the product. I'm thinking of building something graphics, because its for Hackathob
+
+---
+
+can you perhaps create a screenshot of a scene on how this idea will look like?
+
+---
+
+is it buildable in like 1 hour?
+
+---
+
+lets say I have the ERP system (Theres always one supplier at least in the system). Devin as the Brain/Orchestrator gets and Issue -> Devin creates scripts to take the datas from the ERP -> The data will be fed to a voice calling Agent that I built -> Output -> Done
+
+---
+
+lets say I have the ERP system (Theres always one supplier at least in the system). Devin as the Brain/Orchestrator gets and Issue -> Devin creates scripts to take the datas from the ERP -> The data will be fed to a voice calling Agent that I built -> Output -> Done. Redesign the UI
+
+---
+
+delete changes from this branch
+
+---
+
+install cloudfare  on this device
+
+---
+
+host cloudfare, tell me the step I do it
+
+---
+
+pnpm doesnt work on me
+
+---
+
+C:\Users\davin\Desktop\python\ehl_hack>pnpm dev
+[ERR_PNPM_NO_PKG_MANIFEST] No package.json found in C:\Users\davin\Desktop\python\ehl_hack
+[ERROR] Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\davin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+
+pnpm: Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\davin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+    at getFinalError (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:34109:14)
+    at makeError (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:36416:21)
+    at getSyncResult (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38260:10)
+    at spawnSubprocessSync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38220:14)
+    at execaCoreSync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38150:23)
+    at callBoundExeca (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40678:23)
+    at boundExeca (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40655:49)
+    at sync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40814:10)
+    at runPnpmCli (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:245099:5)
+    at runDepsStatusCheck (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:246833:7)
+
+---
+
+I want to work on main branch
+
+---
+
+pnpm dev doesnt work on my main branch. Fix it
