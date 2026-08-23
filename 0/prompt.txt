@@ -1,0 +1,60 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Pull the latest changes from lorenzkrinner/mvp-ui onto this branch, it's mostly design changes,
+
+---
+
+okay some of the changes (like sidebar design) didn't fully come through, all design changes from mvp-ui should be on this branch!!
+
+also you can remove the popover trigger button to display the state of the chat. unecessary ui.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/EjfbT5/image.png (9.0 KB)
+</system_instruction>
+
+
+
+also thishighlighter should use a lighter backgorund than the card background: .context/attachments/EjfbT5/image.png
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/HJ8CtW/session-transcript-f4043b0d-8ec3-4e67-9b19-9c13d3e63ae4.md (6.2 KB)
+</system_instruction>
+
+
+
+Dude, but now the entire simplification of the UI os not there again. Liek the tools calls still have th ebroder etc. Why is that so hard to do? Or the sidebar subtitles are still there...
+
+To be clear this is the stuff we implemented here: .context/attachments/HJ8CtW/session-transcript-f4043b0d-8ec3-4e67-9b19-9c13d3e63ae4.md 
+
+Hope this helps
+
+---
+
+okay, now just make sure the sidebar is up to date with the mvp ui branch changes and we're good here.
+
+---
+
+Oh yeah, also adjust the send button to be foreground instead of primary
+
+---
+
+commit
