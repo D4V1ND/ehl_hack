@@ -2,29 +2,13 @@
 
 This folder is **not** the product. These screens answer design questions before production work begins.
 
-## How to open
+## Pitch deck
 
-Start the app, then open the beta website prototype:
+Start the app, then open the interactive deck:
 
 ```sh
 npm run dev
 ```
-
-`http://localhost:3000/prototype/website?variant=A`
-
-Use the floating arrows or the left and right arrow keys to compare variants A–E.
-
-The question: which single-screen beta layout best fits SupplyOS?
-
-- A and B use `public/website/background-1.png`.
-- C and D use `public/website/background-2.jpeg`.
-- E uses `public/website/background-4.png` and develops B as the selected direction.
-- All descriptions contain at most 16 words.
-- The email fields are visual mocks and do not send data.
-
-## Pitch deck
-
-Open the interactive deck at:
 
 `http://localhost:3000/prototype/slides`
 
@@ -35,20 +19,3 @@ and links to the live demo. Slide 6 compares the external supplier-search
 benchmark with the currently observed SupplyOS response times. Slide 9 uses the
 EHL Hackathon logo saved in `public/slides/ehl-logo.svg`; slide 10 thanks
 Cognition for the challenge that inspired SupplyOS.
-
-## Cockpit screen frames
-
-Open the HTML file directly. No build step.
-
-`app/prototype/cockpit-screens.html`
-
-## Screens
-
-1. **Opened from ERP** — right: empty file list (“No artifacts yet”).
-2. **Agent working** — right: files filling in + stage checklist.
-3. **Live call (Lindy + Grok)** — right: SKF transcript, status bar, Claim strip.
-4. **Second call / allocated stock** — right: Munich Motion transcript (`in_stock_allocated`).
-5. **Claim vs record** — right: Claim | Supplier Record + Landed Cost.
-6. **Decision + files** — right: artifacts + PR card. No Approve button.
-
-IA: ERP owns Incident. SupplyOS owns the sourcing run.

@@ -15,7 +15,7 @@ export function HomeHero({ presentation = false }: { presentation?: boolean }) {
         <>
           <div
             className="absolute inset-0 bg-cover bg-[position:center_44%] sm:bg-[position:center_38%] lg:bg-[position:center_34%]"
-            style={{ backgroundImage: "url('/website/background-4.png')" }}
+            style={{ backgroundImage: "url('/website/background-4.webp')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/5 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/25 via-transparent to-transparent" />
