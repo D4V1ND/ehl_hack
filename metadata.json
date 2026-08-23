@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0P2HDHEHAKFEVFXD5SQF3SX",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/consolidate-cockpit-calls",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     "apps/web/components/ai-elements/prompt-input.tsx",
     "apps/web/components/cockpit/cockpit-chat.tsx",
@@ -22,13 +22,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 227777,
+    "input_tokens": 341462,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 7240704,
-    "output_tokens": 42998,
-    "api_call_count": 73
+    "cache_read_tokens": 10097664,
+    "output_tokens": 53394,
+    "api_call_count": 119
   }
 }
