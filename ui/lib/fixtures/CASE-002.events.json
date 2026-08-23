@@ -26,5 +26,111 @@
       "needed_by": "2026-09-11",
       "line_stop_at": "2026-09-11T06:00:00+00:00"
     }
+  },
+  {
+    "seq": 3,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.238888Z",
+    "actor": "devin",
+    "stage": "detected",
+    "level": "warn",
+    "message": "DIN933-M8x40-A2 (Fully threaded hex head bolt, M8 x 40 mm, stainless A2-70, DIN 933.): short 158,000 of 180,000 pcs, PLANT-LEI/ASSY-1 stops 2026-09-11 at EUR 9200.00/h",
+    "payload": {
+      "part_id": "PRT-M8X40",
+      "hs_code": "7318.15.69",
+      "weight_kg": 0.022,
+      "criticality": "medium",
+      "shortfall": 158000
+    }
+  },
+  {
+    "seq": 4,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.243167Z",
+    "actor": "devin",
+    "stage": "researching",
+    "level": "info",
+    "message": "Schrauben Werk Schwaben GmbH (DE): cleared policy \u2014 approved for DIN933-M8x40-A2, incumbent, preferred, contract EUR 0.18/pc, 7d door-to-door",
+    "payload": {
+      "supplier_ref": "SUP-SHW",
+      "passed": true,
+      "failed_rules": []
+    }
+  },
+  {
+    "seq": 5,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.245112Z",
+    "actor": "devin",
+    "stage": "researching",
+    "level": "info",
+    "message": "Fixando Bolt Praha s.r.o. (CZ): cleared policy \u2014 approved for DIN933-M8x40-A2, contract EUR 0.16/pc, 12d door-to-door",
+    "payload": {
+      "supplier_ref": "SUP-FBP",
+      "passed": true,
+      "failed_rules": []
+    }
+  },
+  {
+    "seq": 6,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.245963Z",
+    "actor": "devin",
+    "stage": "researching",
+    "level": "info",
+    "message": "2 of 2 suppliers cleared policy; asking each of them for a quote",
+    "payload": {
+      "compliant": [
+        "SUP-SHW",
+        "SUP-FBP"
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.249867Z",
+    "actor": "calle",
+    "stage": "calling",
+    "level": "info",
+    "message": "Schrauben Werk Schwaben GmbH: free_in_stock, 180,000 pcs at EUR 0.1800, offered the full quantity from stock",
+    "payload": {
+      "supplier_ref": "SUP-SHW",
+      "stock_status": "free_in_stock",
+      "qty_offered": 180000,
+      "confidence": 0.78,
+      "rehearsal": true
+    }
+  },
+  {
+    "seq": 8,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.253889Z",
+    "actor": "calle",
+    "stage": "calling",
+    "level": "info",
+    "message": "Fixando Bolt Praha s.r.o.: free_in_stock, 180,000 pcs at EUR 0.1695, offered the full quantity from stock",
+    "payload": {
+      "supplier_ref": "SUP-FBP",
+      "stock_status": "free_in_stock",
+      "qty_offered": 180000,
+      "confidence": 0.73,
+      "rehearsal": true
+    }
+  },
+  {
+    "seq": 9,
+    "case_id": "CASE-002",
+    "ts": "2026-08-23T02:00:46.261610Z",
+    "actor": "devin",
+    "stage": "decided",
+    "level": "info",
+    "message": "Single source: Schrauben Werk Schwaben GmbH (road) \u2014 EUR 38486.26 landed, full qty 2026-08-31",
+    "payload": {
+      "strategies": 4,
+      "rejected_suppliers": 0,
+      "recommended": "STR-01",
+      "total_cost": "38486.26"
+    }
   }
 ]

@@ -85,6 +85,28 @@
       ],
       "title": "StockStatus",
       "type": "string"
+    },
+    "TranscriptTurn": {
+      "description": "One thing said on the call, in order.\n\n`speaker` is CALL-E's label \u2014 \"bot\", \"user\", or \"unknown\" \u2014 kept as a\nplain string rather than an enum so an unfamiliar label is recorded\nrather than rejected.",
+      "properties": {
+        "offset_seconds": {
+          "default": 0,
+          "title": "Offset Seconds",
+          "type": "integer"
+        },
+        "speaker": {
+          "default": "unknown",
+          "title": "Speaker",
+          "type": "string"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "title": "TranscriptTurn",
+      "type": "object"
     }
   },
   "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
@@ -207,6 +229,18 @@
     "notes": {
       "default": "",
       "title": "Notes",
+      "type": "string"
+    },
+    "transcript": {
+      "items": {
+        "$ref": "#/$defs/TranscriptTurn"
+      },
+      "title": "Transcript",
+      "type": "array"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
       "type": "string"
     },
     "transcript_url": {
