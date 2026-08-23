@@ -85,6 +85,7 @@ function DevinCockpit() {
             />
             <DecisionPanel
               decision={devin.decision}
+              flow={devin.flow}
               candidates={devin.candidates}
               caseId={devin.caseId}
             />

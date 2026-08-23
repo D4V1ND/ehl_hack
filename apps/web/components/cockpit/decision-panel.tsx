@@ -5,7 +5,12 @@ import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { LiveCandidate, LiveDecision, LiveStrategy } from "@/lib/live/types"
+import type {
+  LiveCandidate,
+  LiveDecision,
+  LiveFlowState,
+  LiveStrategy,
+} from "@/lib/live/types"
 
 /** How many plans sit on the table as choices; the rest fold away. */
 const OPTIONS_SHOWN = 3
@@ -43,12 +48,32 @@ function premium(option: LiveStrategy, cheapest: LiveStrategy): string | null {
   return `+${money.format(gap)}`
 }
 
+/** Has every supplier we called come back yet?
+ *
+ * The backend re-prices after each claim is filed, so a decision exists long
+ * before the last call ends. Showing it then puts a shortlist in front of the
+ * buyer that the next answer can still change, which reads as the agent having
+ * made its mind up early. Wait until every compliant supplier has answered, or
+ * until the case says it is decided for the ones that never will.
+ */
+function callsAreIn(
+  flow: LiveFlowState | null,
+  candidates: readonly LiveCandidate[]
+): boolean {
+  if (!flow) return false
+  if (flow.stage === "decided") return true
+  const asked = candidates.filter((c) => c.compliance.passed).length
+  return asked > 0 && flow.claims.length >= asked
+}
+
 export function DecisionPanel({
   decision,
+  flow,
   candidates,
   caseId,
 }: {
   decision: LiveDecision | null
+  flow: LiveFlowState | null
   candidates: readonly LiveCandidate[]
   caseId: string | null
 }) {
@@ -76,6 +101,7 @@ export function DecisionPanel({
   const rejected = candidates.filter((c) => !c.compliance.passed)
 
   if (!decision || offered.length === 0 || !cheapest) return null
+  if (!callsAreIn(flow, candidates)) return null
 
   return (
     <section

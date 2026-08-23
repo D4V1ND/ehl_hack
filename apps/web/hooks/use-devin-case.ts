@@ -23,6 +23,7 @@ import type {
   CaseSnapshot,
   LiveCandidate,
   LiveDecision,
+  LiveFlowState,
   OpenedCase,
   SessionInfo,
 } from "@/lib/live/types"
@@ -43,6 +44,7 @@ type DevinCaseState = {
   plan: LivePlan | null
   session: SessionInfo | null
   decision: LiveDecision | null
+  flow: LiveFlowState | null
 }
 
 const EMPTY: DevinCaseState = {
@@ -54,6 +56,7 @@ const EMPTY: DevinCaseState = {
   plan: null,
   session: null,
   decision: null,
+  flow: null,
 }
 
 function statusFromSession(session: SessionInfo | null): DevinCaseStatus {
@@ -89,6 +92,7 @@ export function useDevinCase(caseIdFromUrl: string | null) {
       session,
       // Filled by the first poll; attaching should not block on pricing.
       decision: null,
+      flow: null,
     })
   }, [])
 
@@ -160,6 +164,7 @@ export function useDevinCase(caseIdFromUrl: string | null) {
             session,
             // Keep the last priced package if a tick comes back without one.
             decision: flow?.decision ?? current.decision,
+            flow: flow ?? current.flow,
             status: statusFromSession(session),
             error: session?.error ?? current.error,
           }
