@@ -1,0 +1,28 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Okay, we're currently in the works of merging  slice-b/calls-from-cockpit  Into this branch. Now, the question is: How do we continue from there? Because my friends are working in main in main, we currently have the Voice Agent and the API calls, the API schema, and Devin workflows. That's where the entire backend basically lives that we are actually going to use. In the other boundary, we just have the frontend. How do we connect those? It's going to be very complicated. Different schemas, probably there's a lot of schema drift between what the frontend expects and what FastAPI expects, and what we get from our actual backend.
+
+How can we consolidate those and merge them together? Use sub-agents for your research. Only answer when you're really confident that this is actually what we need.
+
+Always compare this to the product spec we have in plan.md, and based on what we actually want with this product. Once you're 100% confident on how to consolidate, answer using the ADHD skill [i-have-adhd](/Users/lorenzkrinner/.agents/skills/i-have-adhd/SKILL.md) To keep its children simple.
+
+I don't care if this takes 30 minutes or so, as long i really only care about the quality of your output.
+
+Remember, you are the orchestrator. They are the sub-agents. You want to save your context window. The sub-agents are just there for delegation or research.
+
+---
+
+Quick update. Actually, just learned we already are basically done with the consolidation of the Slice B calls from Cockpit branch merging into this branch. It's already basically a two-person setup, so now continue your research.
