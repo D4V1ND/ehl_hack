@@ -1,0 +1,65 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PV77HWZBMPHWSCBFBYRJQ0",
+  "session_id": "01a02d91-956e-7d61-ab78-efd0d20f6fcf",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T08:20:27.530637Z",
+  "branch": "lorenzkrinner/build-deck-prototypes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/app/page.tsx",
+    "apps/web/app/prototype/README.md",
+    "apps/web/app/prototype/slides/page.tsx",
+    "apps/web/components/home/home-hero.tsx",
+    "apps/web/components/prototype/slides-deck.module.css",
+    "apps/web/components/prototype/slides-deck.tsx",
+    "apps/web/lib/live/checklist.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "262c4a7583b9",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 230596,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9852672,
+    "output_tokens": 42301,
+    "api_call_count": 82
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T08:20:27.35306Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 821,
+    "human_modified": 62,
+    "human_removed": 0,
+    "total_committed": 821,
+    "total_lines_changed": 883,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1175,
+      "user_lines_removed": 31,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/attachments/YJTZ12/PR instructions.md": 15,
+        ".context/attachments/hS7uEc/pasted_text_2026-08-23_09-41-16.txt": 277,
+        "apps/web/app/page.tsx": 2,
+        "apps/web/app/prototype/README.md": 10,
+        "apps/web/app/prototype/slides/page.tsx": 25,
+        "apps/web/components/home/home-hero.tsx": 39,
+        "apps/web/components/prototype/slides-deck.module.css": 450,
+        "apps/web/components/prototype/slides-deck.tsx": 353,
+        "apps/web/lib/live/checklist.ts": 4
+      },
+      "user_removed_per_file": {
+        "apps/web/app/page.tsx": 30,
+        "apps/web/lib/live/checklist.ts": 1
+      }
+    }
+  ]
+}

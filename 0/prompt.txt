@@ -1,0 +1,71 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/davao directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/hS7uEc/pasted_text_2026-08-23_09-41-16.txt (14.1 KB)
+- .context/attachments/lRXB1P/deck (1).pdf (3.1 MB)
+</system_instruction>
+
+
+
+This is the entire session I had with devon appended below.
+
+What's up in the PDF you created last.
+
+What's your turn this into the actual slides and prototypes slides so I can test them myself. They should live on the apps/web.
+
+.context/attachments/hS7uEc/pasted_text_2026-08-23_09-41-16.txt .context/attachments/lRXB1P/deck (1).pdf 
+
+Then we'll iterate based on that.
+
+install the skills as well mentiopned in this transcript
+
+---
+
+Btw, you can skip slide 3, unecessary.
+
+---
+
+Why are you taking so long. Just build the html now!!
+
+---
+
+What is taking so long to fucking build a html flow?
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/3VVSHr/image.png (308.3 KB)
+</system_instruction>
+
+
+
+Use this image for slide 4,  .context/attachments/3VVSHr/image.png 
+
+Add subpoints similar to slide 2  for slide 5.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/YJTZ12/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/YJTZ12/PR instructions.md
