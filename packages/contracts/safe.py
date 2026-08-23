@@ -195,6 +195,7 @@ def claim_from_result(
         certification_current=_answer(payload.get("certification_current")),
         certs_claimed=_strings(payload.get("certs_claimed")),
         notes=_text(payload.get("notes")),
+        summary=_text(payload.get("summary")),
         transcript_url=_text(payload.get("transcript_url")) or None,
         recording_url=_text(payload.get("recording_url")) or None,
         confidence=_confidence(payload.get("confidence")),

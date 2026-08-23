@@ -1,0 +1,440 @@
+{
+  "case_id": "CASE-6204-2RS",
+  "strategies": [
+    {
+      "strategy_id": "STR-05",
+      "label": "Split: 4,000 bridge from Kugellager Bayern GmbH (road) + 6,500 from Rulmenti Est SRL (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-KBY",
+          "supplier_name": "Kugellager Bayern GmbH",
+          "qty": 4000,
+          "mode": "road",
+          "eta": "2026-09-01",
+          "landed": {
+            "supplier_ref": "SUP-KBY",
+            "qty": 4000,
+            "mode": "road",
+            "goods_cost": "6720.00",
+            "freight": "469.20",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "17.25",
+            "expedite_surcharge": "0.00",
+            "total": "7206.45",
+            "unit_effective": "1.8016",
+            "breakdown_md": "**Kugellager Bayern GmbH** — 4,000 pcs, road, ETA 2026-09-01\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 4,000 x EUR 1.68 | 6720.00 |\n| freight (road) | 408.0 kg x EUR 1.15/kg | 469.20 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 8 days, 1 pallet(s) | 17.25 |\n| **landed total** | | **7206.45** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 6500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 6500,
+            "mode": "road",
+            "goods_cost": "8775.00",
+            "freight": "762.45",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "26.08",
+            "expedite_surcharge": "0.00",
+            "total": "9563.53",
+            "unit_effective": "1.4713",
+            "breakdown_md": "**Rulmenti Est SRL** — 6,500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 6,500 x EUR 1.35 | 8775.00 |\n| freight (road) | 663.0 kg x EUR 1.15/kg | 762.45 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 9 days, 1 pallet(s) | 26.08 |\n| **landed total** | | **9563.53** |\n"
+          }
+        }
+      ],
+      "total_cost": "16769.98",
+      "unit_effective": "1.5971",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": true,
+      "risk_score": 0.2,
+      "rationale": "4,000 pcs from Kugellager Bayern GmbH by road, ETA 2026-09-01; 6,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 16769.98; line keeps running."
+    },
+    {
+      "strategy_id": "STR-01",
+      "label": "Single source: Kugellager Bayern GmbH (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-KBY",
+          "supplier_name": "Kugellager Bayern GmbH",
+          "qty": 10500,
+          "mode": "road",
+          "eta": "2026-09-01",
+          "landed": {
+            "supplier_ref": "SUP-KBY",
+            "qty": 10500,
+            "mode": "road",
+            "goods_cost": "16590.00",
+            "freight": "1231.65",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "82.09",
+            "expedite_surcharge": "0.00",
+            "total": "17903.74",
+            "unit_effective": "1.7051",
+            "breakdown_md": "**Kugellager Bayern GmbH** — 10,500 pcs, road, ETA 2026-09-01\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 10,500 x EUR 1.58 | 16590.00 |\n| freight (road) | 1071.0 kg x EUR 1.15/kg | 1231.65 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 17 days, 1 pallet(s) | 82.09 |\n| **landed total** | | **17903.74** |\n"
+          }
+        }
+      ],
+      "total_cost": "17903.74",
+      "unit_effective": "1.7051",
+      "coverage_date": "2026-09-01",
+      "meets_line_stop": true,
+      "risk_score": 0.15,
+      "rationale": "10,500 pcs from Kugellager Bayern GmbH by road, ETA 2026-09-01. Landed EUR 17903.74; line keeps running."
+    },
+    {
+      "strategy_id": "STR-06",
+      "label": "Split: 4,000 bridge from Kugellager Bayern GmbH (air) + 6,500 from Rulmenti Est SRL (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-KBY",
+          "supplier_name": "Kugellager Bayern GmbH",
+          "qty": 4000,
+          "mode": "air",
+          "eta": "2026-08-30",
+          "landed": {
+            "supplier_ref": "SUP-KBY",
+            "qty": 4000,
+            "mode": "air",
+            "goods_cost": "6720.00",
+            "freight": "1978.80",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "25.30",
+            "expedite_surcharge": "0.00",
+            "total": "8724.10",
+            "unit_effective": "2.1810",
+            "breakdown_md": "**Kugellager Bayern GmbH** — 4,000 pcs, air, ETA 2026-08-30\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 4,000 x EUR 1.68 | 6720.00 |\n| freight (air) | 408.0 kg x EUR 4.85/kg | 1978.80 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 10 days, 1 pallet(s) | 25.30 |\n| **landed total** | | **8724.10** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 6500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 6500,
+            "mode": "road",
+            "goods_cost": "8775.00",
+            "freight": "762.45",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "26.08",
+            "expedite_surcharge": "0.00",
+            "total": "9563.53",
+            "unit_effective": "1.4713",
+            "breakdown_md": "**Rulmenti Est SRL** — 6,500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 6,500 x EUR 1.35 | 8775.00 |\n| freight (road) | 663.0 kg x EUR 1.15/kg | 762.45 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 9 days, 1 pallet(s) | 26.08 |\n| **landed total** | | **9563.53** |\n"
+          }
+        }
+      ],
+      "total_cost": "18287.63",
+      "unit_effective": "1.7417",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": true,
+      "risk_score": 0.2,
+      "rationale": "4,000 pcs from Kugellager Bayern GmbH by air, ETA 2026-08-30; 6,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 18287.63; line keeps running."
+    },
+    {
+      "strategy_id": "STR-07",
+      "label": "Split: 4,000 bridge from SKF Deutschland Vertrieb GmbH (road) + 6,500 from Rulmenti Est SRL (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-SKF",
+          "supplier_name": "SKF Deutschland Vertrieb GmbH",
+          "qty": 4000,
+          "mode": "road",
+          "eta": "2026-08-28",
+          "landed": {
+            "supplier_ref": "SUP-SKF",
+            "qty": 4000,
+            "mode": "road",
+            "goods_cost": "8400.00",
+            "freight": "469.20",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "31.00",
+            "expedite_surcharge": "0.00",
+            "total": "8900.20",
+            "unit_effective": "2.2251",
+            "breakdown_md": "**SKF Deutschland Vertrieb GmbH** — 4,000 pcs, road, ETA 2026-08-28\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 4,000 x EUR 2.10 | 8400.00 |\n| freight (road) | 408.0 kg x EUR 1.15/kg | 469.20 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 12 days, 1 pallet(s) | 31.00 |\n| **landed total** | | **8900.20** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 6500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 6500,
+            "mode": "road",
+            "goods_cost": "8775.00",
+            "freight": "762.45",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "26.08",
+            "expedite_surcharge": "0.00",
+            "total": "9563.53",
+            "unit_effective": "1.4713",
+            "breakdown_md": "**Rulmenti Est SRL** — 6,500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 6,500 x EUR 1.35 | 8775.00 |\n| freight (road) | 663.0 kg x EUR 1.15/kg | 762.45 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 9 days, 1 pallet(s) | 26.08 |\n| **landed total** | | **9563.53** |\n"
+          }
+        }
+      ],
+      "total_cost": "18463.73",
+      "unit_effective": "1.7585",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": true,
+      "risk_score": 0.2,
+      "rationale": "4,000 pcs from SKF Deutschland Vertrieb GmbH by road, ETA 2026-08-28; 6,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 18463.73; line keeps running."
+    },
+    {
+      "strategy_id": "STR-08",
+      "label": "Split: 4,000 bridge from SKF Deutschland Vertrieb GmbH (air) + 6,500 from Rulmenti Est SRL (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-SKF",
+          "supplier_name": "SKF Deutschland Vertrieb GmbH",
+          "qty": 4000,
+          "mode": "air",
+          "eta": "2026-08-26",
+          "landed": {
+            "supplier_ref": "SUP-SKF",
+            "qty": 4000,
+            "mode": "air",
+            "goods_cost": "8400.00",
+            "freight": "1978.80",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "41.34",
+            "expedite_surcharge": "0.00",
+            "total": "10420.14",
+            "unit_effective": "2.6050",
+            "breakdown_md": "**SKF Deutschland Vertrieb GmbH** — 4,000 pcs, air, ETA 2026-08-26\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 4,000 x EUR 2.10 | 8400.00 |\n| freight (air) | 408.0 kg x EUR 4.85/kg | 1978.80 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 14 days, 1 pallet(s) | 41.34 |\n| **landed total** | | **10420.14** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 6500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 6500,
+            "mode": "road",
+            "goods_cost": "8775.00",
+            "freight": "762.45",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "26.08",
+            "expedite_surcharge": "0.00",
+            "total": "9563.53",
+            "unit_effective": "1.4713",
+            "breakdown_md": "**Rulmenti Est SRL** — 6,500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 6,500 x EUR 1.35 | 8775.00 |\n| freight (road) | 663.0 kg x EUR 1.15/kg | 762.45 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 9 days, 1 pallet(s) | 26.08 |\n| **landed total** | | **9563.53** |\n"
+          }
+        }
+      ],
+      "total_cost": "19983.67",
+      "unit_effective": "1.9032",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": true,
+      "risk_score": 0.2,
+      "rationale": "4,000 pcs from SKF Deutschland Vertrieb GmbH by air, ETA 2026-08-26; 6,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 19983.67; line keeps running."
+    },
+    {
+      "strategy_id": "STR-02",
+      "label": "Single source: Kugellager Bayern GmbH (air)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-KBY",
+          "supplier_name": "Kugellager Bayern GmbH",
+          "qty": 10500,
+          "mode": "air",
+          "eta": "2026-08-30",
+          "landed": {
+            "supplier_ref": "SUP-KBY",
+            "qty": 10500,
+            "mode": "air",
+            "goods_cost": "16590.00",
+            "freight": "5194.35",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "110.11",
+            "expedite_surcharge": "0.00",
+            "total": "21894.46",
+            "unit_effective": "2.0852",
+            "breakdown_md": "**Kugellager Bayern GmbH** — 10,500 pcs, air, ETA 2026-08-30\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 10,500 x EUR 1.58 | 16590.00 |\n| freight (air) | 1071.0 kg x EUR 4.85/kg | 5194.35 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 19 days, 1 pallet(s) | 110.11 |\n| **landed total** | | **21894.46** |\n"
+          }
+        }
+      ],
+      "total_cost": "21894.46",
+      "unit_effective": "2.0852",
+      "coverage_date": "2026-08-30",
+      "meets_line_stop": true,
+      "risk_score": 0.15,
+      "rationale": "10,500 pcs from Kugellager Bayern GmbH by air, ETA 2026-08-30. Landed EUR 21894.46; line keeps running."
+    },
+    {
+      "strategy_id": "STR-09",
+      "label": "Split: everything the fast suppliers will give, remainder on the cheapest",
+      "lines": [
+        {
+          "supplier_ref": "SUP-SKF",
+          "supplier_name": "SKF Deutschland Vertrieb GmbH",
+          "qty": 8000,
+          "mode": "road",
+          "eta": "2026-08-28",
+          "landed": {
+            "supplier_ref": "SUP-SKF",
+            "qty": 8000,
+            "mode": "road",
+            "goods_cost": "16800.00",
+            "freight": "938.40",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "83.81",
+            "expedite_surcharge": "0.00",
+            "total": "17822.21",
+            "unit_effective": "2.2278",
+            "breakdown_md": "**SKF Deutschland Vertrieb GmbH** — 8,000 pcs, road, ETA 2026-08-28\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 8,000 x EUR 2.10 | 16800.00 |\n| freight (road) | 816.0 kg x EUR 1.15/kg | 938.40 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 17 days, 1 pallet(s) | 83.81 |\n| **landed total** | | **17822.21** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-KBY",
+          "supplier_name": "Kugellager Bayern GmbH",
+          "qty": 2000,
+          "mode": "road",
+          "eta": "2026-09-01",
+          "landed": {
+            "supplier_ref": "SUP-KBY",
+            "qty": 2000,
+            "mode": "road",
+            "goods_cost": "3360.00",
+            "freight": "234.60",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "6.60",
+            "expedite_surcharge": "0.00",
+            "total": "3601.20",
+            "unit_effective": "1.8006",
+            "breakdown_md": "**Kugellager Bayern GmbH** — 2,000 pcs, road, ETA 2026-09-01\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 2,000 x EUR 1.68 | 3360.00 |\n| freight (road) | 204.0 kg x EUR 1.15/kg | 234.60 |\n| duty (DE) | 0.0% of goods+freight | 0.00 |\n| carrying | 5 days, 1 pallet(s) | 6.60 |\n| **landed total** | | **3601.20** |\n"
+          }
+        },
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 500,
+            "mode": "road",
+            "goods_cost": "650.00",
+            "freight": "58.65",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "0.47",
+            "expedite_surcharge": "0.00",
+            "total": "709.12",
+            "unit_effective": "1.4182",
+            "breakdown_md": "**Rulmenti Est SRL** — 500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 500 x EUR 1.30 | 650.00 |\n| freight (road) | 51.0 kg x EUR 1.15/kg | 58.65 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 1 days, 1 pallet(s) | 0.47 |\n| **landed total** | | **709.12** |\n"
+          }
+        }
+      ],
+      "total_cost": "22132.53",
+      "unit_effective": "2.1079",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": true,
+      "risk_score": 0.25,
+      "rationale": "8,000 pcs from SKF Deutschland Vertrieb GmbH by road, ETA 2026-08-28; 2,000 pcs from Kugellager Bayern GmbH by road, ETA 2026-09-01; 500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 22132.53; line keeps running."
+    },
+    {
+      "strategy_id": "STR-04",
+      "label": "Single source: Rulmenti Est SRL (air)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 10500,
+          "mode": "air",
+          "eta": "2026-09-10",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 10500,
+            "mode": "air",
+            "goods_cost": "14175.00",
+            "freight": "5194.35",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "78.09",
+            "expedite_surcharge": "0.00",
+            "total": "19447.44",
+            "unit_effective": "1.8521",
+            "breakdown_md": "**Rulmenti Est SRL** — 10,500 pcs, air, ETA 2026-09-10\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 10,500 x EUR 1.35 | 14175.00 |\n| freight (air) | 1071.0 kg x EUR 4.85/kg | 5194.35 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 15 days, 1 pallet(s) | 78.09 |\n| **landed total** | | **19447.44** |\n"
+          }
+        }
+      ],
+      "total_cost": "19447.44",
+      "unit_effective": "1.8521",
+      "coverage_date": "2026-09-10",
+      "meets_line_stop": false,
+      "risk_score": 0.15,
+      "rationale": "10,500 pcs from Rulmenti Est SRL by air, ETA 2026-09-10. Landed EUR 19447.44; line stops — EUR 3091200.00 of downtime before the first arrival."
+    },
+    {
+      "strategy_id": "STR-03",
+      "label": "Single source: Rulmenti Est SRL (road)",
+      "lines": [
+        {
+          "supplier_ref": "SUP-RUL",
+          "supplier_name": "Rulmenti Est SRL",
+          "qty": 10500,
+          "mode": "road",
+          "eta": "2026-09-12",
+          "landed": {
+            "supplier_ref": "SUP-RUL",
+            "qty": 10500,
+            "mode": "road",
+            "goods_cost": "14175.00",
+            "freight": "1231.65",
+            "duty": "0.00",
+            "tooling": "0",
+            "carrying_cost": "63.60",
+            "expedite_surcharge": "0.00",
+            "total": "15470.25",
+            "unit_effective": "1.4734",
+            "breakdown_md": "**Rulmenti Est SRL** — 10,500 pcs, road, ETA 2026-09-12\n\n| component | basis | EUR |\n| --- | --- | --- |\n| goods | 10,500 x EUR 1.35 | 14175.00 |\n| freight (road) | 1071.0 kg x EUR 1.15/kg | 1231.65 |\n| duty (RO) | 0.0% of goods+freight | 0.00 |\n| carrying | 15 days, 1 pallet(s) | 63.60 |\n| **landed total** | | **15470.25** |\n"
+          }
+        }
+      ],
+      "total_cost": "15470.25",
+      "unit_effective": "1.4734",
+      "coverage_date": "2026-09-12",
+      "meets_line_stop": false,
+      "risk_score": 0.15,
+      "rationale": "10,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 15470.25; line stops — EUR 3974400.00 of downtime before the first arrival."
+    }
+  ],
+  "recommended_strategy_id": "STR-05",
+  "runner_up_ids": [
+    "STR-01",
+    "STR-06",
+    "STR-07"
+  ],
+  "rationale_md": "# Decision — CASE-6204-2RS\n\n**Recommendation: Split: 4,000 bridge from Kugellager Bayern GmbH (road) + 6,500 from Rulmenti Est SRL (road)** — landed EUR 16769.98 (EUR 1.5971/pc), full quantity on site 2026-09-12.\n\nPO-2291 (30,000 pcs, SUP-KBY) slipped from 2026-08-26 to 2026-09-17. On-hand cover is 12 days at ASSY-3's take rate of 350/day.\n\n## Why this plan\n\n- The line stops on 2026-09-03 at EUR 18400.00/hour. This plan keeps it running; EUR 3974400.00 of downtime avoided against the cheapest plan that does not.\n- 4,000 pcs from Kugellager Bayern GmbH by road, ETA 2026-09-01; 6,500 pcs from Rulmenti Est SRL by road, ETA 2026-09-12. Landed EUR 16769.98; line keeps running.\n- Runner-up `STR-01` (Single source: Kugellager Bayern GmbH (road)): +EUR 1133.76, full qty 2026-09-01, feasible.\n- Runner-up `STR-06` (Split: 4,000 bridge from Kugellager Bayern GmbH (air) + 6,500 from Rulmenti Est SRL (road)): +EUR 1517.65, full qty 2026-09-12, feasible.\n- Runner-up `STR-07` (Split: 4,000 bridge from SKF Deutschland Vertrieb GmbH (road) + 6,500 from Rulmenti Est SRL (road)): +EUR 1693.75, full qty 2026-09-12, feasible.\n\n## Order lines\n\n| supplier | qty | mode | ETA | landed EUR |\n| --- | --- | --- | --- | --- |\n| Kugellager Bayern GmbH | 4,000 | road | 2026-09-01 | 7206.45 |\n| Rulmenti Est SRL | 6,500 | road | 2026-09-12 | 9563.53 |\n\n## What a human still owns\n\n- Approving this PR is the approval. Nothing was ordered.\n- Policy: `policy_report.md`. Cost arithmetic: `cost_report.md`. Event log: `events.jsonl`.\n- Devin session: https://app.devin.ai/sessions/2ddef68c8a9f45fda34ea2a192f24520\n",
+  "policy_report_url": "policy_report.md",
+  "cost_report_url": "cost_report.md",
+  "pr_url": null,
+  "devin_session_url": "https://app.devin.ai/sessions/2ddef68c8a9f45fda34ea2a192f24520",
+  "decided_at": "2026-08-23T01:24:04.055146Z"
+}
