@@ -9,6 +9,7 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
+import { DecisionPanel } from "@/components/cockpit/decision-panel"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { LiveCandidatePanel } from "@/components/cockpit/live-candidate-panel"
 import { PlanChecklist } from "@/components/cockpit/plan-checklist"
@@ -82,6 +83,12 @@ function DevinCockpit() {
             <PlanChecklist
               plan={devin.checklist}
               launching={devin.status === "launching"}
+            />
+            <DecisionPanel
+              decision={devin.decision}
+              flow={devin.flow}
+              candidates={devin.candidates}
+              caseId={devin.caseId}
             />
           </ConversationContent>
           <ConversationScrollButton />
