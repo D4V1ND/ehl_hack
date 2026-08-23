@@ -1,0 +1,338 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PX1NYH2KEDNMV8WS7A0VPJ",
+  "session_id": "84a47eb1-3198-48a5-8708-01f4c042dc32",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T08:51:04.2433182Z",
+  "branch": "main",
+  "checkpoints_count": 8,
+  "save_step_count": 9,
+  "files_touched": [
+    "apps/web/components/cockpit/cockpit-chat.tsx",
+    "apps/web/components/cockpit/decision-panel.tsx",
+    "apps/web/hooks/use-devin-case.ts",
+    "apps/web/lib/live/api.ts",
+    "apps/web/lib/live/types.ts",
+    "backend/outreach/calle.py",
+    "cases/CASE-6204-2RS-10/events.jsonl",
+    "cases/CASE-6204-2RS-10/plan.json",
+    "cases/CASE-6204-2RS-11/events.jsonl",
+    "cases/CASE-6204-2RS-11/plan.json",
+    "cases/CASE-6204-2RS-12/events.jsonl",
+    "cases/CASE-6204-2RS-12/plan.json",
+    "cases/CASE-6204-2RS-13/events.jsonl",
+    "cases/CASE-6204-2RS-13/plan.json",
+    "cases/CASE-6204-2RS-14/events.jsonl",
+    "cases/CASE-6204-2RS-14/plan.json",
+    "cases/CASE-6204-2RS-15/events.jsonl",
+    "cases/CASE-6204-2RS-15/plan.json",
+    "cases/CASE-6204-2RS-16/events.jsonl",
+    "cases/CASE-6204-2RS-16/plan.json",
+    "cases/CASE-6204-2RS-17/events.jsonl",
+    "cases/CASE-6204-2RS-17/plan.json",
+    "cases/CASE-6204-2RS-18/events.jsonl",
+    "cases/CASE-6204-2RS-18/plan.json",
+    "cases/CASE-6204-2RS-19/events.jsonl",
+    "cases/CASE-6204-2RS-19/plan.json",
+    "cases/CASE-6204-2RS-20/events.jsonl",
+    "cases/CASE-6204-2RS-20/plan.json",
+    "cases/CASE-6204-2RS-21/events.jsonl",
+    "cases/CASE-6204-2RS-21/plan.json",
+    "cases/CASE-6204-2RS-22/events.jsonl",
+    "cases/CASE-6204-2RS-22/plan.json",
+    "cases/CASE-6204-2RS-23/events.jsonl",
+    "cases/CASE-6204-2RS-23/plan.json",
+    "cases/CASE-6204-2RS-3/events.jsonl",
+    "cases/CASE-6204-2RS-9/events.jsonl",
+    "cases/CASE-6204-2RS-9/plan.json",
+    "cases/CASE-6204-2RS/events.jsonl",
+    "cases/CASE-6204-2RS/plan.json",
+    "cases/CASE-6205-2RS-2/events.jsonl",
+    "cases/CASE-6205-2RS-2/plan.json",
+    "cases/CASE-6205-2RS/events.jsonl",
+    "cases/CASE-6205-2RS/plan.json",
+    "cases/CASE-6305-2RS/events.jsonl",
+    "cases/CASE-6305-2RS/plan.json",
+    "conftest.py",
+    "test/test_calle_provider.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "9ce1d2df2809",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 788,
+    "cache_creation_tokens": 1603206,
+    "cache_read_tokens": 102336112,
+    "output_tokens": 232235,
+    "api_call_count": 395
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-goal-2026-08-23T08:10:35.5194503Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "goal"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "62850e801321",
+      "timestamp": "2026-08-23T08:10:35.5194503Z",
+      "native": {
+        "command": "/goal"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/goal",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_017c9gnrPQK3Ts4nQujQwZWp",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "9ce1d2df2809",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 454,
+        "end": 455,
+        "entry_ids": [
+          "e7158ce0-1005-4234-97fe-ee79b1db5d18"
+        ],
+        "tool_use_id": "toolu_017c9gnrPQK3Ts4nQujQwZWp"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_017c9gnrPQK3Ts4nQujQwZWp"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01NHGUFQ3KA1k92SQLCtBnGi",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "artifact-design"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "9ce1d2df2809",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 570,
+        "end": 571,
+        "entry_ids": [
+          "c0ca32b1-8326-4ad4-9c5a-4bed9e248bd0"
+        ],
+        "tool_use_id": "toolu_01NHGUFQ3KA1k92SQLCtBnGi"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01NHGUFQ3KA1k92SQLCtBnGi"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: artifact-design",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01Sxt7b2rpwVi3C4FMpnFvjo",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "claude-in-chrome"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "9ce1d2df2809",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 2457,
+        "end": 2458,
+        "entry_ids": [
+          "75caeb13-14b3-40a3-ba81-6c14787d7d3e"
+        ],
+        "tool_use_id": "toolu_01Sxt7b2rpwVi3C4FMpnFvjo"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01Sxt7b2rpwVi3C4FMpnFvjo"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: claude-in-chrome",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 42
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T08:51:03.7119011Z",
+    "agent_lines": 112,
+    "agent_removed": 175,
+    "human_added": 3982,
+    "human_modified": 3919,
+    "human_removed": 0,
+    "total_committed": 7225,
+    "total_lines_changed": 8188,
+    "agent_percentage": 3.5051294577430383,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 415,
+      "user_lines_removed": 48,
+      "agent_lines_added": 29,
+      "agent_lines_removed": 29,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-10/events.jsonl": 2,
+        "cases/CASE-6204-2RS-10/plan.json": 145,
+        "cases/CASE-6204-2RS-11/events.jsonl": 2,
+        "cases/CASE-6204-2RS-11/plan.json": 145,
+        "cases/CASE-6204-2RS-9/events.jsonl": 49,
+        "cases/CASE-6204-2RS-9/plan.json": 2
+      },
+      "user_removed_per_file": {
+        "cases/CASE-6204-2RS-9/events.jsonl": 46,
+        "cases/CASE-6204-2RS-9/plan.json": 2
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 687,
+      "user_lines_removed": 0,
+      "agent_lines_added": 80,
+      "agent_lines_removed": 77,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-10/events.jsonl": 2,
+        "cases/CASE-6204-2RS-10/plan.json": 145,
+        "cases/CASE-6204-2RS-11/events.jsonl": 2,
+        "cases/CASE-6204-2RS-11/plan.json": 145,
+        "cases/CASE-6204-2RS-12/events.jsonl": 61,
+        "cases/CASE-6204-2RS-12/plan.json": 262
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 687,
+      "user_lines_removed": 0,
+      "agent_lines_added": 80,
+      "agent_lines_removed": 77,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-10/events.jsonl": 2,
+        "cases/CASE-6204-2RS-10/plan.json": 145,
+        "cases/CASE-6204-2RS-11/events.jsonl": 2,
+        "cases/CASE-6204-2RS-11/plan.json": 145,
+        "cases/CASE-6204-2RS-12/events.jsonl": 61,
+        "cases/CASE-6204-2RS-12/plan.json": 262
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 689,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1216,
+      "agent_lines_removed": 682,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-10/events.jsonl": 2,
+        "cases/CASE-6204-2RS-10/plan.json": 145,
+        "cases/CASE-6204-2RS-11/events.jsonl": 2,
+        "cases/CASE-6204-2RS-11/plan.json": 145,
+        "cases/CASE-6204-2RS-12/events.jsonl": 63,
+        "cases/CASE-6204-2RS-12/plan.json": 262
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 1601,
+      "user_lines_removed": 39,
+      "agent_lines_added": 3538,
+      "agent_lines_removed": 1469,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-10/events.jsonl": 2,
+        "cases/CASE-6204-2RS-10/plan.json": 145,
+        "cases/CASE-6204-2RS-11/events.jsonl": 2,
+        "cases/CASE-6204-2RS-11/plan.json": 145,
+        "cases/CASE-6204-2RS-12/events.jsonl": 64,
+        "cases/CASE-6204-2RS-12/plan.json": 262,
+        "cases/CASE-6204-2RS/events.jsonl": 1,
+        "cases/CASE-6204-2RS/plan.json": 1,
+        "cases/CASE-6205-2RS-2/events.jsonl": 22,
+        "cases/CASE-6205-2RS-2/plan.json": 11,
+        "cases/CASE-6205-2RS/events.jsonl": 637,
+        "cases/CASE-6205-2RS/plan.json": 232,
+        "cases/CASE-6305-2RS/events.jsonl": 4,
+        "cases/CASE-6305-2RS/plan.json": 3
+      },
+      "user_removed_per_file": {
+        "cases/CASE-6204-2RS/plan.json": 1,
+        "cases/CASE-6205-2RS-2/plan.json": 11,
+        "cases/CASE-6205-2RS/plan.json": 24,
+        "cases/CASE-6305-2RS/plan.json": 3
+      }
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 70,
+      "user_lines_removed": 0,
+      "agent_lines_added": 6951,
+      "agent_lines_removed": 1441,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70
+      }
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 76,
+      "user_lines_removed": 0,
+      "agent_lines_added": 7007,
+      "agent_lines_removed": 1441,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-14/events.jsonl": 6
+      }
+    }
+  ]
+}

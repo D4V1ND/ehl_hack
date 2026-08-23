@@ -1,0 +1,243 @@
+create another branch that is a copy from https://github.com/D4V1ND/ehl_hack/tree/lorenzkrinner/consolidate-cockpit-calls. UI_graph or something perhaps
+
+---
+
+davin@Maison_DVN MINGW64 ~/Desktop/python/ehl_hack/cases (call_e)
+$ git switch UI_graph
+error: Your local changes to the following files would be overwritten by checkout:
+        .env.example
+Please commit your changes or stash them before you switch branches.
+Aborting
+
+---
+
+what frontend do I have
+
+---
+
+give me steps how do I turn it on
+
+---
+
+install all the stuffs I need
+
+---
+
+try run them and fix what fail
+
+---
+
+how do I run them now
+
+---
+
+the chat rn is boring UI for the product. I'm thinking of building something graphics, because its for Hackathob
+
+---
+
+can you perhaps create a screenshot of a scene on how this idea will look like?
+
+---
+
+is it buildable in like 1 hour?
+
+---
+
+lets say I have the ERP system (Theres always one supplier at least in the system). Devin as the Brain/Orchestrator gets and Issue -> Devin creates scripts to take the datas from the ERP -> The data will be fed to a voice calling Agent that I built -> Output -> Done
+
+---
+
+lets say I have the ERP system (Theres always one supplier at least in the system). Devin as the Brain/Orchestrator gets and Issue -> Devin creates scripts to take the datas from the ERP -> The data will be fed to a voice calling Agent that I built -> Output -> Done. Redesign the UI
+
+---
+
+delete changes from this branch
+
+---
+
+install cloudfare  on this device
+
+---
+
+host cloudfare, tell me the step I do it
+
+---
+
+pnpm doesnt work on me
+
+---
+
+C:\Users\davin\Desktop\python\ehl_hack>pnpm dev
+[ERR_PNPM_NO_PKG_MANIFEST] No package.json found in C:\Users\davin\Desktop\python\ehl_hack
+[ERROR] Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\davin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+
+pnpm: Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\davin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+    at getFinalError (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:34109:14)
+    at makeError (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:36416:21)
+    at getSyncResult (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38260:10)
+    at spawnSubprocessSync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38220:14)
+    at execaCoreSync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:38150:23)
+    at callBoundExeca (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40678:23)
+    at boundExeca (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40655:49)
+    at sync (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:40814:10)
+    at runPnpmCli (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:245099:5)
+    at runDepsStatusCheck (file:///C:/Users/davin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:246833:7)
+
+---
+
+I want to work on main branch
+
+---
+
+pnpm dev doesnt work on my main branch. Fix it
+
+---
+
+ok it runs, now how to turn on the backend
+
+---
+
+I want to test out the app, how
+
+---
+
+C:\Users\davin\Desktop\python\ehl_hack>curl -s localhost:8010/healthz
+
+C:\Users\davin\Desktop\python\ehl_hack>curl -s localhost:8010/healthy. got nothing as return
+
+---
+
+C:\Users\davin\Desktop\python\ehl_hack>pnpm dev
+Already up to date
+Done in 625ms using pnpm v11.7.0
+$ node scripts/run-py.mjs
+
+Stockout — Slice B
+  OK cockpit   http://localhost:3001/cockpit
+  OK API       http://localhost:8010/docs
+  logs      C:\Users\davin\Desktop\python\ehl_hack\.logs\api.log  C:\Users\davin\Desktop\python\ehl_hack\.logs\ui.log
+  Ctrl-C to stop both
+
+
+C:\Users\davin\Desktop\python\ehl_hack>. it runs but it looks like its stopped?
+
+---
+
+proceed
+
+---
+
+PS C:\Users\davin\Desktop\python\ehl_hack> cd .\apps\
+PS C:\Users\davin\Desktop\python\ehl_hack\apps> cd .\web\
+PS C:\Users\davin\Desktop\python\ehl_hack\apps\web> npm run dev. can I also put this inside run.py, so if I start run.py, everything is there
+
+---
+
+PS C:\Users\davin\Desktop\python\ehl_hack> cd .\apps\
+PS C:\Users\davin\Desktop\python\ehl_hack\apps> cd .\web\
+PS C:\Users\davin\Desktop\python\ehl_hack\apps\web> npm run dev. can I also put this inside run.py, so if I start run.py, everything is there. because apparently, I only need to run run.py and everything is on
+
+---
+
+let me run run.py myself
+
+---
+
+before I run it, is there like a mock sql data? where is it
+
+---
+
+why is the backend not calling on my number?
+
+---
+
+yes
+
+---
+
+write down in bullet points what tech stacks we are using in this project
+
+---
+
+from http://localhost:3001/chat?case=CASE-6204-2RS-3. the calling supplier part is faulty, it doesnt call me. Fix it. its running rn, check the backend logs
+
+---
+
+why both suppliers call me, I only want one supplier?
+
+---
+
+will one of calle call me on my number?
+
+---
+
+but doesnt that mean two of the buyers will call me?
+
+---
+
+which supplier I am then
+
+---
+
+but which reach my number?
+
+---
+
+s I will get 3 calls?
+
+---
+
+do live=true, but only one call reaches me
+
+---
+
+Calling Kugellager Bayern GmbH
+
+The call plan could not be prepared. (code=provider_unavailable status=503 details={})
+
+---
+
+it calls me successfully. but where do I see the review package at the end?
+
+---
+
+can the candidates be clicked around now?
+
+---
+
+the workflow Calling suppliers
+Writing the call brief
+
+Brief: 6,300 pcs of 6204-2RS to PLANT-MUC by 2026-09-03; ask price, lead time, split feasibility.
+
+Calling SUP-KBY
+
+Offers 10,500 pcs at EUR 1.6114, 10 days, DAP.
+
+Calling SUP-RUL
+
+Offers 10,500 pcs at EUR 1.4451, 23 days, DAP.
+
+Calling SUP-SKF
+
+Offers 8,000 of 10,500 at EUR 1.9931, 7 days, DAP. even done before the call done. it is taking the demo data I think
+
+---
+
+proceed
+
+---
+
+fix those now
+
+---
+
+/goal I want my chat functions till the end with me being called and the Output being shown
+
+---
+
+I got the call but miss it. I will try running it myself
+
+---
+
+I put new api key for calle, call me. for the card, show all the 3 Options so the buyer will choose himself.
