@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from datetime import date, datetime
 from decimal import Decimal
 from functools import lru_cache
@@ -64,11 +65,20 @@ class SqliteERP:
                 f"no database at {self.db_path}. Run `make db` "
                 "(python -m backend.record.seed_db) to build it from the seed YAML."
             )
-        # check_same_thread=False because uvicorn serves from a worker thread and
-        # every query here is a read.
-        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA foreign_keys = ON")
+        # One connection per thread: uvicorn serves sync endpoints from a
+        # threadpool, and a shared connection interleaves the cursors of
+        # concurrent requests into each other's rows.
+        self._local = threading.local()
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        conn: sqlite3.Connection | None = getattr(self._local, "conn", None)
+        if conn is None:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA foreign_keys = ON")
+            self._local.conn = conn
+        return conn
 
     def _rows(self, sql: str, params: tuple = ()) -> list[sqlite3.Row]:
         return self.conn.execute(sql, params).fetchall()
