@@ -1,0 +1,81 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/zjlYBK/image.png (21.1 KB)
+</system_instruction>
+
+
+
+I would like to adjust the UX of how our UI currently works...
+
+So first of all:
+- When calling agents get spawned we see inline tool call that looks sth like this: 
+(loading spinner) Agent name (for this just use a random agent name that we generate) * 0:21 (ellapsed calling time, or dispaying "dialing...") 
+* status 
+In terms of structure like this: .context/attachments/zjlYBK/image.png 
+- When the agent called with the candidates and we gathered all necessary data for all candidates, how do you then do the decision, right now we assume the agent does it, but it doesn't it just gives provides you with a list, the rest you do. How do we make a decision, how do we display it in the UI?
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/n23X1V/image.png (59.0 KB)
+</system_instruction>
+
+
+
+Sorry i wasn't nearly done:
+- Hovering over such an agent highlights the entire contianer (muted bg, rounded corners), clicking on it opens the calling dialogue
+- If a candidate is getting called we dispaly "dialing..." or "calling..." in the status field of the candidate sidebar
+- Other statuses are: sourced, no answer, incomplete, (waht could we use for the status when we found all data), chosen and of course rejected
+- At the end you can decide of a list of incomplete or that other status candidates which one you chose
+
+Right now we just spaw them all in parallel, but it's not always at once: .context/attachments/n23X1V/image.png 
+
+Then what we should actually do, instead of having the dailign or calling status we instead dispolay a agent card, each agent gets its colored avatar (just use a bot icon for now) and this is a card (fully rounded) that appears below the card title & subtitle of the candidate collapsible trigger. It shoudl animate in by the collapsible first giving space at the bottom (top content, like chevron, shouldn't move) and then the agent calling card pops in, then we just display the agent statuse on the other side of the card using a simepl tex tmmuted text "calling..." dialing... etc.
+
+I think that's the best way.
+
+So the huiman doesn'T need to approve a certain decision anymore, they do it themselves. 
+
+But how do we notify them to make that decision, like wher ein the UI do we tell them, we're done, make your deciiosn.
+
+Ana agent is done when he comed thorugh all conadaidtes, some canditaes already have all data on their website so we don't even need to call them. Keep that in mind and add that to the plan file.
+
+---
+
+It's not done yet
+
+- i want you tofrom now on simulate the tool calls better, add better timeouts, etc. make it feel liek real tool calls. it should be verifiable for me as a human seeing this live
+- The inline AI agent ui doesn't exist yet
+- you can simulate each ai agent calling for a random time of 15-45 seconds, also with real transcripts, at the end the results should make sense. right now you just added hardcoded calling agents for each candidate. like as soon as a claling agent is done, the entrance animation should revert and in the chat we should display the inline agent display as completed as well
+- in the decision UI, first remove the primary color styling, make it gray & white also:
+- remove the choose candidate button
+- structure the trigger like this: "Complete --- gap --- take decision > (take decision is no button, it's a text)
+- The record decision button should be at the bottom, span the full width and be a squircle, not a fully rounded button
+- Remove the required checks box
+
+---
+
+Looks good, but you forgot to display when you call someone, also it's fine to add some web search tools as well so that we can search teh web and check if that supplier already has the necessary data public so we don't have to call them, that way some suppliers are called here, some here, some there....
+
+The web search tool can look exactly like the api tool we already created.
+
+---
+
+Looks good, commit.
