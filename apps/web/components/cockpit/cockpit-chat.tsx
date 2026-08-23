@@ -17,7 +17,6 @@ import { CockpitShell } from "@/components/cockpit/cockpit-shell"
 import { DotLoader } from "@/components/cockpit/dot-loader"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { LiveCandidatePanel } from "@/components/cockpit/live-candidate-panel"
-import { MessageComposer } from "@/components/cockpit/message-composer"
 import { useDevinCase } from "@/hooks/use-devin-case"
 import type { CaseEvent, Incident, Part } from "@/lib/live/types"
 
@@ -36,8 +35,6 @@ function DevinCockpit() {
   const devin = useDevinCase(caseFromUrl)
   const { status, launch } = devin
   const [candidatesOpen, setCandidatesOpen] = useState(true)
-  const [draft, setDraft] = useState("")
-  const [notes, setNotes] = useState<string[]>([])
 
   useEffect(() => {
     if (caseFromUrl || status !== "idle") return
@@ -51,29 +48,12 @@ function DevinCockpit() {
     if (caseId) router.replace(`/chat?case=${encodeURIComponent(caseId)}`)
   }
 
-  function sendNote(message: string) {
-    const text = message.trim()
-    if (!text) return
-    setDraft("")
-    setNotes((current) => [...current, text])
-  }
-
   const incident = devin.snapshot?.incident ?? null
   const part = devin.snapshot?.part ?? null
   const connected = devin.status === "live" || devin.status === "stubbed"
-  const sessions =
-    connected && incident && part
-      ? [
-          {
-            caseId: incident.case_id,
-            partLabel: `${part.item_code} · ${part.item_name}`,
-          },
-        ]
-      : []
 
   return (
     <CockpitShell
-      sessions={sessions}
       rightSidebar={
         candidatesOpen ? (
           <LiveCandidatePanel
@@ -83,7 +63,7 @@ function DevinCockpit() {
         ) : undefined
       }
     >
-      <div className="grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+      <div className="grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
         <IncidentHeader
           caseId={devin.caseId}
           incident={incident}
@@ -111,13 +91,6 @@ function DevinCockpit() {
             {devin.events.map((event) => (
               <EventTurn key={`${event.case_id}-${event.seq}`} event={event} />
             ))}
-            {notes.map((note, index) => (
-              <Message key={`note-${index}`} from="user">
-                <MessageContent>
-                  <p>{note}</p>
-                </MessageContent>
-              </Message>
-            ))}
             {devin.status === "launching" ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <DotLoader className="size-4" />
@@ -127,15 +100,6 @@ function DevinCockpit() {
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
-        <div className="shrink-0 bg-background">
-          <MessageComposer
-            value={draft}
-            status={devin.status === "launching" ? "submitted" : "ready"}
-            onChange={setDraft}
-            onSend={sendNote}
-            onStop={() => undefined}
-          />
-        </div>
       </div>
     </CockpitShell>
   )

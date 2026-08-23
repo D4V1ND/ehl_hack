@@ -17,7 +17,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
   Tooltip,
   TooltipContent,
@@ -41,7 +40,6 @@ export function IncidentHeader(props: IncidentHeaderProps) {
   return (
     <Collapsible className="shrink-0">
       <header className="group/incident-header flex h-11 items-center gap-2 border-b border-border/70 bg-background px-3">
-        <SidebarTrigger className="md:hidden" />
         <CollapsibleTrigger
           className="group/incident-trigger flex min-w-0 flex-1 items-center gap-4 rounded-md px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           aria-label="Toggle Incident details"

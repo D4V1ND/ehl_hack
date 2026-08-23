@@ -1,94 +1,24 @@
 "use client"
 
-import {
-  useEffect,
-  useState,
-  type CSSProperties,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-} from "react"
+import { useEffect, useState, type ReactNode } from "react"
 
-import {
-  SessionSidebar,
-  type SidebarSession,
-} from "@/components/cockpit/session-sidebar"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-
-const LEFT_SIDEBAR_MIN = 10
-const LEFT_SIDEBAR_MAX = 20
 
 export function CockpitShell({
   children,
   rightSidebar,
-  sessions = [],
 }: {
   children: ReactNode
   rightSidebar?: ReactNode
-  sessions?: readonly SidebarSession[]
 }) {
-  const [leftSidebarWidth, setLeftSidebarWidth] = useState(LEFT_SIDEBAR_MAX)
-
-  function resizeLeftSidebar(clientX: number) {
-    const viewportPercentage = (clientX / window.innerWidth) * 100
-    setLeftSidebarWidth(
-      Math.min(LEFT_SIDEBAR_MAX, Math.max(LEFT_SIDEBAR_MIN, viewportPercentage))
-    )
-  }
-
-  function startLeftResize(event: PointerEvent<HTMLButtonElement>) {
-    event.currentTarget.setPointerCapture(event.pointerId)
-    resizeLeftSidebar(event.clientX)
-  }
-
-  function continueLeftResize(event: PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      resizeLeftSidebar(event.clientX)
-    }
-  }
-
-  function stopLeftResize(event: PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-  }
-
-  function resizeLeftWithKeyboard(event: KeyboardEvent<HTMLButtonElement>) {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
-
-    event.preventDefault()
-    const direction = event.key === "ArrowRight" ? 1 : -1
-    setLeftSidebarWidth((width) =>
-      Math.min(LEFT_SIDEBAR_MAX, Math.max(LEFT_SIDEBAR_MIN, width + direction))
-    )
-  }
-
   return (
-    <SidebarProvider
-      open
-      onOpenChange={() => undefined}
-      className="h-dvh min-h-0 overflow-hidden"
-      style={{ "--sidebar-width": `${leftSidebarWidth}vw` } as CSSProperties}
-    >
-      <SessionSidebar
-        sessions={sessions}
-        width={leftSidebarWidth}
-        onResizeStart={startLeftResize}
-        onResize={continueLeftResize}
-        onResizeEnd={stopLeftResize}
-        onResizeKeyDown={resizeLeftWithKeyboard}
-      />
-      <SidebarInset className="h-dvh min-h-0 min-w-0 overflow-hidden">
-        <WorkspacePanels rightSidebar={rightSidebar}>
-          {children}
-        </WorkspacePanels>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
+      <WorkspacePanels rightSidebar={rightSidebar}>{children}</WorkspacePanels>
+    </div>
   )
 }
 
