@@ -1,6 +1,6 @@
 [
   {
-    "task_id": "OUT-CASE-001-SUP-KBY-735a1e",
+    "task_id": "OUT-CASE-001-SUP-KBY-e09004",
     "case_id": "CASE-001",
     "supplier_ref": "SUP-KBY",
     "channel": "voice",
@@ -20,7 +20,7 @@
     }
   },
   {
-    "task_id": "OUT-CASE-001-SUP-SKF-3ad5f4",
+    "task_id": "OUT-CASE-001-SUP-SKF-094bb6",
     "case_id": "CASE-001",
     "supplier_ref": "SUP-SKF",
     "channel": "voice",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "task_id": "OUT-CASE-001-SUP-RUL-45c019",
+    "task_id": "OUT-CASE-001-SUP-RUL-3e86ee",
     "case_id": "CASE-001",
     "supplier_ref": "SUP-RUL",
     "channel": "voice",

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --port ${ERP_PORT:-3001}",
+    "dev": "node ../../scripts/next-dev.mjs ERP_PORT 3001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

@@ -1,0 +1,70 @@
+{
+  "task_id": "case-real-28fea263-task-1",
+  "case_id": "case-real-28fea263",
+  "supplier_ref": "SUP-ATLAS",
+  "available": false,
+  "qty_offered": 0,
+  "unit_price": null,
+  "price_breaks": [],
+  "currency": "unknown",
+  "moq": null,
+  "lead_time_days": null,
+  "expedite_option": null,
+  "incoterm": null,
+  "certs_claimed": [],
+  "payment_terms": null,
+  "notes": "Ready to place the call immediately to ...0979 in English for Meridian Motors to gather procurement pricing, availability, lead time, MOQ, incoterm, certification, and stock-status details for 100 units of 6203-2RS deep groove ball bearings. The bot will disclose that it is an AI assistant and that the call is recorded, will not make commitments, and will end the call if the recipient asks for a human or asks it to stop.",
+  "transcript": [],
+  "summary": "Ready to place the call immediately to ...0979 in English for Meridian Motors to gather procurement pricing, availability, lead time, MOQ, incoterm, certification, and stock-status details for 100 units of 6203-2RS deep groove ball bearings. The bot will disclose that it is an AI assistant and that the call is recorded, will not make commitments, and will end the call if the recipient asks for a human or asks it to stop.",
+  "transcript_url": null,
+  "recording_url": null,
+  "confidence": 0.0,
+  "raw": {
+    "id": "call_jXj4RBp3UJkkH3w614H2qA",
+    "object": "call_task",
+    "status": "queued",
+    "task": "You are an AI procurement assistant calling on behalf of Meridian Motors. Say this clearly in your first two sentences: that you are an AI assistant, who you are calling for, and that this call is recorded. If the person asks to speak to a human, or asks you to stop, thank them and end the call without pursuing the request. Do not agree to any price, quantity, delivery commitment, or contract change on this call — you are gathering information only, and a human buyer makes every decision.\n\nSpeak English for the whole call, and keep speaking English even if the other person answers in another language. Say the part name and part number slowly and clearly, spelling out letters and reading digits one at a time, and repeat it once so they can confirm they heard it correctly.\n\nYou are sourcing: 6203-2RS deep groove ball bearing.\nQuantity required: 100 units.\nNeeded by: 2026-09-15.\n\nAsk for all of the following, and confirm the numbers back to them before you hang up:\n  - the unit price for this quantity\n  - quantity price breaks (what the unit price becomes at higher volumes, and at which quantities the price changes)\n  - the minimum order quantity\n  - the lead time in days\n  - the incoterm (who pays freight and insurance)\n  - whether their quality certification for this part is currently valid, and which certification it is\n  - whether any units they mention are physically in stock and free, or already promised to another customer\n\nNegotiate toward 3.20 per unit. If they open higher, ask what volume would bring the price down. Never state our own contract price or our walk-away price. If they cannot reach the target, record their best offer and move on politely.",
+    "recipients": [
+      {
+        "id": "rcp_2728fad49f007374",
+        "phones": [
+          "+4917680060979"
+        ],
+        "locale": "en-US",
+        "region": "DE",
+        "status": "in_progress",
+        "structured_result": null,
+        "summary": "Ready to place the call immediately to ...0979 in English for Meridian Motors to gather procurement pricing, availability, lead time, MOQ, incoterm, certification, and stock-status details for 100 units of 6203-2RS deep groove ball bearings. The bot will disclose that it is an AI assistant and that the call is recorded, will not make commitments, and will end the call if the recipient asks for a human or asks it to stop.",
+        "attempts": [
+          {
+            "id": "att_9f0a2f700e3dad03",
+            "phone": "+4917680060979",
+            "status": "in_progress",
+            "started_at": null,
+            "completed_at": null,
+            "summary": "Ready to place the call immediately to ...0979 in English for Meridian Motors to gather procurement pricing, availability, lead time, MOQ, incoterm, certification, and stock-status details for 100 units of 6203-2RS deep groove ball bearings. The bot will disclose that it is an AI assistant and that the call is recorded, will not make commitments, and will end the call if the recipient asks for a human or asks it to stop.",
+            "transcript_turns": [],
+            "provider_call_id": null,
+            "failure_code": null,
+            "failure_message": null
+          }
+        ]
+      }
+    ],
+    "structured_result": null,
+    "summary": "Ready to place the call immediately to ...0979 in English for Meridian Motors to gather procurement pricing, availability, lead time, MOQ, incoterm, certification, and stock-status details for 100 units of 6203-2RS deep groove ball bearings. The bot will disclose that it is an AI assistant and that the call is recorded, will not make commitments, and will end the call if the recipient asks for a human or asks it to stop.",
+    "task_completed": null,
+    "completion_confidence": null,
+    "evidence": [],
+    "metadata": {
+      "case_id": "case-real-28fea263",
+      "task_id": "case-real-28fea263-task-1",
+      "supplier_ref": "SUP-ATLAS"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "created_at": "2026-08-22T22:02:17.260344Z",
+    "completed_at": null,
+    "transcript_turns": []
+  }
+}
