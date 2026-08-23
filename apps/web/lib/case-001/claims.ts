@@ -4,6 +4,8 @@ export const CLAIMS = [
   {
     supplierId: "supplier-skf-nordic",
     round: 1,
+    sourceChannel: "voice",
+    sourceRef: "call:skf",
     callId: "skf",
     quantityAvailable: "32000",
     earliestReady: "3 days",
@@ -22,6 +24,8 @@ export const CLAIMS = [
   {
     supplierId: "supplier-schaeffler-fag",
     round: 1,
+    sourceChannel: "voice",
+    sourceRef: "call:fag",
     callId: "fag",
     quantityAvailable: "32000",
     earliestReady: "21 days",
@@ -40,7 +44,8 @@ export const CLAIMS = [
   {
     supplierId: "supplier-nsk-europe",
     round: 1,
-    callId: "nsk",
+    sourceChannel: "website",
+    sourceRef: "fixture-web:nsk-europe/6204-2RS",
     quantityAvailable: "32000",
     earliestReady: "14 days",
     priceQuoted: "yes",
@@ -58,6 +63,8 @@ export const CLAIMS = [
   {
     supplierId: "supplier-munich-motion",
     round: 1,
+    sourceChannel: "voice",
+    sourceRef: "call:munich-motion",
     callId: "munich-motion",
     quantityAvailable: "32000",
     earliestReady: "2 days",

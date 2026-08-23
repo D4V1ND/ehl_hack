@@ -1,6 +1,6 @@
 # SupplyOS
 
-An EHL Game Jam sourcing demo for a German automotive manufacturer. A bearing shortage launches an agent that gathers structured CALL-E Claims, checks policy and landed cost, and presents a human-approved Decision in SupplyOS.
+An EHL Game Jam sourcing demo for a German automotive manufacturer. A bearing shortage launches an agent that gathers structured Claims, checks policy and landed cost, and hands a verified Candidate comparison to a human Decision-maker in SupplyOS.
 
 Planning documents still use the working name **SupplyGuard**. The product UI uses **SupplyOS**.
 
@@ -18,8 +18,8 @@ We will not trade these away as we iterate.
 
 1. **Auditable sourcing.** Cases, Claims, checks, costs, and Decisions remain traceable.
 2. **Claims are not facts.** What a supplier says stays separate from the factory's trusted records.
-3. **Self-checking decisions.** Compliance and landed-cost logic are executable and tested before a recommendation ships.
-4. **Human approval.** The agent recommends. A human marks the Decision approved in SupplyOS; approved is final.
+3. **Self-checking evidence.** Compliance and landed-cost logic are executable and tested before a Candidate can enter a Decision.
+4. **Human Decision.** The agent gathers and checks. A human chooses the Candidate and records the Decision; recorded is final.
 
 ## Who is who
 
@@ -32,7 +32,7 @@ Use the domain words from `docs/PLAN.md` and `docs/specs/supplyguard-plan-1-foun
 
 ## How it works
 
-The planned path is shortage trigger → Devin Session → system-of-record lookup → parallel supplier outreach → structured Claims → compliance and landed-cost checks → Decision → human approval in SupplyOS. The Cockpit renders progress and the approved final state.
+The planned path is shortage trigger → Devin Session → system-of-record lookup → staggered supplier research and outreach → structured Claims → compliance and landed-cost checks → human Decision in SupplyOS. The Cockpit renders progress and the recorded final state.
 
 The repository is still a walking skeleton. Turborepo contains the `/chat` Cockpit, the mock ERP, and the FastAPI service. The Cockpit remains fixture-driven. Confirm that a planned module exists before extending it.
 
@@ -60,7 +60,7 @@ The repository is still a walking skeleton. Turborepo contains the `/chat` Cockp
 - Model missing or unclear answers as `unknown`. Convert unusable call results into confidence-zero Claims instead of crashing.
 - Use exact decimal arithmetic for money.
 - Use only reserved fictional phone numbers in code, tests, fixtures, and documentation. Keep secrets in the local environment.
-- Produce purchase recommendations only. A human approves any purchase through review.
+- Produce decision support only. A human records any purchase Decision through review.
 
 ## Taste
 

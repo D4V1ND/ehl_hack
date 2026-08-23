@@ -56,20 +56,30 @@ export function CallStage({
   call: RehearsalCall
   onEnd: () => void
 }) {
+  const active = call.status === "dialing" || call.status === "calling"
+  const heading =
+    call.status === "dialing"
+      ? `${call.runtimeAgentName ?? "Agent"} is dialing`
+      : call.status === "calling"
+        ? `${call.runtimeAgentName ?? "Agent"} is calling`
+        : "Rehearsal call complete"
+
   return (
     <section
       className="relative flex size-full min-h-0 flex-col items-center justify-center overflow-hidden bg-background px-6 py-16"
       aria-labelledby="call-stage-heading"
     >
       <div className="absolute top-4 flex flex-wrap items-center justify-center gap-2">
-        <Badge variant="secondary">Rehearsal</Badge>
+        <Badge variant="secondary">
+          {active ? "Live rehearsal" : "Rehearsal"}
+        </Badge>
         <Badge variant="outline">No call placed</Badge>
       </div>
       <div className="flex max-w-md flex-col items-center gap-7 text-center">
-        <VoiceActivity />
+        <VoiceActivity active={call.status === "calling"} />
         <div className="flex flex-col gap-1.5">
           <h2 id="call-stage-heading" className="text-sm font-medium">
-            Mock call playback
+            {heading}
           </h2>
           <p className="font-mono text-xs text-muted-foreground">
             {call.duration} · {call.maskedPhone}
@@ -85,18 +95,23 @@ export function CallStage({
           onClick={onEnd}
         >
           <PhoneOffIcon />
-          <span className="sr-only">End mock call</span>
+          <span className="sr-only">Close call detail</span>
         </Button>
       </div>
     </section>
   )
 }
 
-function VoiceActivity() {
+function VoiceActivity({ active }: { active: boolean }) {
   const bars = useRef<Array<HTMLSpanElement | null>>([])
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (
+      !active ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return
+    }
 
     const animations = bars.current.flatMap((bar, index) =>
       bar
@@ -110,7 +125,7 @@ function VoiceActivity() {
         : []
     )
     return () => animations.forEach((animation) => animation.cancel())
-  }, [])
+  }, [active])
 
   return (
     <div className="flex h-32 items-center justify-center gap-1.5" aria-hidden>

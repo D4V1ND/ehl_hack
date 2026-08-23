@@ -6,20 +6,13 @@ export type StockStatus =
   | "unclear"
 
 export type YesNoUnknown = "yes" | "no" | "unknown"
-export type DecisionState =
-  "evaluating" | "on_hold" | "needs_human_review" | "approved"
-export type CallStatus = "completed" | "no_answer" | "stopped_for_human"
+export type DecisionState = "researching" | "ready" | "recorded"
+export type CallStatus =
+  "dialing" | "calling" | "completed" | "no_answer" | "stopped_for_human"
 export type OutreachTaskStatus = "completed"
 
 export type ScriptKind =
-  | "tool"
-  | "policy"
-  | "outreach"
-  | "claims"
-  | "deltas"
-  | "strategy"
-  | "tests"
-  | "decision"
+  "tool" | "policy" | "outreach" | "claims" | "deltas" | "strategy" | "tests"
 
 export type ScriptStep = {
   id: string
@@ -28,6 +21,7 @@ export type ScriptStep = {
   waitMs: number
   method?: string
   path?: string
+  callId?: string
   summary: string
   detail: string
 }
@@ -37,7 +31,9 @@ export type IncidentStage = "open" | "calling" | "decided"
 export type Claim = {
   supplierId: string
   round: number
-  callId: string
+  sourceChannel: "voice" | "website"
+  sourceRef: string
+  callId?: string
   quantityAvailable: string
   earliestReady: string
   priceQuoted: YesNoUnknown
@@ -66,4 +62,7 @@ export type RehearsalCall = {
   evidence: readonly string[]
   transcript: readonly { speaker: string; text: string }[]
   turns: readonly { speaker: string; text: string }[]
+  runtimeAgentName?: string
+  runtimeStartedAt?: string
+  visibleTranscriptTurnCount?: number
 }

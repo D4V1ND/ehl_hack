@@ -12,10 +12,10 @@ export const metadata: Metadata = {
     template: "%s · SupplyOS",
   },
   description:
-    "Auditable sourcing for factory shortages, from supplier Claims to a human-approved Decision.",
+    "Auditable sourcing for factory shortages, from supplier Claims to a human-recorded Decision.",
 }
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -31,7 +31,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("dark antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "dark antialiased",
+        fontMono.variable,
+        "font-sans",
+        geist.variable
+      )}
     >
       <body>
         <ThemeProvider>

@@ -18,10 +18,8 @@ import {
 import { CallDetailDialog } from "@/components/cockpit/call-detail-dialog"
 import { CandidatePanel } from "@/components/cockpit/candidate-panel"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
-import {
-  DecisionBar,
-  type DecisionStatus,
-} from "@/components/cockpit/decision-bar"
+import { AgentCallActivity } from "@/components/cockpit/agent-call-activity"
+import { DecisionBar } from "@/components/cockpit/decision-bar"
 import { DotLoader } from "@/components/cockpit/dot-loader"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { IncidentRequestMessage } from "@/components/cockpit/incident-request-message"
@@ -31,7 +29,10 @@ import { FINAL_MESSAGE, SCRIPT, SEND_DELAY_MS } from "@/lib/case-001"
 
 export function CockpitChat() {
   const rehearsal = useDeterministicRehearsal()
-  const [approved, setApproved] = useState(false)
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
+    null
+  )
+  const [decisionRecorded, setDecisionRecorded] = useState(false)
   const [candidatesOpen, setCandidatesOpen] = useState(true)
   const [draft, setDraft] = useState("")
   const [messages, setMessages] = useState<string[]>([])
@@ -55,18 +56,12 @@ export function CockpitChat() {
       ? null
       : SCRIPT[rehearsal.currentStepIndex]
   const checksPassed = isStepVisible("tests", visible)
-  const decisionExists = isStepVisible("strategy", visible)
-  const decisionStatus: DecisionStatus = approved
-    ? "approved"
-    : !running && !checksPassed
-      ? "on hold"
-      : checksPassed
-        ? "needs human review"
-        : "evaluating"
+  const decisionReady = checksPassed
 
   function replay() {
     rehearsal.replay()
-    setApproved(false)
+    setSelectedCandidateId(null)
+    setDecisionRecorded(false)
   }
 
   function sendMessage(message: string) {
@@ -93,6 +88,13 @@ export function CockpitChat() {
         candidatesOpen ? (
           <CandidatePanel
             visible={visible}
+            agentRuns={rehearsal.agentRuns}
+            chosenCandidateIds={
+              decisionRecorded && selectedCandidateId
+                ? [selectedCandidateId]
+                : []
+            }
+            decisionRecorded={decisionRecorded}
             onClose={() => setCandidatesOpen(false)}
           />
         ) : undefined
@@ -112,14 +114,7 @@ export function CockpitChat() {
           >
             <IncidentRequestMessage />
             {complete ? (
-              <>
-                <CompletedRunSummary steps={SCRIPT} />
-                <Message from="assistant" className="max-w-full">
-                  <MessageContent>
-                    <MessageResponse>{FINAL_MESSAGE}</MessageResponse>
-                  </MessageContent>
-                </Message>
-              </>
+              <CompletedRunSummary steps={SCRIPT} />
             ) : (
               SCRIPT.slice(0, conversationStepCount).map((step, index) => {
                 const current = index === rehearsal.currentStepIndex
@@ -138,6 +133,14 @@ export function CockpitChat() {
                 )
               })
             )}
+            <AgentCallActivity agentRuns={rehearsal.agentRuns} />
+            {complete ? (
+              <Message from="assistant" className="max-w-full">
+                <MessageContent>
+                  <MessageResponse>{FINAL_MESSAGE}</MessageResponse>
+                </MessageContent>
+              </Message>
+            ) : null}
             {running ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <DotLoader className="size-4" />
@@ -155,11 +158,12 @@ export function CockpitChat() {
           <ConversationScrollButton />
         </Conversation>
         <div className="shrink-0 bg-background">
-          {decisionExists ? (
+          {decisionReady ? (
             <DecisionBar
-              checksPassed={checksPassed}
-              status={decisionStatus}
-              onApprove={() => setApproved(true)}
+              recorded={decisionRecorded}
+              selectedCandidateId={selectedCandidateId}
+              onSelectCandidate={setSelectedCandidateId}
+              onRecord={() => setDecisionRecorded(true)}
             />
           ) : null}
           <MessageComposer
@@ -172,7 +176,7 @@ export function CockpitChat() {
         </div>
       </div>
       <Suspense fallback={null}>
-        <CallDetailDialog />
+        <CallDetailDialog agentRuns={rehearsal.agentRuns} />
       </Suspense>
     </CockpitShell>
   )

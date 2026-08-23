@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from "@/components/icons"
+import { ExternalLinkIcon, SearchIcon } from "@/components/icons"
 import {
   CandidateComparisonTable,
   formatOptional,
@@ -88,6 +88,11 @@ function ClaimEvidence({
             <ExternalLinkIcon aria-hidden className="size-3" />
             <span className="sr-only">for {candidate.name}</span>
           </a>
+        ) : hasClaim && candidate.claim?.sourceChannel === "website" ? (
+          <span className="inline-flex min-h-10 w-fit items-center gap-1 font-medium">
+            <SearchIcon aria-hidden className="size-3" />
+            Public website evidence
+          </span>
         ) : null}
       </dd>
     </dl>

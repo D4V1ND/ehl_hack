@@ -1,4 +1,8 @@
-import { CheckIcon, ChevronDownIcon } from "@/components/icons"
+"use client"
+
+import { useState } from "react"
+
+import { CheckIcon, ChevronRightIcon } from "@/components/icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -7,110 +11,148 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { STRATEGIES } from "@/lib/case-001"
-
-export type DecisionStatus =
-  "evaluating" | "on hold" | "needs human review" | "approved"
+import { CANDIDATES, LANDED_LINES } from "@/lib/case-001"
+import { cn } from "@/lib/utils"
 
 type DecisionBarProps = {
-  checksPassed: boolean
-  status: DecisionStatus
-  onApprove: () => void
+  recorded: boolean
+  selectedCandidateId: string | null
+  onSelectCandidate: (candidateId: string) => void
+  onRecord: () => void
 }
 
+const SELECTABLE_CANDIDATES = CANDIDATES.filter((candidate) => {
+  const landedLine = LANDED_LINES.find(
+    (line) => line.candidateId === candidate.id
+  )
+  return candidate.compliance === "passed" && landedLine?.usable !== false
+})
+
 export function DecisionBar({
-  checksPassed,
-  status,
-  onApprove,
+  recorded,
+  selectedCandidateId,
+  onSelectCandidate,
+  onRecord,
 }: DecisionBarProps) {
-  const approved = status === "approved"
-  const recommended = STRATEGIES.find((strategy) => strategy.recommended)!
+  const [open, setOpen] = useState(false)
+  const selectedCandidate = CANDIDATES.find(
+    (candidate) => candidate.id === selectedCandidateId
+  )
+
+  function recordDecision() {
+    onRecord()
+    setOpen(false)
+  }
 
   return (
     <div className="mx-auto w-full max-w-[50vw] px-4 pt-3">
-      <Collapsible>
-        <Card size="sm" className="w-full gap-0 bg-accent py-0 ring-0">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <Card
+          size="sm"
+          className="w-full gap-0 border border-border bg-secondary/70 py-0 ring-0"
+        >
           <CollapsibleContent className="border-b border-border/70 px-3 py-3">
-            <DecisionDetails checksPassed={checksPassed} />
+            <DecisionDetails
+              recorded={recorded}
+              selectedCandidateId={selectedCandidateId}
+              onSelectCandidate={onSelectCandidate}
+              onRecord={recordDecision}
+            />
           </CollapsibleContent>
-          <div className="flex min-w-0 items-center gap-3 px-3 py-2">
-            <CollapsibleTrigger
-              className="group flex min-w-0 flex-1 items-center gap-3 text-left"
-              aria-label="Toggle Decision details"
-            >
-              <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]:-rotate-90 motion-reduce:transition-none" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium tabular-nums">
-                    {recommended.total}
+          <CollapsibleTrigger
+            className="group flex min-h-10 w-full min-w-0 items-center gap-3 px-3 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Toggle Decision details"
+          >
+            <span className="text-sm font-medium">Complete</span>
+            <span className="ml-auto flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
+              {recorded ? (
+                <>
+                  <CheckIcon aria-hidden="true" className="size-3.5" />
+                  <span className="truncate">
+                    {selectedCandidate?.name ?? "Decision recorded"}
                   </span>
-                  <DecisionStatusBadge status={status} />
-                </div>
-              </div>
-            </CollapsibleTrigger>
-            <Button
-              type="button"
-              size="sm"
-              variant={approved ? "secondary" : "default"}
-              disabled={!checksPassed || approved}
-              onClick={onApprove}
-            >
-              {approved ? <CheckIcon data-icon="inline-start" /> : null}
-              {approved ? "Approved" : "Mark approved"}
-            </Button>
-          </div>
+                </>
+              ) : (
+                <span>Take decision</span>
+              )}
+              <ChevronRightIcon className="size-4 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]:rotate-90 motion-reduce:transition-none" />
+            </span>
+          </CollapsibleTrigger>
         </Card>
       </Collapsible>
     </div>
   )
 }
 
-function DecisionDetails({ checksPassed }: { checksPassed: boolean }) {
+function DecisionDetails({
+  recorded,
+  selectedCandidateId,
+  onSelectCandidate,
+  onRecord,
+}: DecisionBarProps) {
   return (
-    <div className="grid gap-4 text-sm sm:grid-cols-2">
-      <div className="flex flex-col gap-2">
-        <p className="font-medium">Rationale</p>
-        <p className="text-muted-foreground">
-          SKF air protects the line-stop. FAG sea lowers total Landed Cost for
-          the remaining quantity.
-        </p>
-        <p className="font-medium">Runner-ups</p>
-        {STRATEGIES.filter((strategy) => !strategy.recommended).map(
-          (strategy) => (
-            <div
-              key={strategy.name}
-              className="flex justify-between gap-3 text-xs text-muted-foreground"
-            >
-              <span>{strategy.name}</span>
-              <span className="shrink-0 tabular-nums">{strategy.total}</span>
-            </div>
+    <div className="text-sm">
+      <p className="font-medium">Choose a Candidate</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Compare Claims and Supplier Records before you record the Decision.
+      </p>
+      <div className="mt-3 grid gap-1.5" role="radiogroup">
+        {SELECTABLE_CANDIDATES.map((candidate) => {
+          const selected = selectedCandidateId === candidate.id
+          const landedLine = LANDED_LINES.find(
+            (line) => line.candidateId === candidate.id
           )
-        )}
+
+          return (
+            <button
+              key={candidate.id}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={recorded}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default",
+                selected ? "bg-secondary" : "hover:bg-muted/70"
+              )}
+              onClick={() => onSelectCandidate(candidate.id)}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex size-4 shrink-0 items-center justify-center rounded-full border",
+                  selected
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-muted-foreground/50"
+                )}
+              >
+                {selected ? <CheckIcon className="size-3" /> : null}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-medium">
+                  {candidate.name}
+                </span>
+                <span className="block truncate text-[11px] text-muted-foreground">
+                  {candidate.claimUnit} · {landedLine?.arrivalDays ?? "unknown"}{" "}
+                  days
+                </span>
+              </span>
+              <Badge variant="secondary">ready</Badge>
+            </button>
+          )
+        })}
       </div>
-      <div className="flex flex-col gap-2">
-        <p className="font-medium">Required checks</p>
-        {(["Policy", "Cost model"] as const).map((check) => (
-          <div
-            key={check}
-            className="flex items-center justify-between gap-3 rounded-md border border-border px-2.5 py-2"
-          >
-            <span>{check}</span>
-            <Badge variant={checksPassed ? "secondary" : "outline"}>
-              {checksPassed ? "passed" : "evaluating"}
-            </Badge>
-          </div>
-        ))}
-        <p className="text-xs text-muted-foreground">
-          Approval is local rehearsal state. It does not place an order.
-        </p>
-      </div>
+      <Button
+        type="button"
+        size="lg"
+        className="mt-4 w-full rounded-xl bg-foreground text-background hover:bg-foreground/85"
+        disabled={!selectedCandidateId || recorded}
+        onClick={onRecord}
+      >
+        {recorded ? "Decision recorded" : "Record Decision"}
+      </Button>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Recording is final. It does not place an order.
+      </p>
     </div>
   )
-}
-
-function DecisionStatusBadge({ status }: { status: DecisionStatus }) {
-  if (status === "approved") return <Badge variant="secondary">approved</Badge>
-  if (status === "on hold") return <Badge variant="destructive">on hold</Badge>
-  if (status === "needs human review") return null
-  return <Badge variant="outline">evaluating</Badge>
 }

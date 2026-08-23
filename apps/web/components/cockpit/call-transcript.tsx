@@ -1,4 +1,5 @@
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
+import { DotLoader } from "@/components/cockpit/dot-loader"
 import { Message, MessageContent, MessageHeader } from "@/components/ui/message"
 import {
   MessageScroller,
@@ -11,6 +12,11 @@ import { INCIDENT, type RehearsalCall } from "@/lib/case-001"
 
 export function CallTranscript({ call }: { call: RehearsalCall }) {
   const disclosure = call.transcript[0]?.text ?? ""
+  const visibleTurns = call.transcript.slice(
+    0,
+    call.visibleTranscriptTurnCount ?? call.transcript.length
+  )
+  const live = call.status === "dialing" || call.status === "calling"
   const systemPrompt = `Outreach Task: call ${call.supplier} at ${call.maskedPhone} in rehearsal mode about ${INCIDENT.partId}. Begin with the mandatory disclosure: “${disclosure}” Then gather quantity, earliest readiness, unit price, free-versus-allocated stock, exact part confirmation, and certification status. Do not make commitments.`
 
   return (
@@ -35,7 +41,7 @@ export function CallTranscript({ call }: { call: RehearsalCall }) {
                   </p>
                 </div>
               </MessageScrollerItem>
-              {call.transcript.map((turn, index) => {
+              {visibleTurns.map((turn, index) => {
                 const isAgent = turn.speaker === "Agent"
 
                 return (
@@ -61,6 +67,18 @@ export function CallTranscript({ call }: { call: RehearsalCall }) {
                   </MessageScrollerItem>
                 )
               })}
+              {live ? (
+                <MessageScrollerItem>
+                  <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
+                    <DotLoader className="size-4" />
+                    <span>
+                      {call.status === "dialing"
+                        ? "Waiting for an answer"
+                        : "Transcribing live"}
+                    </span>
+                  </div>
+                </MessageScrollerItem>
+              ) : null}
             </MessageScrollerContent>
           </MessageScrollerViewport>
         </MessageScroller>
