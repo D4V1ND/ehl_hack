@@ -268,3 +268,21 @@ def test_the_tools_the_session_calls_by_hand_work_too(client):
     )
     assert tasks.status_code == 200, tasks.text
     assert len(tasks.json()) == len(compliant)
+
+
+def test_the_ui_on_the_fallback_dev_port_is_allowed_by_default():
+    """`npm run dev` silently moves to :3001 when :3000 is taken, and the browser
+    trigger dies on CORS if only :3000 is trusted."""
+    from backend.api.settings import cors_origins_from_env
+
+    assert "http://localhost:3001" in cors_origins_from_env(None)
+    assert cors_origins_from_env("") == cors_origins_from_env(None)
+
+
+def test_allowed_origins_stay_an_allowlist():
+    from backend.api.settings import cors_origins_from_env
+
+    assert cors_origins_from_env("https://demo.example , http://localhost:3001") == [
+        "https://demo.example",
+        "http://localhost:3001",
+    ]
