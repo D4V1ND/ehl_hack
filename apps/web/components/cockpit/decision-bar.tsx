@@ -41,16 +41,12 @@ export function DecisionBar({
               <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]:-rotate-90 motion-reduce:transition-none" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Decision</span>
+                  <span className="text-sm font-medium tabular-nums">
+                    {recommended.total}
+                  </span>
                   <DecisionStatusBadge status={status} />
                 </div>
-                <p className="truncate text-xs text-muted-foreground">
-                  {recommended.name}
-                </p>
               </div>
-              <span className="shrink-0 text-sm font-medium tabular-nums">
-                {recommended.total}
-              </span>
             </CollapsibleTrigger>
             <Button
               type="button"

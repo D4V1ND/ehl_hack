@@ -97,4 +97,6 @@ export const SCRIPT: ScriptStep[] = [
 ]
 
 export const TICK_MS = 760
+export const FINAL_MESSAGE =
+  "I recommend the split Strategy: 20% SKF air and 80% FAG sea. The Decision is ready for human review."
 export const USER_PROMPT = `${BUYER_NAME}, ${INCIDENT.plantLabel}: Incident ${INCIDENT.caseId}, part ${INCIDENT.partId} ${INCIDENT.description}. qty_required ${INCIDENT.qtyRequired}, qty_on_hand ${INCIDENT.qtyOnHand}, shortfall ${INCIDENT.shortfall}, line_stop in ${INCIDENT.lineStopDays} days. Find Candidates, gather Claims, recommend a Decision.`

@@ -55,13 +55,8 @@ export function SessionSidebar({
                     isActive={incident.caseId === activeSession}
                     onClick={() => setActiveSession(incident.caseId)}
                   >
-                    <span className="min-w-0">
-                      <span className="block font-mono text-xs">
-                        {incident.caseId}
-                      </span>
-                      <span className="block truncate text-xs text-sidebar-foreground/60">
-                        {incident.partLabel}
-                      </span>
+                    <span className="min-w-0 truncate text-xs">
+                      {incident.partLabel}
                     </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

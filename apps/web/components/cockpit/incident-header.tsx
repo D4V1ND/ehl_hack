@@ -48,9 +48,6 @@ export function IncidentHeader(props: IncidentHeaderProps) {
           aria-label="Toggle Incident details"
         >
           <span className="font-mono text-sm">{INCIDENT.caseId}</span>
-          <span className="hidden text-sm text-muted-foreground sm:inline">
-            {INCIDENT.partId}
-          </span>
           <span className="hidden text-sm md:inline">
             {INCIDENT.lineStopDays} days to line stop
           </span>

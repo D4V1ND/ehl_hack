@@ -3,18 +3,10 @@
 import { ChevronDownIcon, XIcon } from "@/components/icons"
 import { CandidateComparison } from "@/components/cockpit/candidate-comparison"
 import { RejectedCandidate } from "@/components/cockpit/rejected-candidate"
-import {
-  claimStatus,
-  complianceStatus,
-  landedCostStatus,
-  outreachStatus,
-  stockStatus,
-} from "@/components/cockpit/candidate-status"
 import type {
   Candidate,
   CandidateState,
 } from "@/components/cockpit/candidate-types"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Collapsible,
@@ -47,7 +39,7 @@ export function CandidatePanel({
       className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-sidebar text-foreground"
     >
       <header className="flex min-h-11 shrink-0 items-center justify-between border-b border-border px-3">
-          <h2 className="text-sm font-medium">Candidates</h2>
+        <h2 className="text-sm font-medium">Candidates</h2>
         <Button
           type="button"
           size="icon-sm"
@@ -87,6 +79,7 @@ function CandidateRow({
   state: CandidateState
   visibleIds: ReadonlySet<string>
 }) {
+  const status = getLifecycleStatus(candidate, state)
   const rejected = state.policyComplete && candidate.compliance === "failed"
   const call = CALLS.find(
     (item) => item.candidateId === candidate.id && visibleIds.has(item.afterId)
@@ -94,25 +87,36 @@ function CandidateRow({
   const landedLine = LANDED_LINES.find(
     (line) => line.candidateId === candidate.id
   )
+  const description = candidate.supplierRecord.preferred
+    ? `${candidate.country} · Preferred Supplier Record`
+    : `${candidate.country} · Supplier Record`
 
   return (
     <Collapsible className="border-b border-border">
-      <CollapsibleTrigger className="group flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
+      <CollapsibleTrigger className="group flex min-h-9 w-full items-center gap-2 px-2.5 py-1.5 text-left outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium">
-              {candidate.name}
-            </span>
-            <span className="shrink-0 font-mono text-xs text-muted-foreground">
-              {candidate.country}
-            </span>
+          <span className="block truncate text-xs font-medium">
+            {candidate.name}
           </span>
-          <CandidateStatuses candidate={candidate} state={state} />
+          <span className="block truncate text-[11px] leading-4 text-muted-foreground">
+            {description}
+          </span>
         </span>
-        <LifecycleBadge candidate={candidate} state={state} />
+        <span
+          className={cn(
+            "inline-flex h-4.5 shrink-0 items-center gap-1 rounded-full px-1.5 text-[10px] font-medium",
+            status.className
+          )}
+        >
+          <span
+            aria-hidden="true"
+            className={cn("size-2 rounded-full", status.dotClassName)}
+          />
+          {status.label}
+        </span>
         <ChevronDownIcon
-          aria-hidden
-          className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
+          aria-hidden="true"
+          className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -133,53 +137,34 @@ function CandidateRow({
   )
 }
 
-function CandidateStatuses({
-  candidate,
-  state,
-}: {
-  candidate: Candidate
-  state: CandidateState
-}) {
-  const allocated =
-    state.claimsComplete && candidate.stockStatus === "in_stock_allocated"
-  const values = [
-    [
-      "compliance",
-      complianceStatus(candidate, state),
-      state.policyComplete && candidate.compliance === "failed",
-    ],
-    ["Outreach Task", outreachStatus(candidate, state), false],
-    ["Claim", claimStatus(candidate, state), false],
-    ["stock_status", stockStatus(candidate, state), allocated],
-    ["Landed Cost", landedCostStatus(candidate, state), false],
-  ] as const
-
-  return (
-    <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-      {values.map(([label, value, destructive]) => (
-        <span
-          key={label}
-          className={cn("whitespace-nowrap", destructive && "text-destructive")}
-        >
-          {label} <span className="font-mono text-foreground">{value}</span>
-        </span>
-      ))}
-    </span>
-  )
-}
-
-function LifecycleBadge({
-  candidate,
-  state,
-}: {
-  candidate: Candidate
-  state: CandidateState
-}) {
+function getLifecycleStatus(candidate: Candidate, state: CandidateState) {
   if (state.policyComplete && candidate.compliance === "failed")
-    return <Badge variant="destructive">rejected</Badge>
+    return {
+      label: "rejected",
+      className: "bg-destructive/30 text-foreground",
+      dotClassName: "bg-destructive",
+    }
   if (state.claimsComplete)
-    return <Badge variant="secondary">Claim filed</Badge>
-  if (state.outreachStarted) return <Badge variant="outline">outreach</Badge>
-  if (state.policyComplete) return <Badge variant="secondary">passed</Badge>
-  return <Badge variant="outline">matched</Badge>
+    return {
+      label: "Claim filed",
+      className: "bg-chart-5/30 text-foreground",
+      dotClassName: "bg-chart-5",
+    }
+  if (state.outreachStarted)
+    return {
+      label: "outreach",
+      className: "bg-chart-1/30 text-foreground",
+      dotClassName: "bg-chart-1",
+    }
+  if (state.policyComplete)
+    return {
+      label: "passed",
+      className: "bg-primary/30 text-foreground",
+      dotClassName: "bg-primary",
+    }
+  return {
+    label: "matched",
+    className: "bg-muted-foreground/30 text-foreground",
+    dotClassName: "bg-muted-foreground",
+  }
 }

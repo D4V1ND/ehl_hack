@@ -6,8 +6,15 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import { Message, MessageContent } from "@/components/ai-elements/message"
-import { AssistantTurn } from "@/components/cockpit/assistant-turn"
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message"
+import {
+  AssistantTurn,
+  CompletedRunSummary,
+} from "@/components/cockpit/assistant-turn"
 import { CallDetailDialog } from "@/components/cockpit/call-detail-dialog"
 import { CandidatePanel } from "@/components/cockpit/candidate-panel"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
@@ -19,7 +26,7 @@ import { DotLoader } from "@/components/cockpit/dot-loader"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { IncidentRequestMessage } from "@/components/cockpit/incident-request-message"
 import { MessageComposer } from "@/components/cockpit/message-composer"
-import { SCRIPT, TICK_MS } from "@/lib/case-001"
+import { FINAL_MESSAGE, SCRIPT, TICK_MS } from "@/lib/case-001"
 
 export function CockpitChat() {
   const [visible, setVisible] = useState(0)
@@ -97,13 +104,24 @@ export function CockpitChat() {
             scrollClassName="chat-scrollbar overflow-x-hidden overflow-y-auto"
           >
             <IncidentRequestMessage />
-            {SCRIPT.slice(0, visible).map((step, index) => (
-              <AssistantTurn
-                key={step.id}
-                step={step}
-                latest={index === visible - 1 && running}
-              />
-            ))}
+            {running ? (
+              SCRIPT.slice(0, visible).map((step, index) => (
+                <AssistantTurn
+                  key={step.id}
+                  step={step}
+                  latest={index === visible - 1}
+                />
+              ))
+            ) : (
+              <>
+                <CompletedRunSummary steps={SCRIPT} />
+                <Message from="assistant" className="max-w-full">
+                  <MessageContent>
+                    <MessageResponse>{FINAL_MESSAGE}</MessageResponse>
+                  </MessageContent>
+                </Message>
+              </>
+            )}
             {running ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <DotLoader className="size-4" />
