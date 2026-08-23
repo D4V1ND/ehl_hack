@@ -240,7 +240,13 @@ def cmd_api() -> None:
     ensure_db(py)
     port = pick_port(API_PORT_DEFAULT)
     bold(f"API on http://localhost:{port}  (docs at /docs)")
-    run_module(py, "uvicorn", "backend.api.main:app", "--reload", "--port", str(port))
+    # Watch only the Python source. Watching the whole repo restarts the API
+    # whenever npm touches a node_modules tree (some packages ship .py files).
+    run_module(
+        py, "uvicorn", "backend.api.main:app", "--reload",
+        "--reload-dir", "backend", "--reload-dir", "packages",
+        "--port", str(port),
+    )
 
 
 def cmd_ui() -> None:
