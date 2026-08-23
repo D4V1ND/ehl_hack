@@ -3,29 +3,30 @@ marp: true
 theme: default
 paginate: true
 size: 16:9
-title: Stockout — autonomous sourcing
+title: SupplyOS
 style: |
   section {
-    background: #ffffff;
-    color: #16181d;
+    background: #0b0f12;
+    color: #eef1f4;
     font-family: Inter, -apple-system, "Segoe UI", sans-serif;
     padding: 60px 80px;
   }
-  h1 { font-size: 60px; letter-spacing: -2px; font-weight: 500; line-height: 1.1; color: #16181d; }
+  h1 { font-size: 60px; letter-spacing: -2px; font-weight: 500; line-height: 1.05; color: #ffffff; }
   h1 strong { color: #e8500f; }
-  h2 { font-size: 40px; letter-spacing: -1px; font-weight: 500; color: #16181d; }
-  h3 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  h2 { font-size: 40px; letter-spacing: -1px; font-weight: 500; color: #ffffff; }
+  h3 { font-size: 26px; font-weight: 600; margin-bottom: 4px; color: #ffffff; }
   section.lead { justify-content: center; text-align: center; }
-  strong { color: #e8500f; }
-  .big { font-size: 92px; font-weight: 500; letter-spacing: -3px; line-height: 1; }
-  .sub { color: #5c6370; font-size: 26px; }
-  .note { color: #8b919c; font-size: 20px; }
-  section::after { color: #b0b5bd; }
-  table { font-size: 24px; }
+  strong { color: #f0813f; }
+  code { background: #151b20; }
+  pre { background: #151b20; border: 1px solid #223038; }
+  .sub { color: #9aa5ad; font-size: 26px; }
+  .note { color: #7d878e; font-size: 20px; }
+  section::after { color: #4d565c; }
+  table { font-size: 24px; border-color: #223038; }
   table thead { display: none; }
+  table td, table tr { background: transparent !important; border-color: #223038; }
   section.demo h2 { margin-bottom: 8px; }
   section.demo img { display: block; margin: 0 auto; }
-  blockquote { border-left: 4px solid #e8500f; padding-left: 24px; color: #5c6370; }
 ---
 
 <!-- _class: lead -->
@@ -33,36 +34,38 @@ style: |
 ![bg fit](../assets/hero.png)
 
 <!--
-Speaker: 0:30. The slide is the product, full bleed — do not read it out. One
-sentence: a bearing in a bin at PLANT-MUC runs out in twelve days, and the line
-it feeds costs eighteen thousand four hundred euros an hour when it stops. Then
-move.
+Speaker, 0:30. The slide is the product. Do not read it out.
+
+A bearing in a bin at PLANT-MUC runs out in twelve days. The line it feeds costs
+eighteen thousand four hundred euros an hour when it stands still. Somebody has
+to fix that today, and that somebody has a phone and a spreadsheet.
 -->
 
 ---
 
-## A shortage costs three things
+## What a shortage costs
 
-### It is slow
-Days of phone tag per part. **€18,400 an hour** if the line stops, and the line
-does not wait for the phone to be answered.
+### Time
+Days of phone tag for one part, and the line keeps counting down at €18,400 an
+hour.
 
-### The decision is worse than it looks
-A buyer calls the two or three vendors they already know. Nobody weighs fifteen
-suppliers against MOQ, Incoterms, freight, duty and carrying cost by hand.
+### Quality of the decision
+A buyer calls the two or three suppliers they already know. Fifteen suppliers
+weighed against MOQ, Incoterms, freight, duty and carrying cost is more than
+anybody can hold in their head under pressure.
 
-### So it is more expensive
-Least of all does anybody hand-compute a **split order** — and that is usually
-where the money is.
+### Money
+So you pay for air freight on the whole order, or you let the line stop. The
+cheaper answer usually sits between those two, and nobody has time to find it.
 
 <!--
-Speaker: 0:45. This is the emotional centre of the pitch. Land the third bullet
-hardest: the option that saves the money is the one no human has time to find.
+Speaker, 0:45. This is the centre of the pitch. Slow down on the third point:
+the money is lost in the option nobody had time to compute.
 -->
 
 ---
 
-## The option nobody has time to find
+## The plan nobody computes by hand
 
 ```yaml
 candidates:
@@ -77,11 +80,12 @@ recommended:
     - sea 80% from FAG   # unit economy
 ```
 
-<span class="sub">Air the fifth that saves the line. Ship the rest.</span>
+<span class="sub">Fly the fifth that saves the line. Ship the rest.</span>
 
 <!--
-Speaker: part of the problem beat, ~15s. Two options everybody sees: all air, or
-stop the line. The split is the third one, and it is arithmetic, not intuition.
+Speaker, 15s inside the problem beat. Everybody sees two options: all air, or
+stop the line. The third one is arithmetic across every supplier and every
+freight mode, which is what a computer is for.
 -->
 
 ---
@@ -90,15 +94,15 @@ stop the line. The split is the third one, and it is arithmetic, not intuition.
 
 | | |
 |---|---|
-| **Reads** | the system of record — bin, take rate, the BOM line that stops, the incumbent, the slipped PO |
+| **Reads** | the system of record: bin, take rate, the BOM line that stops, the incumbent, the slipped PO |
 | **Screens** | every supplier against the company's own compliance rules, rejected by name and by the rule that failed |
-| **Calls** | them through CALL-E — MOQ, Incoterms, lead time, price breaks |
-| **Costs** | every single-source and split plan, landed, on-time-first-then-cheapest |
+| **Calls** | them through CALL-E, asking for MOQ, Incoterms, lead time and price breaks |
+| **Costs** | every single-source and split plan, landed, on time first and cheapest second |
 | **Ships** | the decision as a pull request |
 
 <!--
-Speaker: 0:30. Five verbs, one breath each. Do not explain the architecture —
-that is a backup slide if the jury asks.
+Speaker, 0:30. Five verbs, one breath each. Save the architecture for the
+question round.
 -->
 
 ---
@@ -107,40 +111,40 @@ that is a backup slide if the jury asks.
 
 ## Watch it work
 
-<!-- Replace with the recorded walkthrough. PPTX: embedded video. PDF: the
-     still below, narrated over. Keep the recording under 90 seconds. -->
+<!-- Placeholder still. Replace with the recorded walkthrough: embedded video if
+     ehl.gg takes PPTX, a frame from the recording if it takes PDF. -->
 
 ![w:840](../assets/demo.png)
 
-<span class="note">…and the phone in the room is the same agent, live.</span>
+<span class="note">The phone that rings in this room is the same agent.</span>
 
 <!--
-Speaker: 1:45 total, the largest block in the pitch.
+Speaker, 1:45, the biggest block in the pitch.
 
-Recording (~90s), narrated live over muted audio:
-  inventory → Source this part → shortage derived from the ERP → six suppliers
-  screened → plans ranked on-time-first-then-cheapest → the pull request.
+Recording, about 90 seconds, narrated live over muted audio:
+  inventory, Source this part, the shortage read out of the ERP, six suppliers
+  screened, plans ranked on time first and cheapest second, the pull request.
 
-Then the live call, ~20s: dial SUP-KBY and let the room hear the agent open with
-the disclosure that it is an AI, then ask the must-asks. Answer it as the
-supplier, keep it short, and hang up. Do NOT wait for the re-price — CALL-E took
-~18 minutes in rehearsal. The re-priced plan is already in the recording.
+Then the live call, about 20 seconds. Dial SUP-KBY and let the room hear the
+agent say it is an AI and ask its questions. Answer as the supplier, keep it
+short, hang up. Do not wait for the re-price: CALL-E needed about 18 minutes in
+rehearsal, and the re-priced plan is already in the recording.
 -->
 
 ---
 
 ## Where this goes
 
-# One AI for the whole supply chain.
+# One AI for your whole supply chain.
 
-<span class="sub">End to end, inside the ERP the buyers already live in.</span>
+<span class="sub">End to end, inside the ERP your buyers already work in.</span>
 
-Shortage firefighting is the first workflow — the one that earns the trust.
-Then reorder points, supplier discovery, price negotiation, risk on the whole
-bill of materials.
+Shortages come first because they hurt most and prove the loop. Reorder points,
+supplier discovery, price negotiation and risk across the bill of materials run
+on the same machinery.
 
 <!--
-Speaker: 0:25. Say it as a product line, not a dream: same loop, more workflows.
+Speaker, 0:25. Say it as a roadmap, not a dream: same loop, more workflows.
 -->
 
 ---
@@ -148,74 +152,30 @@ Speaker: 0:25. Say it as a product line, not a dream: same loop, more workflows.
 ## How we get there
 
 ### Start narrow, and in person
-A handful of Munich manufacturers. One part family at a time, in the plant,
-with their own compliance rules.
+A handful of Munich manufacturers. One part family at a time, in the plant, with
+their own compliance rules.
 
 ### Then compound
-Every case adds suppliers, quotes, call playbooks and rules that the next
-customer inherits. The tenth plant is cheaper to serve than the first.
+Every case adds suppliers, quotes, call scripts and rules that the next customer
+inherits. The tenth plant costs less to serve than the first.
 
-<span class="note">Being local is the strategy, not a limitation — we can stand
-on the shop floor the day the line is at risk.</span>
+<span class="note">We can stand on the shop floor the afternoon a line is at
+risk, which is why we start here.</span>
 
 <!--
-Speaker: 0:30. The jury will want to hear why you and why now — "we can be in
-the plant this afternoon" is a better answer than a market size.
+Speaker, 0:30. The jury wants to know why you and why now. Being able to drive
+to the plant beats a market-size slide.
 -->
 
 ---
 
 <!-- _class: lead -->
 
-# Nothing is ordered.<br/>**A human merges the PR.**
+# Give your supply chain<br/>**an engineer.**
 
-<span class="sub">stockout · EHL Game Jam Munich · Cognition "Devin for X"</span>
+<span class="sub">SupplyOS · EHL Game Jam Munich · Cognition "Devin for X"</span>
 
 <!--
-Speaker: 0:25, the close. Say what you want from the room — a pilot plant, an
-introduction to a buying desk, whatever the ask is. Fill this in before
-submitting.
+Speaker, 0:25. Close with the ask: a pilot plant, an introduction to a buying
+desk, whatever you want from the room. Fill this in before submitting.
 -->
-
----
-
-<!-- _class: lead -->
-
-<span class="sub">Backup slides — question round</span>
-
----
-
-## Guardrails
-
-- **Nothing is ordered.** The agent ranks and stops; a buyer picks.
-- **Unknown stays unknown.** Every field a call did not establish reads
-  `unknown` — it is never inferred.
-- **Too late is too late.** A plan that misses the line stop is shown as too
-  late however cheap it is.
-- **Approve by merge.** The pull request is the human-in-the-loop gate.
-- **The call discloses itself.** Every supplier is told they are speaking to an
-  AI, before anything is asked.
-
----
-
-## Under the hood
-
-- Contracts first: one frozen set of models shared by every slice.
-- The system of record sits behind one interface — mock YAML today, SQL today,
-  a real ERP adapter tomorrow, same tool URLs.
-- The cost model is pure functions with a passing test suite: landed cost,
-  freight, duty, carrying cost, split orders.
-- `cases/` is the datastore — one directory per case, append-only event log.
-  The artifact *is* the record.
-- 116 tests, and the cockpit runs offline on fixtures.
-
----
-
-## What we do not claim
-
-- No purchase is placed. No supplier is committed to anything.
-- A live agent session takes tens of minutes; the sub-second run you saw is the
-  deterministic backend, and the recording says which is which.
-- The ERP is seeded, not a customer's production system.
-- Web search, email RFQ and the automatic shortage detector are designed, not
-  demonstrated.
