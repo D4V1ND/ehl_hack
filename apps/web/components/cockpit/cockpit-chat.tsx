@@ -8,17 +8,11 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import {
-  Message,
-  MessageContent,
-  MessageResponse,
-} from "@/components/ai-elements/message"
 import { CockpitShell } from "@/components/cockpit/cockpit-shell"
-import { DotLoader } from "@/components/cockpit/dot-loader"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { LiveCandidatePanel } from "@/components/cockpit/live-candidate-panel"
+import { PlanChecklist } from "@/components/cockpit/plan-checklist"
 import { useDevinCase } from "@/hooks/use-devin-case"
-import type { CaseEvent, Incident, Part } from "@/lib/live/types"
 
 export function CockpitChat() {
   return (
@@ -50,7 +44,6 @@ function DevinCockpit() {
 
   const incident = devin.snapshot?.incident ?? null
   const part = devin.snapshot?.part ?? null
-  const connected = devin.status === "live" || devin.status === "stubbed"
 
   return (
     <CockpitShell
@@ -85,18 +78,10 @@ function DevinCockpit() {
               error={devin.error}
               sessionUrl={devin.session?.session_url ?? null}
             />
-            {connected && incident && part ? (
-              <IncidentRequest incident={incident} part={part} />
-            ) : null}
-            {devin.events.map((event) => (
-              <EventTurn key={`${event.case_id}-${event.seq}`} event={event} />
-            ))}
-            {devin.status === "launching" ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <DotLoader className="size-4" />
-                <span>Starting Devin…</span>
-              </div>
-            ) : null}
+            <PlanChecklist
+              plan={devin.checklist}
+              launching={devin.status === "launching"}
+            />
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -147,48 +132,6 @@ function SessionBanner({
           </a>
         </>
       ) : null}
-      . Events below are from the case log, not a local script.
     </p>
-  )
-}
-
-function IncidentRequest({
-  incident,
-  part,
-}: {
-  incident: Incident
-  part: Part
-}) {
-  return (
-    <Message from="user">
-      <MessageContent>
-        <p className="leading-6">
-          Resolve{" "}
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-input px-1.5 py-[1px] align-baseline text-xs font-medium text-foreground">
-            <span
-              aria-hidden="true"
-              className="size-1.5 rounded-full bg-accent-foreground"
-            />
-            <span>
-              @{incident.case_id} · {part.item_code}
-            </span>
-          </span>{" "}
-          by finding Candidates, gathering Claims, and recommending a Decision.
-        </p>
-      </MessageContent>
-    </Message>
-  )
-}
-
-function EventTurn({ event }: { event: CaseEvent }) {
-  return (
-    <Message from="assistant" className="max-w-full">
-      <MessageContent>
-        <p className="mb-1 font-mono text-xs text-muted-foreground">
-          {event.stage} · {event.actor}
-        </p>
-        <MessageResponse>{event.message}</MessageResponse>
-      </MessageContent>
-    </Message>
   )
 }

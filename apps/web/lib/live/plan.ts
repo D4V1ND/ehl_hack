@@ -22,6 +22,7 @@ export type LivePlanStep = {
 export type LivePlanSection = {
   group: string
   label: string
+  status?: LiveStepStatus
   steps: LivePlanStep[]
 }
 

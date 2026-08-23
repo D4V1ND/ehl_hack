@@ -8,7 +8,9 @@ import {
   openCase,
   sessionFromEvents,
 } from "@/lib/live/api"
+import { resolveChecklist } from "@/lib/live/checklist"
 import { EVENT_POLL_MS, PART_ID } from "@/lib/live/config"
+import { fetchPlan, type LivePlan } from "@/lib/live/plan"
 import type {
   CaseEvent,
   CaseSnapshot,
@@ -30,6 +32,7 @@ type DevinCaseState = {
   caseId: string | null
   snapshot: CaseSnapshot | null
   events: CaseEvent[]
+  plan: LivePlan | null
   session: SessionInfo | null
 }
 
@@ -39,6 +42,7 @@ const EMPTY: DevinCaseState = {
   caseId: null,
   snapshot: null,
   events: [],
+  plan: null,
   session: null,
 }
 
@@ -51,9 +55,10 @@ export function useDevinCase(caseIdFromUrl: string | null) {
   const [state, setState] = useState<DevinCaseState>(EMPTY)
 
   const attach = useCallback(async (caseId: string, opened?: OpenedCase) => {
-    const [snapshot, events] = await Promise.all([
+    const [snapshot, events, plan] = await Promise.all([
       fetchCase(caseId),
       fetchEvents(caseId),
+      fetchPlan(caseId),
     ])
     const session =
       opened !== undefined
@@ -70,6 +75,7 @@ export function useDevinCase(caseIdFromUrl: string | null) {
       caseId,
       snapshot,
       events,
+      plan,
       session,
     })
   }, [])
@@ -122,9 +128,10 @@ export function useDevinCase(caseIdFromUrl: string | null) {
     const tick = async () => {
       try {
         const since = eventsRef.current.at(-1)?.seq ?? 0
-        const [snapshot, fresh] = await Promise.all([
+        const [snapshot, fresh, plan] = await Promise.all([
           fetchCase(caseId),
           fetchEvents(caseId, since),
+          fetchPlan(caseId),
         ])
         if (cancelled) return
         setState((current) => {
@@ -136,6 +143,7 @@ export function useDevinCase(caseIdFromUrl: string | null) {
             ...current,
             snapshot,
             events,
+            plan,
             session,
             status: statusFromSession(session),
             error: session?.error ?? current.error,
@@ -154,10 +162,14 @@ export function useDevinCase(caseIdFromUrl: string | null) {
   }, [state.caseId, state.status])
 
   const candidates: readonly LiveCandidate[] = state.snapshot?.candidates ?? []
+  const checklist = state.plan
+    ? resolveChecklist(state.plan, candidates)
+    : null
 
   return {
     ...state,
     candidates,
+    checklist,
     launch,
     running: state.status === "launching" || state.status === "live",
   }

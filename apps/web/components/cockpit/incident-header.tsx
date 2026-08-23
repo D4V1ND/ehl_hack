@@ -191,9 +191,5 @@ function formatQuantity(quantity: string): string {
 
 function lineStopLabel(incident: Incident | null): string {
   if (!incident) return "Waiting for Devin"
-  const days = Math.max(
-    0,
-    Math.round((Date.parse(incident.line_stop_at) - Date.now()) / 86_400_000)
-  )
-  return `${days} days to line stop`
+  return `Line stop ${incident.line_stop_at.slice(0, 10)}`
 }
