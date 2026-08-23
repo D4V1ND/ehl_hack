@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stockout — challenge pitch (5 min)</title>
+<link rel="stylesheet" href="../shared/deck.css">
+</head>
+<body>
+<div class="stage">
+<div class="deck" data-deck="v1 · challenge pitch · 5 min" data-budget="300">
+
+  <!-- 1 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="dark" data-chrome="off" data-title="Title" data-seconds="12">
+    <div class="body middle" style="justify-content:center">
+      <p class="kicker">EHL Munich · Cognition "Devin for X"</p>
+      <h1 style="max-width:20ch">Procurement is an engineering problem.<br>Give it an engineer.</h1>
+      <p class="lede" style="max-width:44ch">Stockout files a part shortage with an agent. It reads the ERP,
+        phones the suppliers, costs every plan, and ships the decision as a pull request.</p>
+    </div>
+    <div class="row" style="gap:10px">
+      <span class="tag on">Stockout</span>
+      <span class="tag">Devin · CALL-E · procurement-as-code</span>
+    </div>
+    <aside class="note">
+      <p class="say">"A production line is twelve days from standing still because one part won't arrive.
+        Today a human spends those twelve days on the phone. We gave that job to an engineer that isn't human."</p>
+      <p>Land the one-liner, then move. 12 seconds, no team intro yet.</p>
+      <p><strong>Before this slide is on screen the live call is already dialling</strong> — start it in the
+        wings, so the phone is ringing while you do problem and solution. See slide 6.</p>
+    </aside>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="Problem" data-seconds="30">
+    <p class="kicker">The problem</p>
+    <h2>A part is late. A line stops. A human works the phones.</h2>
+    <div class="body cols cols-2-1" style="margin-top:26px">
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">what actually happens</span>
+          <p>The buyer finds the shortage in a spreadsheet, calls four suppliers, writes the answers
+            in an email, guesses at freight and duty, and picks one. <strong>Nothing of that decision
+            is written down in a form anyone can check.</strong></p>
+        </div>
+        <div class="card">
+          <span class="card-title">why it stays slow</span>
+          <p>Suppliers answer phones, not APIs. Price is never price — it is MOQ, price breaks,
+            incoterms, freight, duty and carrying cost. And "we can do 3 weeks" is a claim,
+            not a fact.</p>
+        </div>
+        <div class="card accent">
+          <span class="card-title">the cost</span>
+          <p>Days of buyer time per shortage, and a line-stop risk that is decided
+            by whoever picked up the phone first.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">a shortage, as the ERP sees it</span>
+          <div class="term" style="font-size:13px">
+            <div><span class="d">part</span>  6204-2RS <span class="d">bearing</span></div>
+            <div><span class="d">on hand</span>  <span class="k">180</span> pcs</div>
+            <div><span class="d">take rate</span>  40 / day</div>
+            <div><span class="d">cover</span>  <span class="k">4.5 days</span></div>
+            <div><span class="d">open PO</span>  slipped <span class="k">+18 d</span></div>
+            <div><span class="d">stops</span>  BOM line <span class="k">ASM-118</span></div>
+          </div>
+        </div>
+        <p class="note-inline">Every number above is derivable. The next twelve days of phone calls are not.</p>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"The data to spot the shortage is already in the ERP. What is missing is everything after:
+        who can actually supply it, at what real landed cost, and by when."</p>
+      <p>Do not linger. The judges know procurement is painful — you are here for the how.</p>
+    </aside>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="soft" data-title="Solution" data-seconds="35">
+    <p class="kicker">The solution</p>
+    <h2>The decision is code. So an engineer can make it.</h2>
+    <p class="sub">Devin is the procurement engineer. CALL-E is one of its tools. The deliverable is a
+      pull request a buyer merges — case, claims, transcripts, cost model, executable policy checks.</p>
+    <div class="body cols cols-3">
+      <div class="card">
+        <span class="card-title">1 · autonomous, not assisted</span>
+        <p>A reorder-point scan or one button opens the case and <strong>programmatically starts a
+          Devin session</strong>. No human writes the prompt.</p>
+      </div>
+      <div class="card">
+        <span class="card-title">2 · it checks its own work</span>
+        <p>Two pytest suites per case — the compliance policy and the landed-cost model.
+          <strong>Both green before the PR opens.</strong></p>
+      </div>
+      <div class="card accent">
+        <span class="card-title">3 · the artifact is the datastore</span>
+        <p><code>cases/&lt;id&gt;/</code> in Git: <code>case.yaml</code>, <code>claims/*.json</code>,
+          transcripts, <code>cost_model.py</code>, <code>decision.md</code>.
+          <strong>Approve by merge.</strong></p>
+      </div>
+    </div>
+    <div class="row" style="margin-top:22px;gap:10px">
+      <span class="tag on">everyone else demos "an agent that calls a supplier"</span>
+      <span class="tag">we demo the layer above it</span>
+    </div>
+    <aside class="note">
+      <p class="say">"The differentiator: the output of our agent isn't a transcript or a summary.
+        It's a diff. Reviewable, testable, revertible."</p>
+    </aside>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="How it works" data-seconds="28">
+    <p class="kicker">How it works</p>
+    <h2>Five stages, one case file.</h2>
+    <div class="body" style="margin-top:24px">
+      <div class="pipeline">
+        <div class="step" data-stage="detect">
+          <span class="n">01</span><h3>Detect</h3>
+          <p>Bin, take rate, the BOM line that stops, the slipped PO. The shortage is derived,
+            never typed.</p>
+        </div>
+        <div class="step" data-stage="read">
+          <span class="n">02</span><h3>Screen</h3>
+          <p>Approved suppliers checked against the company's own compliance rules —
+            as executable policy, not prose.</p>
+        </div>
+        <div class="step" data-stage="call">
+          <span class="n">03</span><h3>Call</h3>
+          <p>CALL-E phones the ones that pass with a fixed answer sheet. Unknown is a
+            first-class answer.</p>
+        </div>
+        <div class="step" data-stage="cost">
+          <span class="n">04</span><h3>Cost</h3>
+          <p>Price breaks, MOQ, freight, duty, carrying cost — every single-source
+            <em>and</em> split plan.</p>
+        </div>
+        <div class="step" data-stage="decide">
+          <span class="n">05</span><h3>Publish</h3>
+          <p>Plans ranked on-time first, then cheapest. Opens a PR. <strong>Orders
+            nothing.</strong></p>
+        </div>
+      </div>
+      <div class="cols cols-2" style="margin-top:24px;flex:none">
+        <div class="term">
+          <div><span class="c">$</span> POST /flow/run  <span class="d">case=CASE-001 hold_for=SUP-KBY</span></div>
+          <div><span class="d">screened 6 · called 4 · priced 11 plans</span>  <span class="k">0.4s</span></div>
+          <div><span class="c">$</span> POST /flow/call  <span class="d">supplier=SUP-KBY live=true</span></div>
+        </div>
+        <p style="align-self:center">The deterministic backend runs a whole case in under a second, so the
+          pitch never waits on a spinner — and one supplier is deliberately left uncalled for the live moment.</p>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"Detect, screen, call, cost, publish. The agent ranks and stops — a buyer picks.
+        Nothing is ordered by the machine."</p>
+    </aside>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="dark" data-title="Demo — recording" data-seconds="55">
+    <p class="kicker">Demo · recorded walkthrough</p>
+    <h2>From shortage to pull request.</h2>
+    <div class="body cols cols-2-1" style="margin-top:20px">
+      <div class="shot" data-slot="screen-recording">
+        <!-- drop the file in ../assets/ and swap this block for:
+             <video src="../assets/walkthrough.mp4" controls muted playsinline></video> -->
+        SCREEN RECORDING<br>
+        <span style="color:#807d72">../assets/walkthrough.mp4</span>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="card-title">00:00</span><p><strong>/inventory</strong> — the item master.
+          Any part, not just the one we rehearsed. Press <em>Source this part</em>.</p></div>
+        <div class="card"><span class="card-title">00:20</span><p><strong>The case opens itself</strong> —
+          the shortage derived from the records, a Devin session started, events streaming.</p></div>
+        <div class="card"><span class="card-title">00:45</span><p><strong>Claims and plans</strong> —
+          what each supplier offered, what is still unknown, plans ranked on-time then cheapest.</p></div>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"This part is recorded because a real Devin session takes tens of minutes. Everything
+        you see is the real system, just not in real time."</p>
+      <p>Narrate over the video. Do not read the cards.</p>
+    </aside>
+  </section>
+
+  <!-- 6 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="Demo — live call" data-seconds="55">
+    <p class="kicker">Demo · live</p>
+    <h2>One supplier was left uncalled. Let's phone them now.</h2>
+    <div class="body cols cols-1-2" style="margin-top:22px">
+      <div class="stack">
+        <div class="card accent">
+          <span class="card-title">what is about to happen</span>
+          <p>The agent dials <strong>SUP-KBY</strong> through CALL-E. It discloses that it is an AI,
+            asks the must-ask list — price, breaks, MOQ, lead time, incoterm, certification — and
+            files the answer as a typed claim. The plans re-price.</p>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <span class="tag on">AI disclosure, always</span>
+          <span class="tag ok">every call routed to one demo number</span>
+          <span class="tag">rehearsal is the default</span>
+        </div>
+        <p class="note-inline">A wrong number cannot reach a real supplier: <code>DEMO_CALL_DESTINATION</code>
+          overrides every recipient.</p>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">what to watch on the cockpit</span>
+          <p>The claim arrives typed, not as prose — lead time, price break, MOQ, incoterm, and every
+            field the supplier did not establish reading <code>unknown</code>. Then the plan ranking
+            re-sorts <strong>live, on-time first</strong>.</p>
+        </div>
+        <p class="note-inline">Switch to the cockpit here. Nothing on this slide states the answer —
+          the room should learn the winning plan from the running system, not from a bullet.</p>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"Answer the phone as the supplier. Give it a lead time. Watch the claim land and
+        the ranking change."</p>
+      <p>CALL-E took ~18 minutes to return a structured result in rehearsal on 2026-08-23. <strong>Dial
+        before slide 1</strong> so it rings during problem/solution, and <strong>never make the re-price
+        the finale</strong>. If it does not land, say so and move on; the rehearsed claim tells the same
+        story.</p>
+    </aside>
+  </section>
+
+  <!-- 7 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="soft" data-title="Proof" data-seconds="30">
+    <p class="kicker">The proof</p>
+    <h2>Why you should believe the demo.</h2>
+    <div class="body cols cols-4" style="margin-top:24px">
+      <div class="card">
+        <span class="big">116</span>
+        <span class="metric-label">tests, plus a UI typecheck, in one command. None of them touch
+          the network.</span>
+      </div>
+      <div class="card">
+        <span class="big">2 → 1</span>
+        <span class="metric-label">ERP adapters — YAML mock and SQLite — behind one interface and
+          <strong>the same test suite</strong>. "Swap in a real ERPNext" is one class.</span>
+      </div>
+      <div class="card">
+        <span class="big">&lt; 1s</span>
+        <span class="metric-label">to screen suppliers, cost every single-source and split plan,
+          and write the review package — <strong>against days of buyer phone work</strong>.</span>
+      </div>
+      <div class="card accent">
+        <span class="big">0</span>
+        <span class="metric-label">orders placed by the agent, and zero raw phone numbers in any
+          API response — there is a test that scans every endpoint.</span>
+      </div>
+    </div>
+    <div class="row" style="margin-top:22px;gap:8px;flex-wrap:wrap">
+      <span class="tag ok">money is Decimal, serialized as string — never a float</span>
+      <span class="tag ok">"unknown" is a first-class answer, a garbled call is a confidence-0 claim</span>
+      <span class="tag ok">live calling needs LIVE_CALLS=yes-place-real-calls, never a fallback</span>
+    </div>
+    <aside class="note">
+      <p class="say">"The safety rails are not slideware — they are tests. A plan that misses the line stop
+        is shown as too late however cheap it is."</p>
+    </aside>
+  </section>
+
+  <!-- 8 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="Vision + who buys it" data-seconds="30">
+    <p class="kicker">Our vision · who buys it</p>
+    <h2>Every operational decision, reviewable as a diff.</h2>
+    <div class="body" style="margin-top:22px">
+      <div class="cols cols-3">
+        <div class="card">
+          <span class="card-title">now</span>
+          <p>Sourcing a shortage. One case, one PR, one merge.</p>
+        </div>
+        <div class="card">
+          <span class="card-title">next</span>
+          <p>The whole buyer's desk: expediting, dual-sourcing, price-break renegotiation,
+            supplier qualification — same case file, same review gate.</p>
+        </div>
+        <div class="card accent">
+          <span class="card-title">the thesis</span>
+          <p>Operations runs on decisions nobody can audit. Put them in Git and an
+            <strong>agent is held to an engineer's standard</strong>: tests, review, revert.</p>
+        </div>
+      </div>
+      <div class="cols cols-2" style="margin-top:20px;flex:none">
+        <div class="card">
+          <span class="card-title">the first customer</span>
+          <p>Head of Supply Chain at a €50m–€500m discrete manufacturer. Has an ERP, has 3–15 buyers,
+            has no data-science team, and feels every line stop personally.</p>
+        </div>
+        <div class="card">
+          <span class="card-title">why the wedge works</span>
+          <p>Value lands per resolved shortage, so the pilot is one case — not a transformation
+            programme. Sizing and pricing are in the appendix.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"Procurement is where we start, not where this ends — anything an ops team decides in
+        a meeting can be a pull request instead. We start with mid-market manufacturers: big enough to
+        have an ERP and a shortage every week, small enough that nobody has automated it."</p>
+      <p>Sizing lives in the appendix on purpose. Do not quote a TAM on stage that we cannot defend in
+        the 3 minutes of questions.</p>
+    </aside>
+  </section>
+
+  <!-- 9 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="soft" data-title="How we continue" data-seconds="20">
+    <p class="kicker">How we continue</p>
+    <h2>What we ship next, in order.</h2>
+    <div class="body" style="margin-top:24px">
+      <div class="timeline">
+        <div class="beat">
+          <div class="t">next session</div>
+          <h3>Real ERP</h3>
+          <p>An ERPNext adapter behind the existing interface, proven by the suite both current
+            adapters already pass.</p>
+        </div>
+        <div class="beat">
+          <div class="t">then</div>
+          <h3>Channel routing</h3>
+          <p>Email/portal RFQ for regions CALL-E cannot dial, so supplier geography picks the channel.</p>
+        </div>
+        <div class="beat">
+          <div class="t">then</div>
+          <h3>Unattended detection</h3>
+          <p>The reorder-point scanner opens cases on its own. Humans see PRs, not alerts.</p>
+        </div>
+        <div class="beat">
+          <div class="t">pilot</div>
+          <h3>One design partner</h3>
+          <p>Read-only ERP access, ten real shortages, measured against what their buyers did.</p>
+        </div>
+      </div>
+      <div class="cols cols-2" style="margin-top:28px;flex:none">
+        <div class="card accent">
+          <span class="card-title">the ask</span>
+          <p>An intro to <strong>one manufacturer willing to give us read-only ERP access</strong>.
+            That is the only thing we cannot build ourselves this month.</p>
+        </div>
+        <div class="card">
+          <span class="card-title">known gaps, stated up front</span>
+          <p>Suppliers are seeded, not real. A live call takes minutes, not seconds. Negotiation is
+            one round. None of that is hidden in the code.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"The next three things are already scoped, and the fourth needs a design partner —
+        that's our ask."</p>
+    </aside>
+  </section>
+
+  <!-- 10 ----------------------------------------------------------------- -->
+  <section class="slide" data-bg="dark" data-chrome="off" data-title="Close" data-seconds="5">
+    <div class="body middle" style="justify-content:center">
+      <p class="kicker">Stockout</p>
+      <h1 style="max-width:22ch">A shortage goes in.<br>A pull request comes out.</h1>
+      <p class="lede" style="max-width:46ch">Devin as the procurement engineer, CALL-E as its phone,
+        and a decision a human merges.</p>
+    </div>
+    <div class="row" style="gap:10px">
+      <span class="tag on">github.com/D4V1ND/ehl_hack</span>
+      <span class="tag">questions?</span>
+    </div>
+    <aside class="note">
+      <p class="say">"Stockout. A shortage goes in, a pull request comes out. Happy to take questions."</p>
+      <p><strong>3 minutes of jury Q&amp;A follow — 60% of the pitch length.</strong> The appendix slides
+        (11–14) exist for exactly that: what is real vs seeded, the safety rails, sizing and pricing,
+        and how a real ERP goes in. Jump with digits + <em>enter</em>.</p>
+    </aside>
+  </section>
+
+  <!-- appendix ------------------------------------------------------------ -->
+  <section class="slide" data-bg="soft" data-appendix data-title="Q&amp;A · real vs seeded" data-seconds="0">
+    <p class="kicker">Appendix · not presented</p>
+    <h2>What is real, and what is seeded.</h2>
+    <div class="body cols cols-2" style="margin-top:22px">
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">real</span>
+          <p>The ERP read path (two adapters, one interface), the shortage derivation, the compliance
+            screen, the landed-cost model including splits, the case file and the PR, and the CALL-E
+            call itself — the one you watched was placed on stage.</p>
+        </div>
+        <div class="card">
+          <span class="card-title">seeded</span>
+          <p>The supplier base and item master (40 parts, 15 suppliers) and the freight/duty rate
+            tables. Real ones are data, not code.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card accent">
+          <span class="card-title">honest limits</span>
+          <p>Negotiation is one round, not a haggle. A live call takes minutes, not seconds. A Devin
+            session runs tens of minutes, which is why the walkthrough is recorded.</p>
+        </div>
+        <p class="note-inline">Answer this plainly if asked. Nothing on the demo path is a mock that
+          pretends to be live.</p>
+      </div>
+    </div>
+    <aside class="note"><p>Backup. Jump here if the jury asks "how much of that was real?".</p></aside>
+  </section>
+
+  <section class="slide" data-appendix data-title="Q&amp;A · safety rails" data-seconds="0">
+    <p class="kicker">Appendix · not presented</p>
+    <h2>What stops it doing something expensive.</h2>
+    <div class="body cols cols-4" style="margin-top:24px">
+      <div class="card"><span class="card-title">it cannot order</span>
+        <p>There is no ordering tool. The agent ranks plans and stops; a buyer merges.</p></div>
+      <div class="card"><span class="card-title">it cannot dial by accident</span>
+        <p>Rehearsal is the default. Live needs <code>LIVE_CALLS=yes-place-real-calls</code>, and
+          <code>DEMO_CALL_DESTINATION</code> overrides every recipient.</p></div>
+      <div class="card"><span class="card-title">it cannot leak a number</span>
+        <p>E.164 on entry, masked everywhere it is displayed or logged — a test scans every endpoint.</p></div>
+      <div class="card accent"><span class="card-title">it cannot bluff</span>
+        <p>"Unknown" is a first-class answer; a garbled call becomes a confidence-0 claim, never an
+          exception and never a guess.</p></div>
+    </div>
+    <p class="sub" style="margin-top:24px">Every call opens with the AI disclosure — who is calling, for
+      whom, that it will not commit to price or quantity, and that it ends the call on request.</p>
+    <aside class="note"><p>Backup. "What if it calls the wrong supplier / commits us to a price?"</p></aside>
+  </section>
+
+  <section class="slide" data-bg="soft" data-appendix data-title="Q&amp;A · market + pricing" data-seconds="0">
+    <p class="kicker">Appendix · not presented</p>
+    <h2>Sizing and pricing, with the gaps marked.</h2>
+    <div class="body cols cols-2-1" style="margin-top:22px">
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">wedge → land → expand</span>
+          <p>Shortage firefighting (urgent, unowned) → routine RFQ cycles → supplier base management.</p>
+        </div>
+        <div class="card accent">
+          <span class="card-title">pricing hypothesis</span>
+          <p>Per resolved case, plus a seat for the buyer who reviews. Priced against buyer hours saved
+            and expedite freight avoided — both of which the case file already measures.</p>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-title">sizing — not yet sourced</span>
+        <p class="note-inline">TODO: EU discrete manufacturers in the €50m–€500m band · buyers per firm ·
+          shortages per buyer per year. Source it before an investor conversation; do not invent it in
+          the room.</p>
+      </div>
+    </div>
+    <aside class="note"><p>If asked for a TAM: give the bottom-up unit (value per resolved shortage) and
+      say the top-down number is not sourced yet.</p></aside>
+  </section>
+
+  <section class="slide" data-appendix data-title="Q&amp;A · real ERP" data-seconds="0">
+    <p class="kicker">Appendix · not presented</p>
+    <h2>How a customer's ERP goes in.</h2>
+    <div class="body cols cols-2" style="margin-top:22px">
+      <div class="stack">
+        <div class="card">
+          <span class="card-title">one interface, two adapters today</span>
+          <p>A YAML mock and SQLite sit behind the same reader and pass the same suite. An ERPNext or
+            SAP adapter is one class plus the same tests — read-only.</p>
+        </div>
+        <div class="card">
+          <span class="card-title">what we need from a pilot</span>
+          <p>Read access to item master, on-hand, open POs, BOM and the approved supplier list.
+            Nothing is written back.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card accent">
+          <span class="card-title">how we would prove it</span>
+          <p>Ten historical shortages, replayed. Compare the agent's ranked plan against what the
+            buyer actually did — on time first, then landed cost.</p>
+        </div>
+        <p class="note-inline">That comparison is the pilot's success metric, and it is measurable from
+          the case files alone.</p>
+      </div>
+    </div>
+    <aside class="note"><p>Backup. "Does this work on our SAP?" — yes, read-only, one adapter.</p></aside>
+  </section>
+
+</div>
+</div>
+<script src="../shared/deck.js"></script>
+</body>
+</html>
