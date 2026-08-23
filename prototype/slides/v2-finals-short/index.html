@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stockout — finals cut (3 min, demo first)</title>
+<link rel="stylesheet" href="../shared/deck.css">
+</head>
+<body>
+<div class="stage">
+<div class="deck" data-deck="v2 · finals cut · 3 min" data-budget="180">
+
+  <!-- 1 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="dark" data-chrome="off" data-title="Title" data-seconds="12">
+    <div class="body middle" style="justify-content:center">
+      <p class="kicker">Stockout · EHL Munich finals</p>
+      <h1 style="max-width:19ch">A shortage goes in.<br>A pull request comes out.</h1>
+      <p class="lede" style="max-width:46ch">The buyer's twelve days of phone calls, done by an agent,
+        delivered as a diff a human merges.</p>
+    </div>
+    <aside class="note">
+      <p class="say">"Twelve days from a line stop. Today a buyer spends them on the phone.
+        We gave that job to an engineer that isn't human."</p>
+      <p>Finals room has seen none of this. One breath on the problem, then straight to the demo.</p>
+    </aside>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="Solution in one slide" data-seconds="35">
+    <p class="kicker">The solution, in one slide</p>
+    <h2>Devin is the procurement engineer. The phone is just a tool.</h2>
+    <div class="body" style="margin-top:22px">
+      <div class="pipeline">
+        <div class="step" data-stage="detect"><span class="n">01</span><h3>Detect</h3>
+          <p>Shortage derived from the ERP — bin, take rate, the BOM line that stops.</p></div>
+        <div class="step" data-stage="read"><span class="n">02</span><h3>Screen</h3>
+          <p>Approved suppliers against the company's compliance rules, as executable policy.</p></div>
+        <div class="step" data-stage="call"><span class="n">03</span><h3>Call</h3>
+          <p>CALL-E phones them with a fixed answer sheet. "Unknown" is a valid answer.</p></div>
+        <div class="step" data-stage="cost"><span class="n">04</span><h3>Cost</h3>
+          <p>Landed cost of every single-source and split plan.</p></div>
+        <div class="step" data-stage="decide"><span class="n">05</span><h3>Publish</h3>
+          <p>Ranked plans, opened as a PR. The agent orders nothing.</p></div>
+      </div>
+      <p class="sub" style="margin-top:24px">Everyone can demo an agent that calls a supplier. The layer
+        above it — the case file, the executable policy, the merge gate — is the product.</p>
+    </div>
+    <aside class="note">
+      <p class="say">"Detect, screen, call, cost, publish. The output is not a summary — it's a diff:
+        the claims, the transcripts, the cost model, the recommendation."</p>
+    </aside>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="dark" data-title="Demo" data-seconds="65">
+    <p class="kicker">Demo</p>
+    <h2>Shortage → claims → ranked plans → PR.</h2>
+    <div class="body cols cols-2-1" style="margin-top:20px">
+      <div class="shot" data-slot="screen-recording">
+        SCREEN RECORDING<br>
+        <span style="color:#807d72">../assets/walkthrough.mp4</span>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="card-title">recorded</span><p>The full case, because a real
+          Devin session runs for tens of minutes.</p></div>
+        <div class="card accent"><span class="card-title">live, right now</span><p>One supplier was
+          deliberately left uncalled. The agent dials them on stage — AI disclosure first — and
+          the ranking re-prices on the answer.</p></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <span class="tag ok">every call forced to one demo number</span>
+          <span class="tag">rehearsal is the default</span>
+        </div>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"Start the call, then keep talking. The claim lands while I explain the cost model."</p>
+      <p>The re-price is never the finale — CALL-E has taken ~18 minutes to return in rehearsal.</p>
+    </aside>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="soft" data-title="Proof" data-seconds="30">
+    <p class="kicker">The proof</p>
+    <h2>It is a system, not a script.</h2>
+    <div class="body cols cols-4" style="margin-top:24px">
+      <div class="card"><span class="big">116</span><span class="metric-label">tests plus a UI typecheck,
+        one command, no network.</span></div>
+      <div class="card"><span class="big">2 → 1</span><span class="metric-label">ERP adapters behind one
+        interface, both passing the same suite. A real ERPNext is one class.</span></div>
+      <div class="card"><span class="big">&lt; 1s</span><span class="metric-label">to screen, cost every
+        plan including splits, and write the review package.</span></div>
+      <div class="card accent"><span class="big">0</span><span class="metric-label">orders placed by the
+        agent · zero raw phone numbers in any response, enforced by a test.</span></div>
+    </div>
+    <div class="row" style="margin-top:22px;gap:8px;flex-wrap:wrap">
+      <span class="tag ok">money is Decimal, never float</span>
+      <span class="tag ok">a garbled call becomes a confidence-0 claim, not an exception</span>
+      <span class="tag warn">too late is too late, however cheap</span>
+    </div>
+    <aside class="note">
+      <p class="say">"The rails are tests, not slides."</p>
+    </aside>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------------ -->
+  <section class="slide" data-title="Vision + ask" data-seconds="30">
+    <p class="kicker">Where this goes</p>
+    <h2>Every operational decision, reviewable as a diff.</h2>
+    <div class="body cols cols-2-1" style="margin-top:22px">
+      <div class="stack">
+        <div class="card"><span class="card-title">wedge</span><p>Shortage firefighting at mid-market
+          discrete manufacturers — urgent, unowned, and measurable per case.</p></div>
+        <div class="card"><span class="card-title">expand</span><p>The rest of the buyer's desk:
+          expediting, dual-sourcing, renegotiation, qualification. Same case file, same merge gate.</p></div>
+        <div class="card"><span class="card-title">next builds</span><p>ERPNext adapter · email/portal RFQ
+          for undialable regions · unattended reorder-point detection.</p></div>
+      </div>
+      <div class="card accent" style="align-self:start">
+        <span class="card-title">the ask</span>
+        <p>One manufacturer, read-only ERP access, ten real shortages — measured against what
+          their buyers actually did.</p>
+        <p class="note-inline">It is the only thing on the roadmap we cannot build ourselves.</p>
+      </div>
+    </div>
+    <aside class="note">
+      <p class="say">"Procurement is the wedge, not the ceiling. Our ask is one design partner with a
+        real ERP."</p>
+    </aside>
+  </section>
+
+  <!-- 6 ------------------------------------------------------------------ -->
+  <section class="slide" data-bg="dark" data-chrome="off" data-title="Close" data-seconds="8">
+    <div class="body middle" style="justify-content:center">
+      <h1 style="max-width:20ch">Procurement is an engineering problem.<br>Give it an engineer.</h1>
+      <div class="row" style="gap:10px;margin-top:8px">
+        <span class="tag on">Stockout</span>
+        <span class="tag">github.com/D4V1ND/ehl_hack</span>
+      </div>
+    </div>
+    <aside class="note">
+      <p>Q&amp;A: what's real vs seeded · why voice · what stops a wrong order · swapping in a real ERP ·
+        what a pilot costs.</p>
+    </aside>
+  </section>
+
+</div>
+</div>
+<script src="../shared/deck.js"></script>
+</body>
+</html>

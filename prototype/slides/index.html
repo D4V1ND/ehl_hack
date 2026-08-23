@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stockout — pitch decks</title>
+<link rel="stylesheet" href="shared/deck.css">
+<style>
+  html, body { background: var(--canvas); overflow: auto; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 72px 32px 96px; }
+  .head { border-bottom: 1px solid var(--hairline); padding-bottom: 28px; margin-bottom: 36px; }
+  .versions { display: grid; gap: 16px; }
+  a.version {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--hairline);
+      border-radius: 10px;
+      padding: 22px 24px;
+  }
+  a.version:hover { border-color: var(--primary); }
+  a.version h3 { margin: 0 0 6px; font-size: 22px; }
+  a.version p { margin: 0; color: var(--muted); font-size: 16px; }
+  .rules { margin-top: 44px; }
+  .rules .card { margin-bottom: 12px; }
+  kbd {
+      font-family: var(--mono); font-size: 12px; border: 1px solid var(--hairline-strong);
+      border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; background: var(--card);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <p class="kicker">Stockout · EHL Game Jam Munich</p>
+    <h1 style="font-size:52px">Pitch decks</h1>
+    <p class="sub" style="margin-bottom:0">One version per audience and time slot. Same engine, same
+      tokens as the cockpit. No build step — open the file, press <kbd>f</kbd>.</p>
+  </div>
+
+  <div class="versions">
+    <a class="version" href="v1-challenge-5min/index.html">
+      <div>
+        <h3>v1 · challenge pitch</h3>
+        <p>Sunday 12:30, parallel challenge sessions. Problem → solution → recorded demo → live call →
+          proof → vision → market → next steps. 11 slides.</p>
+      </div>
+      <span class="tag on">5 min + 3 min Q&amp;A</span>
+    </a>
+    <a class="version" href="v2-finals-short/index.html">
+      <div>
+        <h3>v2 · finals cut</h3>
+        <p>Sunday 14:15, hack council. Demo-first, one slide of solution, proof and the ask.
+          6 slides.</p>
+      </div>
+      <span class="tag on">3 min, demo first</span>
+    </a>
+  </div>
+
+  <div class="rules">
+    <h2 style="font-size:26px">The rules we are pitching under</h2>
+    <p class="sub">From the kick-off deck (<em>Munich Agentic Hackathon — Kick off</em>).</p>
+    <div class="card">
+      <span class="card-title">timing</span>
+      <p>Sunday 12:30 — challenge pitches, three parallel sessions: <strong>5 min pitch &amp; demo,
+        3 min jury questions</strong>. Sunday 14:15 — final pitches with the hack council; finalists
+        called on stage one by one.</p>
+    </div>
+    <div class="card">
+      <span class="card-title">hard rules</span>
+      <p>KISS — keep it short and simple. <strong>Only slides submitted on ehl.gg may be used</strong>,
+        so export to PDF and submit before the deadline. Submissions that do not use Entire are rejected.
+        Pitching rooms are announced on Discord; Notion is the single source of truth.</p>
+    </div>
+    <div class="card accent">
+      <span class="card-title">what the judges score — "building a convincing winning pitch"</span>
+      <p><strong>1) The solution</strong> — break down your unique idea, what makes it fundamentally
+        different. <strong>2) The demo</strong> — show the product solving the problem, how would we use it.
+        <strong>3) The proof</strong> — metrics, results, benchmarks; why are you the best.</p>
+    </div>
+    <p class="note-inline">Each deck maps to that scoring order on purpose: solution before demo,
+      demo before proof, vision and ask last.</p>
+  </div>
+
+  <div class="rules">
+    <h2 style="font-size:26px">Driving a deck</h2>
+    <div class="card">
+      <span class="card-title">keys</span>
+      <p><kbd>→</kbd><kbd>←</kbd><kbd>space</kbd> navigate · <kbd>n</kbd> speaker notes ·
+        <kbd>o</kbd> slide grid · <kbd>t</kbd> start/stop the countdown against the deck's time budget ·
+        <kbd>r</kbd> reset it · <kbd>f</kbd> fullscreen · <kbd>p</kbd> print · digits then
+        <kbd>enter</kbd> to jump.</p>
+    </div>
+    <div class="card">
+      <span class="card-title">export for ehl.gg</span>
+      <p><kbd>p</kbd> → <em>Save as PDF</em>, landscape, margins <em>none</em>, background graphics
+        <em>on</em>. Every slide prints at exactly 1280×720; the presenter bar and notes never do.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
