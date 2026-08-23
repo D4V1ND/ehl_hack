@@ -25,6 +25,7 @@ from backend.launch.devin import session_prompt, start_session
 from backend.launch.incident import case_id_for, incident_for_part
 from backend.launch.resolve import resolve_incident
 from backend.outreach.calle import InvalidPhoneNumber, _load_supplier_phones
+from backend.policy.rules import deliverable_qty
 from backend.record.mock_erp import get_mock_erp
 
 TODAY = date(2026, 8, 22)
@@ -286,3 +287,40 @@ def test_allowed_origins_stay_an_allowlist():
         "https://demo.example",
         "http://localhost:3001",
     ]
+
+
+def test_a_filed_claim_keeps_the_supplier_in_the_plans():
+    """`available` was never read from the call result, so every claim filed
+    through POST /tools/claims zeroed its supplier out of every strategy."""
+    from packages.contracts.safe import claim_from_result
+
+    claim = claim_from_result(
+        {"stock_status": "free_in_stock", "qty_offered": 6300, "unit_price": "3.50"},
+        task_id="OUT-1",
+        case_id="CASE-6204-2RS",
+        supplier_ref="SUP-KBY",
+    )
+    assert claim.available
+    supplier = get_mock_erp().get_supplier("SUP-KBY")
+    assert supplier is not None
+    assert deliverable_qty(supplier, claim) == 6300
+
+
+def test_an_explicit_no_still_wins_over_the_offered_quantity():
+    from packages.contracts.safe import claim_from_result
+
+    claim = claim_from_result(
+        {"available": False, "stock_status": "free_in_stock", "qty_offered": 6300},
+        task_id="OUT-1",
+        case_id="CASE-6204-2RS",
+        supplier_ref="SUP-KBY",
+    )
+    assert not claim.available
+
+
+def test_a_silent_result_is_still_unavailable():
+    from packages.contracts.safe import claim_from_result
+
+    claim = claim_from_result(None, task_id="OUT-1", case_id="C", supplier_ref="SUP-KBY")
+    assert not claim.available
+    assert claim.confidence == 0.0
