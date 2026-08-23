@@ -1,0 +1,101 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/sanaa directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Add a version of this to our root readme for setting up everyhitng: 
+
+# Running the whole Stockout flow end to end on main
+
+
+Verified on a clean clone today (Ubuntu 22.04, node 20.18.1, pyenv Python 3.12.8).
+
+
+1. Setup (once)
+
+run.py needs Python >= 3.11; the system python3 here is 3.10, so point at a 3.11+ interpreter.
+
+
+
+bash
+git clone https://github.com/D4V1ND/ehl_hack.git && cd ehl_hack
+python3.12 run.py setup            # .venv, pip install -e .[dev], ui/ npm install, seeds the SQLite ERP
+.venv/bin/pip install -r requirements.txt   # calle-ai; not needed once PR #35 is merged
+
+Without that second line run.py test dies during collection with
+ModuleNotFoundError: No module named 'calle' — calle-ai was only in
+requirements.txt, which nothing installs. PR #35 moves it into pyproject.toml.
+
+2. Offline check
+
+
+
+
+bash
+python3.12 run.py test     # 292 backend tests + UI typecheck, never touches the network
+
+3. Bring the stack up
+
+
+
+bash
+.venv/bin/python -m uvicorn backend.api.main:app --port 8010
+# second terminal
+cd ui && NEXT_PUBLIC_DATA_SOURCE=live NEXT_PUBLIC_API_BASE=http://localhost:8010 npm run dev
+curl localhost:8010/healthz should read "call_mode":"rehearsal" — that is the
+safe default; nothing dials.
+
+
+4. Walk the case
+
+Either from the cockpit at http://localhost:3000/inventory ("Source this part"),
+or straight against the API:
+
+
+
+
+bash
+curl -s localhost:8010/inventory | head
+curl -s -X POST localhost:8010/cases -H 'content-type: application/json' -d '{"part_id":"PRT-6204"}'
+# -> CASE-6204-2RS, stub Devin session (no DEVIN_API_KEY needed)
+ 
+curl -s -X POST "localhost:8010/flow/run?case_id=CASE-6204-2RS&hold_for=SUP-KBY"
+curl -s -X POST "localhost:8010/flow/call?case_id=CASE-6204-2RS&supplier_ref=SUP-KBY"
+curl -s -X POST "localhost:8010/flow/collect?case_id=CASE-6204-2RS"
+curl -s      "localhost:8010/flow/state?case_id=CASE-6204-2RS"
+.venv/bin/python -m orchestrator.sourcing publish --case CASE-6204-2RS
+What that produced here: 6 suppliers screened, 3 rejected on policy
+(blocked origin, missing cert, unaudited), 2 asked, SUP-KBY held back for the
+live moment, recommended plan STR-05 (split 4,000 + 6,500, EUR 17,078.27
+landed, meets the line stop), and a dry-run PR with 6 procurement artifacts.
+
+
+Note: POST /flow/publish does not exist — the HTTP route is
+POST /tools/publish_pr?case_id=...; the CLI publish is what the README means.
+
+5. Live bits (only when you want them)
+
+Live calling: CALLE_API_KEY, DEMO_CALL_DESTINATION=<your phone, E.164>,
+LIVE_CALLS=yes-place-real-calls, FAKE_CALLS=0, then --live.
+CALL-E took ~18 min to return a result in rehearsal per the run sheet, so do
+not make the re-price the finale.
+Real PR on publish: GITHUB_TOKEN + GITHUB_REPO.
+Real Devin session on POST /cases: DEVIN_API_KEY, plus PUBLIC_BASE_URL
+(the cloudflared URL) so the session can call back.
+Bug found and fixed in PR #35
+
+/inventory 500s whenever two requests overlap: SqliteERP shared one
+connection across uvicorn's threadpool, so concurrent cursors returned each
+other's rows (unit_price came back None). 19 of 20 parallel requests failed;
+in the browser it showed as a red "Failed to fetch" banner over the table. Fixed
+with one connection per thread + a regression test.
