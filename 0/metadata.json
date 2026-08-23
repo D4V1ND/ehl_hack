@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NZVHEDCN6658E2VJACRYR1",
+  "session_id": "01a02bd8-51b8-7122-aa37-22699959adff",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T00:20:48.430494Z",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "8dd84f8639fe",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 459323,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17050368,
+    "output_tokens": 72976,
+    "api_call_count": 136
+  },
+  "session_metrics": {
+    "turn_count": 2
+  }
+}

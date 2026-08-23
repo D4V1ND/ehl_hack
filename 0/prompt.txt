@@ -1,0 +1,12 @@
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/qBcw2F/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/qBcw2F/PR instructions.md
+
+---
+
+Rebase your branch onto the remote branch (main) and resolve conflicts. Stage the resolved files and run `git rebase --continue`, then push --force-with-lease.
