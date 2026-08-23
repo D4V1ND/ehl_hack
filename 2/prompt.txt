@@ -1,43 +1,7 @@
-<system_instruction>
-You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
-Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
-Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
-The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+Make the sidebar item slightly smaller, still make the condidates expand, also add a small description of each candidate under the title (but no more info in the trigger!)
 
-Do not rename the current branch unless the user explicitly tells you to do so.
+Then commit.
 
-By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+I want to spawn one sub-agent for the commit and another sub-agent to build a second version of the UI that removes the right candidate sidebar. Instead, it should place the candidates as cards that you can also click on, which then opens a sidebar for more information about the candidate. But they should be displayed in some kind of carousel inline of the chat using cards. 
 
-If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
-Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
-If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
-</system_instruction>
-
-
-<system_instruction>
-The user has attached these files. Read them before proceeding.
-- .context/attachments/MVL3jf/image.png (15.3 KB)
-</system_instruction>
-
-
-
-My UI currently is very overloaded. Adjust it by:
-
-- Makeing my candidate sidbear dispaly only the names of the candidates + their name in a status pebble ( pebble size-2 + status, bg is the pebble color but /30 opacity)
-- In the deterministic flow, as soon as the agent is done all tool calls should be collapsied into a "XYZ tool cals, XYZ messages" dropdown like this one: .context/attachments/MVL3jf/image.png  - it also display the tool icons
-- Remove the broder around my tool calls, make the icons smaller and grayed out, remove the "completed" badge
-- For the decison card, remove the subheading, replace the title with the cost, aka the cost span next to the button is now gone
-- In the sidebar only display the current subheading as the title, remove the subheading
-- In the top bar, remove the number next to the CASE number and move it into the context collapsible conrtent
-
-Do this quickly, let me verify the results, no need to test yourself. Use two subagetns for parallel implemenation
-
----
-
-When I open the consolidated tools, the viewport should stay fixed and the chevron should animate just like in decision card but the other way around
-
-Then also add a determinsitic message at the end of your simulation that is displayed below the tool call collapsible.
-
----
-
-Chevron not workng...
+And when I click again, it will open the current candidate sidebar, but right now only with information about that candidate. It actually added using the sidebar, but using the sidebar from shadcn, which just is a layer above our UI currently. So it doesn't actually move the chat.
