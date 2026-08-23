@@ -1,0 +1,28 @@
+{
+  "fixture_version": 1,
+  "supplier_ref": "SUP-SKF",
+  "structured_result": {
+    "available": true,
+    "qty_offered": 6400,
+    "unit_price": "3.1000",
+    "price_breaks": [{"min_qty": 1, "unit_price": "3.1000"}],
+    "currency": "EUR",
+    "moq": 100,
+    "lead_time_days": 10,
+    "incoterm": "DAP",
+    "certs_claimed": ["ISO_9001", "DIN_625_CONFORMITY"],
+    "payment_terms": "30 days net",
+    "earliest_ready_text": "10 days",
+    "stock_status": "free_in_stock",
+    "price_quoted": "yes",
+    "part_number_confirmed": "yes",
+    "certification_current": "yes"
+  },
+  "completion_confidence": {"score": 0.96, "label": "high"},
+  "summary": "SKF Nordic confirmed 6,400 free units for the requested bearing.",
+  "evidence": ["6,400 units are free for this order", "6204-2RS confirmed"],
+  "transcript_turns": [
+    {"offset_seconds": 0, "speaker": "assistant", "text": "I am an AI assistant gathering availability only."},
+    {"offset_seconds": 12, "speaker": "supplier", "text": "We can allocate 6,400 free units."}
+  ]
+}

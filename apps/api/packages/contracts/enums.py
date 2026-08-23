@@ -71,6 +71,19 @@ class Actor(str, Enum):
     DEVIN = "devin"
     CALLE = "calle"
     SYSTEM = "system"
+    HUMAN = "human"
+
+
+class OutreachStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class DecisionStatus(str, Enum):
+    READY = "ready"
+    APPROVED = "approved"
 
 
 class Stage(str, Enum):

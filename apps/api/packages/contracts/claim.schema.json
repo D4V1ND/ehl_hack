@@ -21,6 +21,7 @@
       "type": "string"
     },
     "ExpediteOption": {
+      "additionalProperties": false,
       "description": "Pay `surcharge` total to pull delivery in by `days`.",
       "properties": {
         "days": {
@@ -48,6 +49,7 @@
       "type": "object"
     },
     "PriceBreak": {
+      "additionalProperties": false,
       "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
       "properties": {
         "min_qty": {
@@ -85,8 +87,32 @@
       ],
       "title": "StockStatus",
       "type": "string"
+    },
+    "TranscriptTurn": {
+      "additionalProperties": false,
+      "description": "One thing said on the call, in order.",
+      "properties": {
+        "offset_seconds": {
+          "default": 0,
+          "title": "Offset Seconds",
+          "type": "integer"
+        },
+        "speaker": {
+          "default": "unknown",
+          "title": "Speaker",
+          "type": "string"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "title": "TranscriptTurn",
+      "type": "object"
     }
   },
+  "additionalProperties": false,
   "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
   "properties": {
     "task_id": {
@@ -207,6 +233,18 @@
     "notes": {
       "default": "",
       "title": "Notes",
+      "type": "string"
+    },
+    "transcript": {
+      "items": {
+        "$ref": "#/$defs/TranscriptTurn"
+      },
+      "title": "Transcript",
+      "type": "array"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
       "type": "string"
     },
     "transcript_url": {

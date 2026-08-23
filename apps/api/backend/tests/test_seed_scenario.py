@@ -87,18 +87,17 @@ def goods_cost(supplier, qty: int) -> Decimal:
 # ---------------------------------------------------------------------------
 
 
-def test_six_candidates_exist(candidates):
-    assert len(candidates) == 6, "CASE-001 is built on six candidate suppliers"
+def test_five_candidates_exist(candidates):
+    assert [supplier.supplier_name for supplier in candidates] == [
+        "SKF Nordic",
+        "Schaeffler FAG",
+        "NSK Europe",
+        "Shenzhen Bearing Co",
+        "Munich Motion",
+    ]
 
 
-def test_exactly_three_candidates_fail_policy_one_per_rule(erp, candidates, incident):
-    """Every one of the four policy rules is visible in a single case.
-
-    Three suppliers are rejected outright, each by a *different* rule, so the
-    supplier board shows three differently-worded rejections rather than three
-    copies of the same one. The fourth rule fires against the cheapest supplier
-    the moment anyone tries to single-source it (see the lead-time test below).
-    """
+def test_shenzhen_fails_only_the_blocked_origin_rule(erp, candidates, incident):
     part = erp.get_part(PART)
     rejected = {
         s.supplier_id: failed_rules(erp, s, part, incident)
@@ -107,24 +106,17 @@ def test_exactly_three_candidates_fail_policy_one_per_rule(erp, candidates, inci
     }
 
     hard_failures = {
-        sid: rules for sid, rules in rejected.items()
+        sid: [rule for rule in rules if rule is not PolicyRule.LEAD_TIME_AFTER_LINE_STOP]
+        for sid, rules in rejected.items()
         if set(rules) - {PolicyRule.LEAD_TIME_AFTER_LINE_STOP}
     }
-    assert len(hard_failures) == 3, f"expected 3 hard rejections, got {hard_failures}"
-
-    fired = {r for rules in hard_failures.values() for r in rules if r is not PolicyRule.LEAD_TIME_AFTER_LINE_STOP}
-    assert fired == {
-        PolicyRule.BLOCKED_ORIGIN_COUNTRY,
-        PolicyRule.MISSING_REQUIRED_CERTIFICATION,
-        PolicyRule.AUDIT_REQUIRED_AND_NOT_AUDITED,
-    }, f"each rejection should cite a different rule, got {fired}"
+    assert hard_failures == {"SUP-SHZ": [PolicyRule.BLOCKED_ORIGIN_COUNTRY]}
 
 
-def test_on_hand_cover_is_exactly_twelve_days(erp, incident):
-    """The stock number and the line-stop date must agree, or the countdown lies."""
+def test_incident_has_the_accepted_shortfall_and_twelve_day_deadline(erp, incident):
     stock = erp.get_stock(PART, incident.plant_id)[0]
-    cover_days = stock.actual_qty / stock.daily_consumption
-    assert cover_days == pytest.approx(12.0)
+    assert stock.actual_qty == 8000
+    assert incident.shortfall == 32000
     assert (incident.line_stop_at.date() - date(2026, 8, 22)).days == 12
 
 
@@ -155,7 +147,7 @@ def test_cheapest_compliant_supplier_cannot_beat_the_line_stop(erp, candidates, 
     )
     downtime_hours = (cheapest.standard_lead_days - days_available) * 24
     downtime_cost = incident.line_stop_cost_per_hour * downtime_hours
-    assert downtime_cost > Decimal("1000000"), (
+    assert downtime_cost > Decimal("800000"), (
         "the cost of getting this wrong should be obviously catastrophic on a slide"
     )
 

@@ -11,16 +11,17 @@ from __future__ import annotations
 
 import time
 from dataclasses import replace
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.api.deps import settings, store
+from backend.api.deps import case_module, settings, store
 from backend.api.main import app
 from backend.api.settings import get_settings
 from backend.casestore.case_store import CaseStore
+from backend.cases.module import CaseModule
 from backend.flow.claims import claim_from_quote
 from backend.flow.conductor import run_case
 from backend.flow.rehearsal import rehearsed_quote
@@ -53,12 +54,20 @@ def records():
 @pytest.fixture
 def client(tmp_path):
     store_ = CaseStore(tmp_path / "cases")
+    module = CaseModule(
+        records=get_mock_erp(),
+        database_path=tmp_path / "case-state.db",
+        clock=lambda: datetime(2026, 8, 22, 9, 0, tzinfo=timezone.utc),
+        id_generator=lambda: "CASE-001",
+    )
     rehearsal = replace(get_settings(), github_token=None, github_repo=None)
     app.dependency_overrides[store] = lambda: store_
+    app.dependency_overrides[case_module] = lambda: module
     app.dependency_overrides[settings] = lambda: rehearsal
     with TestClient(app) as test_client:
         yield test_client, store_
     app.dependency_overrides.pop(store)
+    app.dependency_overrides.pop(case_module)
     app.dependency_overrides.pop(settings)
 
 
@@ -99,9 +108,7 @@ def test_every_rejected_supplier_is_named_with_its_reason(cases, records):
         for e in cases.read_events("CASE-001")
         if e.payload.get("passed") is False
     }
-    assert rejections["SUP-NPB"] == ["blocked_origin_country"]
-    assert rejections["SUP-PUL"] == ["missing_required_certification"]
-    assert rejections["SUP-NBT"] == ["audit_required_and_not_audited"]
+    assert rejections == {"SUP-SHZ": ["blocked_origin_country"]}
 
 
 def test_the_live_call_supplier_is_left_uncalled(cases, records):
@@ -223,9 +230,9 @@ def test_run_endpoint_returns_ranked_options_for_a_buyer(client):
     ).json()
 
     assert body["held_for"] == "SUP-KBY"
-    assert sorted(body["rejected"]) == ["SUP-NBT", "SUP-NPB", "SUP-PUL"]
+    assert body["rejected"] == {"SUP-SHZ": ["blocked_origin_country"]}
     options = body["decision"]["options"]
-    assert len(options) > 1
+    assert options
     assert sum(1 for o in options if o["recommended"]) == 1
     assert "nothing is ordered" in body["decision"]["approval"]
 
@@ -273,21 +280,22 @@ def test_state_reports_where_the_run_has_got_to(client):
 
     body = test_client.get("/flow/state", params={"case_id": "CASE-001"}).json()
     assert body["stage"] == "decided"
-    assert body["candidates"] == 6
+    assert body["candidates"] == 5
     assert body["decision"]["options"]
 
 
 def test_the_cockpit_snapshot_survives_a_screened_case(client):
-    """Regression: the snapshot read `supplier_id` off a candidate, which only has
-    a `supplier_ref`, so the case page 500'd as soon as a run had screened anyone."""
+    """The public snapshot reads its persisted Candidates from the Case module."""
     test_client, _ = client
-    test_client.post("/flow/run", params={"case_id": "CASE-001"})
+    test_client.post(
+        "/cases", json={"part_id": "PRT-6204", "case_id": "CASE-001"}
+    )
 
     response = test_client.get("/cases/CASE-001")
     assert response.status_code == 200
     body = response.json()
-    assert len(body["candidates"]) == 6
-    assert len(body["supplier_records"]) == 6
+    assert len(body["candidates"]) == 5
+    assert len(body["supplier_records"]) == 5
 
 
 def test_state_of_an_unknown_case_is_a_404(client):

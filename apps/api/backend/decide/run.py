@@ -17,11 +17,31 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-from packages.contracts.enums import Actor, Level, Stage
-from packages.contracts.models import Candidate, Claim, Decision, Strategy
-from packages.contracts.money import quantize_total
+from packages.contracts.enums import (
+    Actor,
+    DecisionStatus,
+    FreightMode,
+    Level,
+    Stage,
+    StockStatus,
+)
+from packages.contracts.models import (
+    Candidate,
+    Claim,
+    CompanyProfile,
+    Decision,
+    DecisionChecks,
+    Incident,
+    OrderLine,
+    Part,
+    Strategy,
+    SupplierRecord,
+)
+from packages.contracts.money import quantize_total, quantize_unit
 from backend.casestore.case_store import CaseStore
 from backend.cost.strategy import Option, StrategyBuilder
+from backend.cost.cost_model import Line, eta, landed_cost
+from backend.cost.strategy import simulate
 from backend.decide import artifacts
 from backend.policy.rules import check_lead_time
 from backend.policy.screen import screen
@@ -30,6 +50,7 @@ from backend.record.ports import SystemOfRecord
 # How many alternatives the reports carry. Enough to show the trade-off, few
 # enough that a buyer reads the table instead of skimming it.
 RUNNERS_UP = 3
+DECISION_CONFIDENCE_THRESHOLD = 0.40
 
 
 @dataclass(frozen=True)
@@ -38,6 +59,170 @@ class DecisionOutcome:
     candidates: list[Candidate]
     strategies: list[Strategy]
     recommended: Strategy | None
+
+
+def build_recorded_decision(
+    *,
+    case_id: str,
+    incident: Incident,
+    part: Part,
+    profile: CompanyProfile,
+    suppliers: list[SupplierRecord],
+    candidates: list[Candidate],
+    claims: list[Claim],
+    today: date,
+    decided_at: datetime,
+    revision: int = 1,
+) -> Decision | None:
+    """Build the deterministic split from eligible provider-backed Claims."""
+    cleared = {
+        candidate.supplier_ref
+        for candidate in candidates
+        if candidate.compliance.passed
+    }
+    eligible = [
+        claim
+        for claim in claims
+        if claim.supplier_ref in cleared
+        and claim.confidence >= DECISION_CONFIDENCE_THRESHOLD
+        and claim.available
+        and claim.qty_offered > 0
+        and claim.unit_price is not None
+        and claim.lead_time_days is not None
+        and claim.stock_status
+        in {StockStatus.FREE_IN_STOCK, StockStatus.TO_BE_MADE}
+    ]
+    by_supplier = {supplier.supplier_id: supplier for supplier in suppliers}
+    shortfall = incident.shortfall
+    strategies: list[Strategy] = []
+
+    if shortfall > 0 and eligible:
+        bulk = max(
+            eligible,
+            key=lambda claim: (
+                min(claim.qty_offered, shortfall),
+                -(claim.unit_price or Decimal("999999")),
+                claim.supplier_ref,
+            ),
+        )
+        bulk_qty = min(bulk.qty_offered, shortfall)
+        bridge_qty = shortfall - bulk_qty
+        bridge_options = [
+            claim
+            for claim in eligible
+            if claim.supplier_ref != bulk.supplier_ref and claim.qty_offered >= bridge_qty
+        ]
+        bridge = min(
+            bridge_options,
+            key=lambda claim: (
+                claim.lead_time_days or 999999,
+                claim.unit_price or Decimal("999999"),
+                claim.supplier_ref,
+            ),
+            default=None,
+        )
+
+        if bridge is not None and bridge_qty > 0:
+            allocation = (
+                (bridge, bridge_qty, FreightMode.AIR),
+                (bulk, bulk_qty, FreightMode.SEA),
+            )
+            lines: list[OrderLine] = []
+            arrivals: list[tuple[date, int]] = []
+            for claim, qty, mode in allocation:
+                supplier = by_supplier[claim.supplier_ref]
+                arrival = eta(
+                    supplier=supplier,
+                    profile=profile,
+                    mode=mode,
+                    today=today,
+                    claim=claim,
+                )
+                priced = landed_cost(
+                    line=Line(
+                        supplier=supplier,
+                        qty=qty,
+                        mode=mode,
+                        eta=arrival,
+                        claim=claim,
+                    ),
+                    part=part,
+                    profile=profile,
+                    needed_by=incident.needed_by,
+                    daily_consumption=_daily_consumption(incident, today),
+                )
+                lines.append(
+                    OrderLine(
+                        supplier_ref=supplier.supplier_id,
+                        supplier_name=supplier.supplier_name,
+                        qty=qty,
+                        mode=mode,
+                        eta=arrival,
+                        landed=priced,
+                    )
+                )
+                arrivals.append((arrival, qty))
+
+            total = quantize_total(sum((line.landed.total for line in lines), Decimal("0")))
+            meets_line_stop, coverage_date = simulate(
+                arrivals=arrivals,
+                qty_on_hand=incident.qty_on_hand,
+                daily_consumption=_daily_consumption(incident, today),
+                start=today,
+                qty_required=shortfall,
+            )
+            strategy = Strategy(
+                strategy_id="STR-01",
+                label=(
+                    f"Split: {bridge_qty:,} bridge from {lines[0].supplier_name} (air) "
+                    f"+ {bulk_qty:,} from {lines[1].supplier_name} (sea)"
+                ),
+                lines=lines,
+                total_cost=total,
+                unit_effective=quantize_unit(total / Decimal(shortfall)),
+                coverage_date=coverage_date or max(line.eta for line in lines),
+                meets_line_stop=meets_line_stop,
+                risk_score=round((2 - bridge.confidence - bulk.confidence) / 2, 3),
+                rationale="Provider-backed bridge and bulk Claims cover the trusted shortfall.",
+            )
+            strategies.append(strategy)
+
+    policy_passed = bool(strategies) and all(
+        candidate.compliance.passed
+        for candidate in candidates
+        if candidate.supplier_ref
+        in {line.supplier_ref for line in strategies[0].lines}
+    )
+    cost_model_passed = (
+        bool(strategies)
+        and strategies[0].total_cost > 0
+        and strategies[0].meets_line_stop
+    )
+    if not policy_passed or not cost_model_passed:
+        return None
+    return Decision(
+        case_id=case_id,
+        strategies=strategies,
+        recommended_strategy_id=strategies[0].strategy_id if strategies else None,
+        runner_up_ids=[],
+        rationale_md=(
+            strategies[0].rationale
+            if strategies
+            else "No eligible provider-backed Claims cover the trusted shortfall."
+        ),
+        decided_at=decided_at,
+        revision=revision,
+        status=DecisionStatus.READY,
+        checks=DecisionChecks(
+            policy_passed=policy_passed,
+            cost_model_passed=cost_model_passed,
+        ),
+    )
+
+
+def _daily_consumption(incident: Incident, today: date) -> int:
+    days = max((incident.line_stop_at.date() - today).days, 1)
+    return max(incident.qty_on_hand // days, 1)
 
 
 def run(

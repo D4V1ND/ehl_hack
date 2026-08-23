@@ -160,6 +160,9 @@ class SqliteERP:
 
     @staticmethod
     def _incident(row: sqlite3.Row) -> Incident:
+        # Existing developer databases predate the multi-plant field. Reading
+        # them as an empty list keeps the adapter usable until the next seed.
+        plants_json = row["plants_json"] if "plants_json" in row.keys() else "[]"
         return Incident(
             case_id=row["case_id"], part_id=row["part_id"], plant_id=row["plant_id"],
             production_line=row["production_line"], qty_required=row["qty_required"],
@@ -167,7 +170,7 @@ class SqliteERP:
             line_stop_at=datetime.fromisoformat(row["line_stop_at"]),
             line_stop_cost_per_hour=Decimal(row["line_stop_cost_per_hour"]),
             currency=row["currency"], incumbent_supplier_id=row["incumbent_supplier_id"],
-            reason=row["reason"],
+            reason=row["reason"], plants=json.loads(plants_json or "[]"),
         )
 
     # -- the rest -----------------------------------------------------------

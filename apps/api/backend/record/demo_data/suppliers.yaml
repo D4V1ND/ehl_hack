@@ -11,7 +11,7 @@
 # committed). Replace with each country's official reserved range before any
 # real call.
 #
-# The six suppliers of PRT-6204 are the story. Everything after them is depth.
+# Five suppliers of PRT-6204 are the story. Everything after them is depth.
 
 # --- incumbent: fast and trusted, but most of its stock is already promised ---
 - supplier_id: SUP-KBY
@@ -21,7 +21,7 @@
   phone: '+4930231250142'
   email: vertrieb@kugellager-bayern.example
   channels: [voice, email]
-  part_ids: [PRT-6204, PRT-62052RS, PRT-62062RS]
+  part_ids: [PRT-62052RS, PRT-62062RS]
   approved: true
   preferred: true
   incumbent: true
@@ -40,16 +40,16 @@
 
 # --- fastest on the board, and the most expensive ---
 - supplier_id: SUP-SKF
-  supplier_name: SKF Deutschland Vertrieb GmbH
-  country: DE
-  locale: de-DE
+  supplier_name: SKF Nordic
+  country: SE
+  locale: en-GB
   phone: '+4930231250117'
   email: industrial.sales@skf-vertrieb.example
   channels: [voice, email]
   part_ids: [PRT-6204, PRT-6204ZZ, PRT-62052RS, PRT-63042RS]
   approved: true
-  preferred: false
-  incumbent: false
+  preferred: true
+  incumbent: true
   contract_unit_price: '1.95'
   standard_lead_days: 6
   certifications: [ISO_9001, DIN_625_CONFORMITY]
@@ -62,6 +62,92 @@
     - {min_qty: 10000, unit_price: '1.88'}
     - {min_qty: 25000, unit_price: '1.72'}
 
+- supplier_id: SUP-FAG
+  supplier_name: Schaeffler FAG
+  country: JP
+  locale: en-GB
+  phone: '+4930231250121'
+  email: sourcing@fag-recorded.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.00'
+  standard_lead_days: 21
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 32000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.30'}
+    - {min_qty: 25000, unit_price: '1.60'}
+
+- supplier_id: SUP-NSK
+  supplier_name: NSK Europe
+  country: GB
+  locale: en-GB
+  phone: '+4930231250133'
+  email: sourcing@nsk-recorded.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.10'
+  standard_lead_days: 11
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 16000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.22'}
+
+- supplier_id: SUP-SHZ
+  supplier_name: Shenzhen Bearing Co
+  country: CN
+  locale: en-GB
+  phone: '+4930231250144'
+  email: sourcing@shenzhen-recorded.example
+  marketplace_url: https://example-marketplace.invalid/shenzhen-bearing
+  channels: [email, marketplace]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.20'
+  standard_lead_days: 30
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 40000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '1.15'}
+
+- supplier_id: SUP-MUN
+  supplier_name: Munich Motion
+  country: DE
+  locale: de-DE
+  phone: '+4930231250155'
+  email: sourcing@munich-motion.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.30'
+  standard_lead_days: 5
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 30000
+  max_historical_fill: 32000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.40'}
+
 # --- cheapest compliant source, and far too slow to stop the line on its own ---
 - supplier_id: SUP-RUL
   supplier_name: Rulmenti Est SRL
@@ -70,7 +156,7 @@
   phone: '+4930231250163'
   email: export@rulmenti-est.example
   channels: [voice, email]
-  part_ids: [PRT-6204, PRT-60042RS, PRT-62052RS, PRT-63022RS]
+  part_ids: [PRT-60042RS, PRT-62052RS, PRT-63022RS]
   approved: true
   preferred: false
   incumbent: false
@@ -96,7 +182,7 @@
   email: sales@ningbo-precision.example
   marketplace_url: https://example-marketplace.invalid/ningbo-precision
   channels: [email, marketplace]
-  part_ids: [PRT-6204, PRT-60042RS, PRT-62052RS, PRT-62062RS]
+  part_ids: [PRT-60042RS, PRT-62052RS, PRT-62062RS]
   approved: true
   preferred: false
   incumbent: false
@@ -119,7 +205,7 @@
   phone: '+4930231250174'
   email: export@pulman.example
   channels: [voice, email]
-  part_ids: [PRT-6204, PRT-62052RS]
+  part_ids: [PRT-62052RS]
   approved: true
   preferred: false
   incumbent: false
@@ -143,7 +229,7 @@
   phone: '+4930231250151'
   email: sales@nordbearing.example
   channels: [voice, email]
-  part_ids: [PRT-6204, PRT-62052RS, PRT-63052RS]
+  part_ids: [PRT-62052RS, PRT-63052RS]
   approved: true
   preferred: false
   incumbent: false

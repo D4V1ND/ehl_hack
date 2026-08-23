@@ -6,18 +6,25 @@
 // Money and dates are `string` on the wire on purpose -- a Decimal serialized as a
 // JSON float is exactly the drift we are avoiding. Format them, never sum them.
 
-export type Actor = "devin" | "calle" | "system"
+export type Actor = "devin" | "calle" | "system" | "human"
 export type Answer = "yes" | "no" | "unknown"
 export type AuditStatus = "audited" | "audit_expired" | "never_audited"
 export type Channel = "voice" | "email" | "marketplace"
 export type Criticality = "low" | "medium" | "high" | "critical"
 export type Currency = "EUR" | "USD" | "GBP" | "unknown"
+export type DecisionStatus = "ready" | "approved"
 export type FreightMode = "air" | "sea" | "road"
 export type Level = "info" | "warn" | "error"
+export type OutreachStatus = "pending" | "in_progress" | "completed" | "failed"
 export type PartClass = "rolling_bearing" | "fastener" | "seal" | "electronic_component"
 export type PolicyRule = "blocked_origin_country" | "missing_required_certification" | "audit_required_and_not_audited" | "lead_time_after_line_stop"
 export type Stage = "detected" | "researching" | "calling" | "costing" | "decided"
 export type StockStatus = "free_in_stock" | "in_stock_allocated" | "to_be_made" | "unavailable" | "unclear"
+
+export interface ApproveDecisionRequest {
+  decision_revision: number
+  approved_by: string
+}
 
 export interface Candidate {
   case_id: string
@@ -76,6 +83,8 @@ export interface Claim {
   certs_claimed?: string[]
   payment_terms?: string | null
   notes?: string
+  transcript?: TranscriptTurn[]
+  summary?: string
   transcript_url?: string | null
   recording_url?: string | null
   confidence?: number
@@ -128,6 +137,16 @@ export interface Decision {
   pr_url?: string | null
   devin_session_url?: string | null
   decided_at?: string | null
+  revision?: number
+  status?: DecisionStatus
+  checks?: DecisionChecks
+  approved_at?: string | null
+  approved_by?: string | null
+}
+
+export interface DecisionChecks {
+  policy_passed: boolean
+  cost_model_passed: boolean
 }
 
 export interface Event {
@@ -162,6 +181,31 @@ export interface Incident {
   currency?: Currency
   incumbent_supplier_id?: string | null
   reason?: string
+  plants?: IncidentPlant[]
+}
+
+export interface IncidentPlant {
+  plant_id: string
+  name: string
+  production_line: string
+}
+
+/** A row on the inventory screen: one part, and whether it can be triggered. */
+export interface InventoryRow {
+  part_id: string
+  item_code: string
+  item_name: string
+  part_class: string
+  criticality: string
+  plant_id: string
+  on_hand: number
+  reorder_level: number
+  daily_consumption: number
+  days_of_cover: number | null
+  below_reorder: boolean
+  delayed_po: string | null
+  suppliers: number
+  open_case_id: string | null
 }
 
 export interface LandedCost {
@@ -179,6 +223,22 @@ export interface LandedCost {
   breakdown_md?: string
 }
 
+export interface OpenCaseRequest {
+  part_id: string
+  qty_required?: number | null
+  needed_by?: string | null
+  case_id?: string | null
+}
+
+export interface OpenCaseResponse {
+  case_id: string
+  incident: Incident
+  session_id: string
+  session_url: string
+  stubbed: boolean
+  session_error?: string | null
+}
+
 export interface OpenPurchaseOrder {
   po_id: string
   part_id: string
@@ -188,6 +248,16 @@ export interface OpenPurchaseOrder {
   /** Set when the supplier slips. The delay that fires the detector. */
   revised_date?: string | null
   status?: string
+}
+
+/** PR 22 TypeScript compatibility name for an opened Case response. */
+export interface OpenedCase {
+  case_id: string
+  incident: Incident
+  session_id: string
+  session_url: string
+  stubbed: boolean
+  session_error?: string | null
 }
 
 export interface OrderLine {
@@ -214,6 +284,10 @@ export interface OutreachTask {
   supplier_ref: string
   channel: Channel
   brief: OutreachBrief
+  round?: number
+  status?: OutreachStatus
+  started_at?: string | null
+  completed_at?: string | null
 }
 
 export interface Part {
@@ -240,6 +314,116 @@ export interface PriceBreak {
   unit_price: string
 }
 
+export interface PublicCaseSnapshot {
+  case_id: string
+  stage: Stage
+  incident: Incident
+  part: Part
+  profile_summary: PublicProfileSummary
+  candidates?: Candidate[]
+  supplier_records?: PublicSupplierRecord[]
+  outreach_tasks?: OutreachTask[]
+  claims?: PublicClaim[]
+  decision?: PublicDecision | null
+  devin_session_url?: string | null
+  last_event_seq?: number
+}
+
+export interface PublicCaseSummary {
+  case_id: string
+  part_id: string
+  item_name: string
+  stage: Stage
+  qty_required: number
+  line_stop_at: string
+  opened_at: string
+}
+
+export interface PublicClaim {
+  task_id: string
+  case_id: string
+  supplier_ref: string
+  available?: boolean
+  qty_offered?: number
+  unit_price?: string | null
+  price_breaks?: PriceBreak[]
+  currency?: Currency
+  moq?: number | null
+  lead_time_days?: number | null
+  expedite_option?: ExpediteOption | null
+  incoterm?: string | null
+  certs_claimed?: string[]
+  payment_terms?: string | null
+  transcript?: TranscriptTurn[]
+  summary?: string
+  confidence?: number
+  round?: number
+  earliest_ready_text?: string
+  stock_status?: StockStatus
+  price_quoted?: Answer
+  part_number_confirmed?: Answer
+  certification_current?: Answer
+  evidence?: string[]
+  received_at?: string | null
+}
+
+export interface PublicDecision {
+  case_id: string
+  strategies?: Strategy[]
+  recommended_strategy_id?: string | null
+  runner_up_ids?: string[]
+  rationale_md?: string
+  policy_report_url?: string | null
+  cost_report_url?: string | null
+  devin_session_url?: string | null
+  decided_at?: string | null
+  revision: number
+  status: DecisionStatus
+  checks: DecisionChecks
+  approved_at?: string | null
+  approved_by?: string | null
+}
+
+export interface PublicEvent {
+  seq?: number
+  case_id: string
+  ts: string
+  actor: Actor
+  stage: Stage
+  level?: Level
+  message: string
+  payload?: Record<string, unknown>
+}
+
+export interface PublicProfileSummary {
+  company_name: string
+  home_country: string
+  target_currency: Currency
+  policy_labels?: string[]
+  sourcing_constraints?: string[]
+}
+
+export interface PublicSupplierRecord {
+  supplier_id: string
+  supplier_name: string
+  country: string
+  locale?: string
+  phone_masked: string
+  channels?: Channel[]
+  part_ids?: string[]
+  approved?: boolean
+  preferred?: boolean
+  incumbent?: boolean
+  contract_unit_price?: string | null
+  standard_lead_days?: number | null
+  certifications?: string[]
+  certification_expires_at?: string | null
+  audit_status?: AuditStatus
+  known_allocations?: number
+  max_historical_fill?: number
+  price_breaks?: PriceBreak[]
+}
+
 /** What one supplier said. Every judgement field may be unknown. */
 export interface Quote {
   task_id: string
@@ -257,6 +441,8 @@ export interface Quote {
   certs_claimed?: string[]
   payment_terms?: string | null
   notes?: string
+  transcript?: TranscriptTurn[]
+  summary?: string
   transcript_url?: string | null
   recording_url?: string | null
   confidence?: number
@@ -345,4 +531,11 @@ export interface SupplierRecord {
   /** Largest order they have actually delivered for us */
   max_historical_fill?: number
   price_breaks?: PriceBreak[]
+}
+
+/** One thing said on the call, in order. */
+export interface TranscriptTurn {
+  offset_seconds?: number
+  speaker?: string
+  text?: string
 }

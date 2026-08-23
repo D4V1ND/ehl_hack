@@ -57,7 +57,7 @@ def test_call_order_is_identical_and_deterministic(yaml_erp, sqlite_erp):
     from_yaml = [s.supplier_id for s in yaml_erp.get_suppliers_for_part(PART)]
     from_sql = [s.supplier_id for s in sqlite_erp.get_suppliers_for_part(PART)]
     assert from_yaml == from_sql
-    assert from_yaml[0] == "SUP-KBY"
+    assert from_yaml == ["SUP-SKF", "SUP-FAG", "SUP-NSK", "SUP-SHZ", "SUP-MUN"]
 
 
 def test_money_survives_both_round_trips_exactly(yaml_erp, sqlite_erp):
@@ -66,7 +66,7 @@ def test_money_survives_both_round_trips_exactly(yaml_erp, sqlite_erp):
     A REAL column would turn 1.42 into 1.4199999999999999289457264239899814128875732421875
     somewhere between the seed and the cost model.
     """
-    for supplier_id in ("SUP-KBY", "SUP-SKF", "SUP-RUL"):
+    for supplier_id in ("SUP-SKF", "SUP-FAG", "SUP-NSK", "SUP-SHZ", "SUP-MUN"):
         left = yaml_erp.get_supplier(supplier_id)
         right = sqlite_erp.get_supplier(supplier_id)
         assert left.contract_unit_price == right.contract_unit_price
@@ -77,7 +77,7 @@ def test_money_survives_both_round_trips_exactly(yaml_erp, sqlite_erp):
 
 def test_neither_adapter_exposes_a_raw_number_but_both_can_produce_one(yaml_erp, sqlite_erp):
     for adapter in (yaml_erp, sqlite_erp):
-        record = adapter.get_supplier("SUP-KBY")
+        record = adapter.get_supplier("SUP-SKF")
         assert "phone" not in record.model_dump()
         assert "*" in record.phone_masked
-    assert yaml_erp.raw_phone_for_outreach("SUP-KBY") == sqlite_erp.raw_phone_for_outreach("SUP-KBY")
+    assert yaml_erp.raw_phone_for_outreach("SUP-SKF") == sqlite_erp.raw_phone_for_outreach("SUP-SKF")

@@ -1,10 +1,94 @@
 # Deterministic CASE-001 rehearsal
 
-This document is the deletion map for the fixture-driven Cockpit. It records every deterministic boundary that a live Devin Session must replace.
+SupplyOS has two deterministic layers during backend integration:
 
-The rehearsal makes no network request. It uses fixed CASE-001 data, fixed tool results, fixed timing, and a client-side timer state machine. The generic chat primitives, shadcn `Spinner`, and composer status UI are not rehearsal-specific and can stay.
+1. FastAPI computes and persists a Case from recorded provider results.
+2. The Cockpit still presents its existing client-side CASE-001 fixture.
 
-## Exact runtime sequence
+Both layers make no network request. The backend is now the business-state authority. The current Cockpit remains independently demoable.
+
+## Backend rehearsal sequence
+
+`POST /cases` runs this sequence by default:
+
+1. Read the trusted Part, Incident, Supplier Records, and company policy.
+2. Persist the Case and initial Event in operational SQLite.
+3. Screen Supplier Records into policy-checked Candidates.
+4. Persist Outreach Tasks for compliant Candidates.
+5. Read recorded provider results from `apps/api/backend/outreach/fixtures/`.
+6. Normalize each result into a Claim linked to its Outreach Task.
+7. Run policy, Landed Cost, Strategy, and Decision functions.
+8. Persist the ready Decision and its Event when both checks pass.
+
+`DeterministicCaseRunner` runs synchronously. Its receipt is `deterministic:<case_id>:<revision>` and contains no fabricated Devin URL.
+
+Recorded provider output is the only provider fake. It passes through the same defensive normalizer as CALL-E output.
+
+A malformed result becomes a confidence-zero Claim. Missing answer-sheet values stay `unknown`; missing stock state becomes `unclear`.
+
+Claims below `0.40` remain persisted and public. They cannot influence checks, Landed Cost, Strategy, or Decision output.
+
+## Backend Case API
+
+The Cockpit will use only these public Case routes:
+
+```text
+POST /cases
+GET /cases
+GET /cases/{case_id}
+GET /cases/{case_id}/events?since=N
+POST /cases/{case_id}/decision/approve
+```
+
+The contracts derive from PR 22 Pydantic models. Pydantic also generates JSON Schema and TypeScript.
+
+All monetary values use exact `Decimal` arithmetic. JSON emits decimal text, never a binary float.
+
+Operational Case state lives in `apps/api/backend/casestore/cases.db` by default. The trusted ERP database remains separate.
+
+The Case database stores Incident snapshots, Candidates, Outreach Tasks, Claims, Decisions, and Events. Rebuilding ERP seed data does not delete Cases.
+
+SQLite assigns each Event `seq` once inside a write transaction. State and its matching Event commit together.
+
+The Event cursor is exclusive. `?since=7` returns only Events where `seq > 7`, ordered by `seq`.
+
+Reads never merge memory Events or renumber stored Events. `last_event_seq` is read with the snapshot.
+
+## Public safety and approval
+
+Public routes use explicit safe projections. They never dump internal provider models directly.
+
+Public Claims exclude raw provider output, call IDs, provider storage URLs, and notes. Claims remain separate from trusted Supplier Records.
+
+Public Supplier Records exclude email and marketplace URLs. Public Decisions and summaries exclude pull-request URLs.
+
+Event payload keys are allowlisted. Public free text is recursively scrubbed for phone, email, and secret-like values.
+
+A Decision becomes `ready` only after policy and cost checks pass. A human approves one exact revision in SupplyOS.
+
+Approval updates the Decision and appends one `human` Event atomically. An identical retry appends no second Event.
+
+Approved is final. Approval never places an order.
+
+## Backend CASE-001 result
+
+The recorded backend rehearsal computes this result:
+
+- Part `6204-2RS`; Munich and Stuttgart plants.
+- Required 40,000; on hand 8,000; shortfall 32,000.
+- Five Candidates and four Claims.
+- Shenzhen fails only `blocked_origin_country`.
+- Munich Motion reports `in_stock_allocated` and is not selected.
+- The Strategy orders 6,400 SKF units by air.
+- The Strategy orders 25,600 FAG units by sea.
+- The computed total is `"94880.00"`.
+- Revision 1 starts `ready` with both checks passed.
+
+The backend does not load a prebuilt Decision fixture. It computes the accepted Strategy from recorded provider results.
+
+## Cockpit fixture runtime sequence
+
+The client uses fixed CASE-001 data, fixed tool results, fixed timing, and a timer state machine.
 
 1. `CockpitChat` mounts `useDeterministicRehearsal` in `streaming` status.
 2. Each script step shows a pending Tool when it has an HTTP method and path.
@@ -74,12 +158,17 @@ These files are presentational, but currently import CASE-001 directly:
 
 All paths above are relative to `apps/web/components/cockpit/`.
 
-## Live Devin replacement
+## Backend integration and live Devin replacement
 
-1. Replace `useDeterministicRehearsal` with the Devin Session transport and event stream.
+1. Replace `useDeterministicRehearsal` with a mapper over the public Case snapshot and Event feed.
 2. Drive `MessageComposer` from the live `status`, `sendMessage`, and `stop` values.
 3. Map live messages and tool parts into `AssistantTurn`, or render AI SDK parts directly.
 4. Pass live Incident, Candidate, Claim, call, Strategy, and Decision data into the fixture-bound consumers.
-5. Delete `apps/web/lib/case-001/` and `apps/web/hooks/use-deterministic-rehearsal.ts` after no imports remain.
+5. Submit approval with `decision_revision` and `approved_by`; do not recompute approval state.
+6. Delete `apps/web/lib/case-001/` and `apps/web/hooks/use-deterministic-rehearsal.ts` after no imports remain.
 
 Do not delete `apps/web/components/ui/spinner.tsx` or the generic `PromptInputSubmit` status behavior. They match the live transport states and are not deterministic logic.
+
+The UI maps snake-case public models into presentation models. It does not recalculate policy, Landed Cost, Strategy, Event order, or approval.
+
+Replay stays a presentation action. It must not mutate the persisted Case or its approved Decision.

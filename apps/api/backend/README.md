@@ -1,76 +1,125 @@
-# Slice B — core API, system of record, seed data (+ the cockpit route)
+# SupplyOS FastAPI backend
 
-Everything in this slice is **additive**. No file that existed before it was
-moved, renamed or edited; `app/globals.css`, `app/layout.tsx`, `app/page.tsx`
-and `components/theme-provider.tsx` are exactly as the team left them.
+The backend owns deterministic sourcing state. The Cockpit should render public Case responses without rebuilding business logic.
 
-## Run it
+## Start the API
+
+Run these commands from the repository root:
 
 ```bash
-./run.sh setup   # once per machine: venv deps, npm install, build the database
-./run.sh         # API + cockpit together. Ctrl-C stops both.
-./run.sh ui      # cockpit only — runs offline, this is the demo path
-./run.sh test    # 87 backend tests + typecheck. Never touches the network.
+pnpm install
+pnpm setup:api
+pnpm db:seed
+pnpm dev:api
 ```
 
-Cockpit at `/cockpit`; API docs at `/docs` on whichever port it picked.
+FastAPI starts at `http://localhost:8010`. OpenAPI is available at `http://localhost:8010/docs`.
 
-## What this slice adds
+Rehearsal is the default. Keep `FAKE_CALLS=1`. Never use live calling as a fallback.
 
-| Path | |
+## Public Case API
+
+The Cockpit Case contract has five routes:
+
+| Route | Result |
 |---|---|
-| `packages/contracts/` | the frozen contract — Pydantic models, and the JSON Schema + TypeScript generated from them |
-| `backend/record/` | system of record: two adapters behind one interface, plus the seed data |
-| `backend/store/` | case store and append-only event log |
-| `backend/api/` | one FastAPI process: Devin tool endpoints + cockpit read API |
-| `backend/detect/` | shortage detector |
-| `backend/tests/` | 87 tests |
-| `app/cockpit/` | the cockpit route + its own scoped stylesheet |
-| `components/cockpit/` | cockpit components |
-| `lib/api/`, `lib/contracts.ts`, `lib/fixtures/`, `lib/format.ts`, `lib/stages.ts` | data layer and generated types |
-| `cases/` | runtime output — the artifact *is* the datastore |
+| `POST /cases` | Opens and runs a Case. Returns `201`. |
+| `GET /cases` | Returns stable Case summaries. |
+| `GET /cases/{case_id}` | Returns one safe, consistent Case snapshot. |
+| `GET /cases/{case_id}/events?since=N` | Returns committed Events where `seq > N`. |
+| `POST /cases/{case_id}/decision/approve` | Makes one checked Decision revision final. |
 
-**Design tokens are scoped to the route.** `app/cockpit/cockpit.css` carries the
-DESIGN.md palette and is loaded only on `/cockpit`, so nothing in Slice B
-requires editing `app/globals.css`, which the landing page shares.
+`POST /cases` accepts `part_id` and optional `qty_required`, `needed_by`, and `case_id`.
 
-Build artifacts are kept out of git by `backend/.gitignore` and
-`packages/.gitignore` — the root `.gitignore` is untouched.
+Rehearsal runs synchronously. Its response keeps PR 22's temporary `session_*` fields for compatibility.
 
-## The system of record
+The deterministic receipt uses `deterministic:<case_id>:<revision>`. It does not invent a Devin URL.
 
-`SystemOfRecord` (`backend/record/ports.py`) is the plug-in point. Two adapters
-implement it and **both run against the same test suite**, which is what makes
-"swapping in a real ERPNext is one adapter class" demonstrable rather than a
-claim:
+Approval accepts:
 
-| Adapter | Backing | |
+```json
+{
+  "decision_revision": 1,
+  "approved_by": "buyer-id"
+}
+```
+
+Approval requires a `ready` Decision with passed policy and cost checks. It changes no purchase system.
+
+An identical approval retry is idempotent. An approved Decision is final.
+
+## Data ownership
+
+SupplyOS uses two separate SQLite databases:
+
+| Database | Default path | Owns |
 |---|---|---|
-| `SqliteERP` | `backend/record/supplyguard.db`, ERPNext-shaped tables | default |
-| `MockERP` | `backend/record/demo_data/*.yaml` | reference implementation, and the seed source |
+| Trusted system of record | `backend/record/supplyguard.db` | Parts, stock, Supplier Records, and policy inputs |
+| Operational Case store | `backend/casestore/cases.db` | Incidents, Candidates, Outreach Tasks, Claims, Decisions, and Events |
 
-The YAML is what a human edits; `./run.sh db` compiles it into SQLite. The `.db`
-is a build artifact and is gitignored. Switch with `RECORD_BACKEND=yaml|sqlite`.
+Set `CASE_DATABASE_PATH` to change the operational database path. Both files are generated and ignored by Git.
 
-Money is stored as `TEXT`, never `REAL` — SQLite's `REAL` is a float, and a float
-cent error is invisible in a demo and fatal in procurement.
+The seed command can rebuild the trusted database. It never rebuilds operational Case state.
 
-**Opening the database in a Windows GUI:** `./run.sh db-export`. DB Browser
-cannot open it in place — the repo is on ext4 inside WSL and Windows reaches
-that over `\\wsl.localhost`, which has no POSIX file locking, so SQLite reports
-*"database is locked"* whatever is running. `db-export` writes a `VACUUM INTO`
-snapshot to your Windows Downloads folder.
+Supplier Records and Claims remain separate. A Supplier Record is trusted factory data. A Claim is a supplier statement.
 
-Case artifacts deliberately stay files. `cases/<id>/` is Git, not SQL, because
-the procurement-as-code thesis is that the artifact *is* the datastore.
+## Deterministic rehearsal
 
-## Ground rules this slice enforces
+The default `CaseModule` uses two offline adapters:
 
-- **Phone numbers** validated to E.164 on entry, masked everywhere else. No API
-  model has a field for a raw number. `backend/tests/test_no_raw_phones.py`
-  scans every endpoint.
-- **Rehearsal is the default.** Live calling needs `LIVE_CALLS` set to exactly
-  `yes-place-real-calls`. Never a fallback.
-- **"Unknown" is a first-class answer**, and filing a claim never raises.
-- **Money is `Decimal`**, serialized as a string. No float arithmetic.
-- **No real phone numbers.** Seed numbers use the German BNetzA drama range.
+1. `DeterministicCaseRunner` runs the sourcing pipeline inline.
+2. `RecordedOutreachAdapter` reads provider-result JSON under `backend/outreach/fixtures/`.
+
+Recorded results are the only provider fake. They pass through the same Claim normalizer as provider output.
+
+The normalizer converts unusable results into confidence-zero Claims. It does not crash the Case.
+
+Claims below `0.40` remain visible for audit. They cannot affect policy, Landed Cost, Strategy, or Decision output.
+
+CASE-001 computes four Claims and one checked Decision. It does not load a prebuilt Decision fixture.
+
+## Money
+
+All monetary calculations use `Decimal`. Public JSON serializes money as decimal strings.
+
+Examples are `"1.6400"` for unit price and `"94880.00"` for a total. Do not parse money as binary floats.
+
+## Events and approval
+
+SQLite assigns each Event sequence once inside a write transaction. State and its Event commit together.
+
+The cursor is exclusive. `?since=7` returns only Events with `seq > 7`, ordered by `seq`.
+
+Sequence numbers survive process restarts. Reads never merge memory Events or renumber stored Events.
+
+The snapshot's `last_event_seq` is read with its state in one transaction.
+
+Approval updates the Decision and appends one `human` Event in one transaction. It never places an order.
+
+## Public safety
+
+Public routes return explicit projection models. They do not serialize internal models directly.
+
+The public projection excludes:
+
+- `Claim.raw`, `Claim.call_id`, provider storage URLs, and unstructured notes.
+- Supplier email and marketplace contact URLs.
+- Decision and Case pull-request URLs.
+- Unknown Event payload keys.
+
+Public free text is scrubbed recursively. E.164 phone numbers are masked. Email and secret-like values are redacted.
+
+The raw phone number exists only in the literal guarded CALL-E request body.
+
+## Safe verification
+
+Run these commands from the repository root:
+
+```bash
+pnpm --filter @supplyos/api build
+pnpm --filter @supplyos/api test
+pnpm --filter @supplyos/api contracts:check
+git diff --check
+```
+
+The default test command excludes live tests and blocks network access. Never run a live test for general verification.

@@ -2,14 +2,14 @@
 # `daily_consumption` is the line take rate -- it is what turns a quantity into a
 # date, and therefore what dates the line stop.
 #
-# PRT-6204: 4 200 on hand at 350/day is exactly 12 days of cover. That is the demo.
+# PRT-6204: trusted stock for the CASE-001 acceptance story.
 - part_id: PRT-6204
   warehouse: Stores - MUC
   plant_id: PLANT-MUC
-  actual_qty: 4200
+  actual_qty: 8000
   reserved_qty: 0
   reorder_level: 9000
-  daily_consumption: 350
+  daily_consumption: 640
 - part_id: PRT-M8X40
   warehouse: Stores - LEI
   plant_id: PLANT-LEI

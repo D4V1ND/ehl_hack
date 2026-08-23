@@ -8,15 +8,25 @@ from __future__ import annotations
 
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from backend.api.deps import erp, store
-from backend.store import STORE
-from packages.contracts.enums import Actor, Level, Stage
+from backend.api.deps import case_module, erp, store
+from backend.cases.module import (
+    ApproveDecisionCommand,
+    CaseConflictError,
+    CaseMissingError,
+    CaseModule,
+    OpenCaseCommand,
+    PartMissingError,
+)
+from packages.contracts.enums import Stage
 from packages.contracts.models import (
-    CaseSnapshot,
-    CaseSummary,
-    Event,
+    ApproveDecisionRequest,
+    OpenCaseRequest,
+    OpenCaseResponse,
+    PublicCaseSnapshot,
+    PublicCaseSummary,
+    PublicEvent,
     ShortageAlert,
 )
 from backend.record.ports import SystemOfRecord
@@ -77,177 +87,92 @@ def get_shortages(records: SystemOfRecord = Depends(erp), cases: CaseStore = Dep
     return sorted(alerts, key=lambda a: a.days_to_line_stop)
 
 
-@router.get("/cases", response_model=list[CaseSummary], summary="Every case on disk")
-def list_cases(records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)) -> list[CaseSummary]:
-    summaries: list[CaseSummary] = []
-    for case_id in cases.list_case_ids():
-        incident = records.get_incident(case_id)
-        if incident is None:
-            continue
-        part = records.get_part(incident.part_id)
-        events = cases.read_events(case_id)
-        decision = cases.read_decision(case_id)
-        summaries.append(
-            CaseSummary(
-                case_id=case_id,
-                part_id=incident.part_id,
-                item_name=part.item_name if part else incident.part_id,
-                stage=events[-1].stage if events else cases.current_stage(case_id),
-                qty_required=incident.qty_required,
-                line_stop_at=incident.line_stop_at,
-                opened_at=events[0].ts if events else datetime.now(timezone.utc),
-                pr_url=decision.pr_url if decision else None,
+@router.post(
+    "/cases",
+    response_model=OpenCaseResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Open and run a Case",
+)
+def open_case(
+    body: OpenCaseRequest, module: CaseModule = Depends(case_module)
+) -> OpenCaseResponse:
+    try:
+        result = module.open_case(
+            OpenCaseCommand(
+                part_id=body.part_id,
+                qty_required=body.qty_required,
+                needed_by=body.needed_by,
+                case_id=body.case_id,
             )
         )
-    return summaries
-
-
-@router.get("/cases/{case_id}", response_model=CaseSnapshot, summary="Everything the case page needs, in one response")
-def get_case(case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)) -> CaseSnapshot:
-    incident = records.get_incident(case_id)
-    if incident is None:
-        raise HTTPException(status_code=404, detail=f"no case {case_id}")
-    part = records.get_part(incident.part_id)
-    if part is None:
-        raise HTTPException(status_code=500, detail=f"case {case_id} references unknown part {incident.part_id}")
-
-    profile = records.get_company_profile()
-    candidates = cases.read_candidates(case_id)
-    supplier_ids = {c.supplier_ref for c in candidates} or {
-        s.supplier_id for s in records.get_suppliers_for_part(incident.part_id)
-    }
-    decision = cases.read_decision(case_id)
-    events = cases.read_events(case_id)
-
-    return CaseSnapshot(
-        case_id=case_id,
-        stage=events[-1].stage if events else cases.current_stage(case_id),
-        incident=incident,
-        part=part,
-        profile_summary={
-            "legal_entity": profile.legal_entity,
-            "blocked_origin_countries": profile.blocked_origin_countries,
-            "required_certifications": [
-                c for c in profile.required_certifications.get(part.part_class, [])
-            ],
-            "audit_required_above_criticality": profile.audit_required_above_criticality.value,
-            "wacc": profile.wacc,
-        },
-        candidates=candidates,
-        supplier_records=[s for sid in sorted(supplier_ids) if (s := records.get_supplier(sid))],
-        outreach_tasks=cases.read_outreach_tasks(case_id),
-        claims=cases.read_claims(case_id),
-        decision=decision,
-        devin_session_url=decision.devin_session_url if decision else None,
-        last_event_seq=events[-1].seq if events else 0,
+    except PartMissingError as error:
+        raise HTTPException(status_code=404, detail=f"no part {error}") from error
+    except CaseConflictError as error:
+        raise HTTPException(status_code=409, detail=f"case already exists: {error}") from error
+    return OpenCaseResponse(
+        case_id=result.case_id,
+        incident=result.incident,
+        session_id=result.session_id,
+        session_url=result.session_url,
+        stubbed=result.stubbed,
+        session_error=result.session_error,
     )
 
 
-# Slice C names its stages for its own flow; the cockpit only has the five.
-# Anything from an outreach provider is part of the calling stage.
-SLICE_C_STAGES = {
-    "outreach_dispatched": Stage.CALLING,
-    "quote_received": Stage.CALLING,
-    "call_started": Stage.CALLING,
-    "call_failed": Stage.CALLING,
-}
+@router.get(
+    "/cases", response_model=list[PublicCaseSummary], summary="Every persisted Case"
+)
+def list_cases(module: CaseModule = Depends(case_module)) -> list[PublicCaseSummary]:
+    return module.list_cases()
 
 
-# Slice C's dispatch event duplicates the one Slice B already writes when it
-# briefs the suppliers, so only one of the two reaches the feed.
-SUPPRESSED_STAGES = {"outreach_dispatched"}
-
-
-def _readable(message: str, records=None) -> str:
-    """Product language for anything that reaches the cockpit.
-
-    The event feed is on screen during the demo, so it reads as an operations
-    log. Provider names and mode switches are implementation detail and stay in
-    the code, not on the wall.
-    """
-    for phrase in (
-        " via fake provider",
-        " via the fake provider",
-        " (rehearsal mode)",
-        " (test mode)",
-    ):
-        message = message.replace(phrase, "")
-    return message.strip()
-
-
-def _adopt(raw: dict, seq: int) -> Event | None:
-    """Turn one of Slice C's in-memory events into a cockpit Event.
-
-    Defensive on purpose: a shape we do not recognise is dropped from the feed
-    rather than breaking the endpoint the whole cockpit polls.
-    """
-    if raw.get("stage") in SUPPRESSED_STAGES:
-        return None
+@router.get(
+    "/cases/{case_id}", response_model=PublicCaseSnapshot, summary="One persisted Case snapshot"
+)
+def get_case(
+    case_id: str, module: CaseModule = Depends(case_module)
+) -> PublicCaseSnapshot:
     try:
-        return Event(
-            seq=seq,
-            case_id=raw["case_id"],
-            ts=datetime.fromisoformat(raw["ts"]),
-            actor=Actor(raw.get("actor", "system")),
-            stage=SLICE_C_STAGES.get(raw.get("stage", ""), Stage.CALLING),
-            level=Level(raw.get("level", "info")),
-            message=_readable(raw.get("message", "")),
-            payload=raw.get("payload") or {},
+        return module.get_case(case_id)
+    except CaseMissingError as error:
+        raise HTTPException(status_code=404, detail=f"no case {case_id}") from error
+
+
+@router.get(
+    "/cases/{case_id}/events",
+    response_model=list[PublicEvent],
+    summary="Append-only feed. Poll with ?since=",
+)
+def get_events(
+    case_id: str,
+    since: int = Query(default=0, ge=0),
+    module: CaseModule = Depends(case_module),
+) -> list[PublicEvent]:
+    try:
+        return module.get_events(case_id, since)
+    except CaseMissingError as error:
+        raise HTTPException(status_code=404, detail=f"no case {case_id}") from error
+
+
+@router.post(
+    "/cases/{case_id}/decision/approve",
+    response_model=PublicCaseSnapshot,
+    summary="Mark one checked Decision revision approved",
+)
+def approve_decision(
+    case_id: str,
+    body: ApproveDecisionRequest,
+    module: CaseModule = Depends(case_module),
+) -> PublicCaseSnapshot:
+    try:
+        return module.approve_decision(
+            case_id,
+            ApproveDecisionCommand(
+                decision_revision=body.decision_revision,
+                approved_by=body.approved_by,
+            ),
         )
-    except (KeyError, ValueError, TypeError):
-        return None
-
-
-@router.get("/cases/{case_id}/events", response_model=list[Event], summary="Append-only feed. Poll with ?since=")
-def get_events(case_id: str, since: int = Query(default=0, ge=0), cases: CaseStore = Depends(store)) -> list[Event]:
-    """One feed, two sources.
-
-    Slice B's events are durable, in `cases/<id>/events.jsonl`. Slice C's live in
-    memory for the length of a run, because a call in flight is not an artifact
-    yet. The cockpit should not have to know that, so they are merged here in
-    time order and given a single monotonic `seq` for `?since=` polling.
-    """
-    if not cases.exists(case_id):
-        raise HTTPException(status_code=404, detail=f"no case {case_id}")
-
-    filed = cases.read_events(case_id)
-    live = [e for e in (_adopt(raw, 0) for raw in STORE.events_for(case_id)) if e]
-
-    # Replace supplier ids with company names -- SUP-KBY means nothing to anyone
-    # watching, and the id is still in the payload for anything that needs it.
-    names = {s.supplier_id: s.supplier_name for s in _record_suppliers(cases, case_id)}
-    for event in live:
-        for supplier_id, name in names.items():
-            if supplier_id in event.message:
-                event.message = event.message.replace(supplier_id, name)
-
-    merged = sorted([*filed, *live], key=lambda e: e.ts)
-    for index, event in enumerate(merged, start=1):
-        event.seq = index
-    return [e for e in merged if e.seq > since]
-
-
-def _record_suppliers(cases: CaseStore, case_id: str):
-    """Suppliers relevant to a case, for turning ids into names in the feed."""
-    from backend.api.deps import erp as _erp
-
-    records = _erp()
-    incident = records.get_incident(case_id)
-    if incident is None:
-        return []
-    return records.get_suppliers_for_part(incident.part_id)
-
-
-@router.get("/cases/{case_id}/artifacts", summary="The files this case has produced")
-def get_artifacts(case_id: str, cases: CaseStore = Depends(store)) -> dict:
-    if not cases.exists(case_id):
-        raise HTTPException(status_code=404, detail=f"no case {case_id}")
-    return {"case_id": case_id, "artifacts": cases.list_artifacts(case_id)}
-
-
-@router.get("/cases/{case_id}/artifacts/{name:path}", summary="One artifact, raw")
-def get_artifact(case_id: str, name: str, cases: CaseStore = Depends(store)) -> dict:
-    body = cases.read_artifact(case_id, name)
-    if body is None:
-        raise HTTPException(status_code=404, detail=f"no artifact {name} in {case_id}")
-    return {"case_id": case_id, "name": name, "body": body}
+    except CaseMissingError as error:
+        raise HTTPException(status_code=404, detail=f"no ready Decision for {case_id}") from error
+    except CaseConflictError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error

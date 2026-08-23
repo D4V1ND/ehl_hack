@@ -60,5 +60,8 @@ __pycache__/
 # generated SQLite system of record
 apps/api/backend/record/*.db
 
+# operational Case state
+apps/api/backend/casestore/*.db
+
 # local live-call destinations
 apps/api/backend/fixtures/supplier_phones.local.json

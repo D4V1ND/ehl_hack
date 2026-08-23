@@ -39,6 +39,7 @@ def _load_dotenv(path: Path) -> None:
 class Settings:
     repo_root: Path
     live_calls_enabled: bool
+    case_database_path: Path
     # Which system-of-record adapter to serve from. Both implement the same
     # `SystemOfRecord` interface and pass the same tests; "sqlite" is the default
     # and "yaml" is the reference implementation, kept because having two proves
@@ -70,6 +71,12 @@ def get_settings() -> Settings:
         # Authoritative: Slice C's provider selection. FAKE_CALLS defaults to "1",
         # so live requires deliberately setting it to "0".
         live_calls_enabled=os.environ.get("FAKE_CALLS", "1").strip() == "0",
+        case_database_path=Path(
+            os.environ.get(
+                "CASE_DATABASE_PATH",
+                str(repo_root / "backend" / "casestore" / "cases.db"),
+            )
+        ),
         record_backend=backend,
         github_token=os.environ.get("GITHUB_TOKEN", "").strip() or None,
         github_repo=os.environ.get("GITHUB_REPO", "").strip() or None,

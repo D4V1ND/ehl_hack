@@ -34,13 +34,13 @@ def client(tmp_path):
     app.dependency_overrides.pop(settings)
 
 
-def test_screen_returns_three_rejections_with_their_rules(client):
+def test_screen_returns_the_blocked_origin_rejection_with_its_rule(client):
     test_client, _ = client
     body = test_client.post("/tools/screen", params={"case_id": "CASE-001"}).json()
     candidates = [Candidate(**c) for c in body]
-    assert len(candidates) == 6
+    assert len(candidates) == 5
     rejected = [c for c in candidates if not c.compliance.passed]
-    assert len(rejected) == 3
+    assert len(rejected) == 1
     assert all(c.compliance.failed_rules for c in rejected)
     assert all(c.compliance.explanations for c in rejected)
 
@@ -73,7 +73,7 @@ def test_decide_is_idempotent_so_the_session_can_rerun_it_after_calls(client):
 def test_single_source_blockers_names_the_lead_time_rule(client):
     test_client, _ = client
     body = test_client.get("/tools/single_source_blockers", params={"case_id": "CASE-001"}).json()
-    assert body["SUP-RUL"] == ["lead_time_after_line_stop"]
+    assert body["SUP-FAG"] == ["lead_time_after_line_stop"]
 
 
 def test_publish_is_a_rehearsal_until_a_token_is_configured(client):

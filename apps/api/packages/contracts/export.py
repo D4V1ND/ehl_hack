@@ -3,13 +3,13 @@
     python -m packages.contracts.export
 
 Writes:
-  packages/contracts/schema.json      every model as JSON Schema
-  ui/lib/contracts.ts                 TypeScript types, from the same models
-  ui/lib/fixtures/*.json              a recorded case, so the cockpit runs with no backend
+  apps/api/packages/contracts/schema.json        every model as JSON Schema
+  apps/api/packages/contracts/claim.schema.json  Claim as JSON Schema
+  apps/erp/lib/contracts.ts                       TypeScript types from the same models
 
 The point of doing all three from one place: `Claim` is simultaneously our Python
-type and the cockpit's TypeScript interface, generated together so contract drift
-is not something anyone has to remember to avoid.
+type and the ERP client's TypeScript interface, generated together so contract
+drift is not something anyone has to remember to avoid.
 
 CALL-E is the exception. Its structured-result engine accepts only a small JSON
 Schema subset -- no `anyOf`, no `$ref` -- and rejects what Pydantic emits, so the
@@ -19,12 +19,14 @@ these models by a test instead of by generation.
 
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from types import UnionType
+from collections.abc import Mapping
 from typing import Any, Union, get_args, get_origin
 
 from pydantic import BaseModel
@@ -33,9 +35,10 @@ from packages.contracts import enums as contract_enums
 from packages.contracts import models as contract_models
 from packages.contracts.models import Contract
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+API_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = API_ROOT.parents[1]
 SCHEMA_DIR = Path(__file__).resolve().parent
-UI_LIB = REPO_ROOT / "ui" / "lib"
+ERP_LIB = REPO_ROOT / "apps" / "erp" / "lib"
 
 MODELS: dict[str, type[BaseModel]] = {
     name: obj
@@ -152,76 +155,60 @@ def generate_typescript() -> str:
 # ---------------------------------------------------------------------------
 
 
-def export_schemas() -> Path:
-    SCHEMA_DIR.mkdir(parents=True, exist_ok=True)
+def artifact_contents() -> dict[Path, str]:
+    """Render every generated artifact without touching the filesystem."""
+
     bundle = {name: model.model_json_schema() for name, model in sorted(MODELS.items())}
-    path = SCHEMA_DIR / "schema.json"
-    path.write_text(json.dumps(bundle, indent=2) + "\n", encoding="utf-8")
+    return {
+        SCHEMA_DIR / "schema.json": json.dumps(bundle, indent=2) + "\n",
+        SCHEMA_DIR / "claim.schema.json": json.dumps(
+            contract_models.Claim.model_json_schema(), indent=2
+        )
+        + "\n",
+        ERP_LIB / "contracts.ts": generate_typescript().rstrip() + "\n",
+    }
 
-    # The one CALL-E needs, on its own, so Slice C can point at a single file.
-    claim_path = SCHEMA_DIR / "claim.schema.json"
-    claim_path.write_text(
-        json.dumps(contract_models.Claim.model_json_schema(), indent=2) + "\n", encoding="utf-8"
+
+def stale_artifacts(artifacts: Mapping[Path, str] | None = None) -> list[Path]:
+    """Return missing or stale generated paths without rewriting them."""
+
+    expected = artifacts or artifact_contents()
+    return [
+        path
+        for path, content in expected.items()
+        if not path.is_file() or path.read_text(encoding="utf-8") != content
+    ]
+
+
+def write_artifacts(artifacts: Mapping[Path, str] | None = None) -> list[Path]:
+    """Write the complete generated output set."""
+
+    expected = artifacts or artifact_contents()
+    for path, content in expected.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    return list(expected)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail when generated artifacts do not match Pydantic",
     )
-    return path
+    args = parser.parse_args(argv)
 
+    if args.check:
+        stale = stale_artifacts()
+        for path in stale:
+            print(f"stale {path.relative_to(REPO_ROOT)}")
+        return 1 if stale else 0
 
-def export_typescript() -> Path:
-    UI_LIB.mkdir(parents=True, exist_ok=True)
-    path = UI_LIB / "contracts.ts"
-    path.write_text(generate_typescript(), encoding="utf-8")
-    return path
-
-
-def export_fixtures() -> list[Path]:
-    """A recorded case, not a mock.
-
-    These come from the same endpoints the cockpit would call live, so the
-    offline demo and the live one are the same code path with a different source.
-    """
-    from fastapi.testclient import TestClient
-
-    from backend.api.main import app
-
-    fixtures_dir = UI_LIB / "fixtures"
-    fixtures_dir.mkdir(parents=True, exist_ok=True)
-    client = TestClient(app)
-
-    written: list[Path] = []
-
-    def dump(name: str, payload: Any) -> None:
-        path = fixtures_dir / name
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-        written.append(path)
-
-    dump("shortages.json", client.get("/dashboard/shortages").json())
-    dump("profile.json", client.get("/profile").json())
-    dump("cases.json", client.get("/cases").json())
-
-    for case_id in client.get("/cases").json():
-        cid = case_id["case_id"]
-        dump(f"{cid}.json", client.get(f"/cases/{cid}").json())
-        dump(f"{cid}.events.json", client.get(f"/cases/{cid}/events").json())
-        artifacts = client.get(f"/cases/{cid}/artifacts").json()["artifacts"]
-        bodies = {
-            a["name"]: client.get(f"/cases/{cid}/artifacts/{a['name']}").json()["body"]
-            for a in artifacts
-            if a["is_markdown"]
-        }
-        dump(f"{cid}.artifacts.json", bodies)
-
-    return written
-
-
-def main() -> None:
-    schema = export_schemas()
-    types = export_typescript()
-    fixtures = export_fixtures()
-    print(f"schema     {schema.relative_to(REPO_ROOT)}  ({len(MODELS)} models, {len(ENUMS)} enums)")
-    print(f"typescript {types.relative_to(REPO_ROOT)}")
-    for path in fixtures:
-        print(f"fixture    {path.relative_to(REPO_ROOT)}")
+    for path in write_artifacts():
+        print(f"generated {path.relative_to(REPO_ROOT)}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

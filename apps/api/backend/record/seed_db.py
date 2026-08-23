@@ -145,6 +145,9 @@ def build(db_path: Path | None = None, records: MockERP | None = None) -> Path:
                     i.qty_required, i.qty_on_hand, _text(i.needed_by),
                     i.line_stop_at.isoformat(), _text(i.line_stop_cost_per_hour),
                     i.currency, i.incumbent_supplier_id, i.reason,
+                    json.dumps(
+                        [plant.model_dump(mode="json") for plant in i.plants]
+                    ),
                 )
                 for i in records.list_incidents()
             ],

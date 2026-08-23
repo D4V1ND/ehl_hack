@@ -11,18 +11,23 @@ Nothing here touches the network -- the default provider is the rehearsal one.
 from __future__ import annotations
 
 import time
+from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
 
 from backend.api.main import app
+from backend.api.deps import case_module, store
+from backend.casestore.case_store import CaseStore
+from backend.cases.module import CaseModule
+from backend.record.mock_erp import MockERP
 from backend.store import STORE
 
 CASE = "CASE-001"
 
 
 @pytest.fixture
-def client(monkeypatch):
+def client(monkeypatch, tmp_path):
     """An isolated run against the rehearsal provider.
 
     The provider delivers on daemon timers into a process-global store, so a test
@@ -37,9 +42,21 @@ def client(monkeypatch):
     monkeypatch.setattr(provider_module.settings, "FAKE_MAX_DELAY", 0.05, raising=False)
 
     STORE.reset()
-    yield TestClient(app)
+    artifact_store = CaseStore(tmp_path / "artifacts")
+    module = CaseModule(
+        records=MockERP(),
+        database_path=tmp_path / "cases.db",
+        clock=lambda: datetime(2026, 8, 22, 9, 0, tzinfo=timezone.utc),
+        id_generator=lambda: CASE,
+    )
+    app.dependency_overrides[case_module] = lambda: module
+    app.dependency_overrides[store] = lambda: artifact_store
+    with TestClient(app) as test_client:
+        yield test_client
     time.sleep(0.15)  # let any straggler timer land before we clear
     STORE.reset()
+    app.dependency_overrides.pop(case_module)
+    app.dependency_overrides.pop(store)
 
 
 def dispatch(client, refs=("SUP-KBY", "SUP-SKF", "SUP-RUL"), qty=36000):
@@ -103,12 +120,11 @@ def test_answers_arrive_asynchronously(client):
     assert {q["supplier_ref"] for q in quotes} == refs
 
 
-def test_the_cockpit_sees_one_feed_covering_both_slices(client):
-    """Slice B's file log and Slice C's in-memory events merge into one stream.
-
-    The cockpit polls a single endpoint with ?since=, so the seq numbers have to
-    stay monotonic across both sources.
-    """
+def test_public_event_feed_never_merges_process_local_provider_events(client):
+    assert client.post(
+        "/cases", json={"part_id": "PRT-6204", "case_id": CASE}
+    ).status_code == 201
+    committed = client.get(f"/cases/{CASE}/events").json()
     refs = {"SUP-KBY", "SUP-SKF", "SUP-RUL"}
     dispatch(client, refs=sorted(refs))
     await_quotes(client, refs)
@@ -116,16 +132,9 @@ def test_the_cockpit_sees_one_feed_covering_both_slices(client):
     events = client.get(f"/cases/{CASE}/events").json()
     seqs = [e["seq"] for e in events]
     assert seqs == sorted(seqs) == list(range(1, len(events) + 1))
-
-    actors = {e["actor"] for e in events}
-    assert "system" in actors and "calle" in actors, "both slices should appear"
-    assert any(e["stage"] == "calling" for e in events)
-
-    # ?since= must not re-deliver what the cockpit already has. Asserting on the
-    # seq numbers rather than on emptiness: a straggler delivery landing between
-    # the two requests is legitimate, and a test that fails on it is just flaky.
+    assert events == committed
     later = client.get(f"/cases/{CASE}/events", params={"since": len(events)}).json()
-    assert all(e["seq"] > len(events) for e in later)
+    assert later == []
 
 
 def test_no_endpoint_in_the_call_flow_returns_a_raw_phone_number(client):

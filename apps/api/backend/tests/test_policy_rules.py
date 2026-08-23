@@ -34,19 +34,18 @@ def board(erp):
     )
 
 
-def test_three_suppliers_clear_and_three_are_rejected(board):
+def test_four_suppliers_clear_and_shenzhen_is_rejected(board):
     cleared = {c.supplier_ref for c in board if c.compliance.passed}
-    assert cleared == {"SUP-KBY", "SUP-SKF", "SUP-RUL"}
+    assert cleared == {"SUP-SKF", "SUP-FAG", "SUP-NSK", "SUP-MUN"}
+    assert len(board) == 5
 
 
-def test_each_rejection_cites_a_different_rule(board):
+def test_shenzhen_rejection_cites_only_the_blocked_origin_rule(board):
     cited = {
         c.supplier_ref: c.compliance.failed_rules for c in board if not c.compliance.passed
     }
     assert cited == {
-        "SUP-NPB": [PolicyRule.BLOCKED_ORIGIN_COUNTRY],
-        "SUP-PUL": [PolicyRule.MISSING_REQUIRED_CERTIFICATION],
-        "SUP-NBT": [PolicyRule.AUDIT_REQUIRED_AND_NOT_AUDITED],
+        "SUP-SHZ": [PolicyRule.BLOCKED_ORIGIN_COUNTRY],
     }
 
 
@@ -59,8 +58,8 @@ def test_every_rejection_carries_an_explanation(board):
 
 
 def test_blocked_origin_routes_to_email_because_calle_has_no_cn_region(board):
-    npb = next(c for c in board if c.supplier_ref == "SUP-NPB")
-    assert npb.channel.value in {"email", "marketplace"}
+    shenzhen = next(c for c in board if c.supplier_ref == "SUP-SHZ")
+    assert shenzhen.channel.value in {"email", "marketplace"}
 
 
 def test_no_single_compliant_supplier_can_beat_the_line_stop(erp, board):
@@ -72,13 +71,14 @@ def test_no_single_compliant_supplier_can_beat_the_line_stop(erp, board):
     coverers = [
         s
         for s in cleared
-        if deliverable_qty(s) >= incident.qty_required
+        if deliverable_qty(s) >= incident.shortfall
         and check_lead_time(supplier=s, incident=incident, today=TODAY).passed
     ]
     assert coverers == [], "a single compliant supplier could cover the case; demo is dead"
 
-    rul = suppliers["SUP-RUL"]
-    result = check_lead_time(supplier=rul, incident=incident, today=TODAY)
+    fag = suppliers["SUP-FAG"]
+    assert deliverable_qty(fag) == incident.shortfall
+    result = check_lead_time(supplier=fag, incident=incident, today=TODAY)
     assert result.failed_rules == [PolicyRule.LEAD_TIME_AFTER_LINE_STOP]
     assert "past the line stop" in result.explanations[PolicyRule.LEAD_TIME_AFTER_LINE_STOP]
 
@@ -87,7 +87,7 @@ def test_unknown_lead_time_is_not_a_pass(erp):
     """An unknown does not get the benefit of the doubt."""
     incident = erp.get_incident(CASE)
     supplier = next(
-        s for s in erp.get_suppliers_for_part(PART) if s.supplier_id == "SUP-KBY"
+        s for s in erp.get_suppliers_for_part(PART) if s.supplier_id == "SUP-SKF"
     ).model_copy(update={"standard_lead_days": None})
 
     result = check_lead_time(supplier=supplier, incident=incident, today=TODAY)
@@ -98,7 +98,7 @@ def test_unknown_lead_time_is_not_a_pass(erp):
 def test_a_call_can_only_make_compliance_stricter(erp):
     """Our file says the incumbent holds the certification; the call says no."""
     part = erp.get_part(PART)
-    supplier = next(s for s in erp.get_suppliers_for_part(PART) if s.supplier_id == "SUP-KBY")
+    supplier = next(s for s in erp.get_suppliers_for_part(PART) if s.supplier_id == "SUP-SKF")
     profile = erp.get_company_profile()
 
     assert evaluate_supplier(
@@ -120,23 +120,26 @@ def test_a_call_can_only_make_compliance_stricter(erp):
     assert "on the call" in result.explanations[PolicyRule.MISSING_REQUIRED_CERTIFICATION]
 
 
-def test_allocated_stock_shrinks_what_we_will_plan_around(erp):
-    """The punchline field: "yes, we have 20 000" that is already promised."""
-    supplier = next(s for s in erp.get_suppliers_for_part(PART) if s.supplier_id == "SUP-KBY")
-    assert deliverable_qty(supplier) == 12000
+def test_trusted_allocations_and_a_claim_bound_deliverable_quantity(erp):
+    """Trusted allocations and a newer Claim each bound usable quantity."""
+    suppliers = {s.supplier_id: s for s in erp.get_suppliers_for_part(PART)}
+    munich = suppliers["SUP-MUN"]
+    skf = suppliers["SUP-SKF"]
+    assert deliverable_qty(munich) == 2000
+    assert deliverable_qty(skf) == 8000
 
-    allocated = Claim(
+    offered = Claim(
         task_id="T-2",
         case_id=CASE,
-        supplier_ref=supplier.supplier_id,
+        supplier_ref=skf.supplier_id,
         available=True,
-        qty_offered=6000,
-        stock_status=StockStatus.IN_STOCK_ALLOCATED,
+        qty_offered=6400,
+        stock_status=StockStatus.FREE_IN_STOCK,
         confidence=0.8,
     )
-    assert deliverable_qty(supplier, allocated) == 6000
+    assert deliverable_qty(skf, offered) == 6400
 
     unavailable = Claim(
-        task_id="T-3", case_id=CASE, supplier_ref=supplier.supplier_id, available=False
+        task_id="T-3", case_id=CASE, supplier_ref=skf.supplier_id, available=False
     )
-    assert deliverable_qty(supplier, unavailable) == 0
+    assert deliverable_qty(skf, unavailable) == 0

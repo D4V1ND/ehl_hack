@@ -51,13 +51,8 @@ def test_it_writes_the_whole_review_package(cases, outcome):
 def test_the_policy_report_names_the_rule_behind_every_rejection(cases, outcome):
     report = cases.read_artifact(CASE, "policy_report.md")
     assert report is not None
-    for rule in (
-        "blocked_origin_country",
-        "missing_required_certification",
-        "audit_required_and_not_audited",
-    ):
-        assert rule in report
-    assert "3 cleared, 3 rejected" in report
+    assert "blocked_origin_country" in report
+    assert "4 cleared, 1 rejected" in report
 
 
 def test_the_cost_report_shows_the_plan_it_beat(cases, outcome):
@@ -90,12 +85,12 @@ def test_it_logs_one_event_a_human_can_read(cases, outcome):
     last = events[-1]
     assert last.stage is Stage.DECIDED
     assert outcome.recommended.strategy_id == last.payload["recommended"]
-    assert last.payload["rejected_suppliers"] == 3
+    assert last.payload["rejected_suppliers"] == 1
 
 
 def test_candidates_are_written_for_the_cockpit(cases, outcome):
     stored = cases.read_candidates(CASE)
-    assert len(stored) == 6
+    assert len(stored) == 5
     assert all(c.compliance is not None for c in stored)
 
 
@@ -108,7 +103,7 @@ def test_money_survives_the_json_round_trip_as_a_string(cases, outcome):
 
 def test_the_fourth_rule_is_reported_against_the_cheapest_supplier(erp):
     blockers = single_source_blockers(case_id=CASE, records=erp, today=TODAY)
-    assert blockers["SUP-RUL"] == ["lead_time_after_line_stop"]
+    assert blockers["SUP-FAG"] == ["lead_time_after_line_stop"]
 
 
 def test_a_claim_changes_the_recommendation(erp, cases):

@@ -1,0 +1,23 @@
+{
+  "fixture_version": 1,
+  "supplier_ref": "SUP-NSK",
+  "structured_result": {
+    "available": true,
+    "qty_offered": 32000,
+    "unit_price": "0.5000",
+    "price_breaks": [{"min_qty": 1, "unit_price": "0.5000"}],
+    "currency": "EUR",
+    "lead_time_days": 2,
+    "stock_status": "free_in_stock",
+    "price_quoted": "yes",
+    "part_number_confirmed": "unknown",
+    "certification_current": "unknown"
+  },
+  "completion_confidence": {"score": 0.20, "label": "low"},
+  "summary": "The recording was incomplete and the part number was unclear.",
+  "evidence": [],
+  "transcript_turns": [
+    {"offset_seconds": 0, "speaker": "assistant", "text": "I am an AI assistant gathering availability only."},
+    {"offset_seconds": 15, "speaker": "supplier", "text": "The line was unclear."}
+  ]
+}

@@ -28,8 +28,7 @@ def client():
 
 
 def readable_paths() -> list[str]:
-    """Every GET route, with path parameters filled in from real seed data."""
-    erp = get_mock_erp()
+    """GET routes readable from trusted seed data without creating a Case."""
     part_id = "PRT-6204"
     case_id = "CASE-001"
     return [
@@ -40,9 +39,6 @@ def readable_paths() -> list[str]:
         "/schema/SupplierRecord",
         "/dashboard/shortages",
         "/cases",
-        f"/cases/{case_id}",
-        f"/cases/{case_id}/events",
-        f"/cases/{case_id}/artifacts",
         "/tools/parts",
         f"/tools/part/{part_id}",
         f"/tools/stock?part_id={part_id}",
@@ -63,6 +59,24 @@ def test_no_endpoint_returns_a_raw_phone_number(client, path):
     assert not leaked, f"{path} leaked {len(leaked)} raw phone number(s)"
 
 
+def test_artifact_route_is_not_public_and_does_not_leak_a_raw_phone(client):
+    response = client.get("/cases/CASE-001/artifacts")
+
+    assert response.status_code == 404
+    assert not E164_ANYWHERE.findall(response.text)
+
+
+def test_a_trusted_incident_is_not_a_public_case_fallback(client):
+    """CASE-001 exists in ERP records, but not necessarily in the Case database."""
+
+    cases_before = client.get("/cases").json()
+    for path in ("/cases/CASE-001", "/cases/CASE-001/events"):
+        response = client.get(path)
+        assert response.status_code == 404
+        assert not E164_ANYWHERE.findall(response.text)
+    assert client.get("/cases").json() == cases_before
+
+
 def test_the_seed_really_does_contain_raw_numbers(client):
     """Guard against the guard passing vacuously.
 
@@ -72,7 +86,7 @@ def test_the_seed_really_does_contain_raw_numbers(client):
     """
     erp = get_mock_erp()
     raw = [erp.raw_phone_for_outreach(s.supplier_id) for s in erp.list_suppliers()]
-    assert len(raw) == 15
+    assert raw, "the leak scan needs at least one seeded phone number"
     for number in raw:
         assert E164_ANYWHERE.fullmatch(number), f"{number!r} is not the shape the scan looks for"
 

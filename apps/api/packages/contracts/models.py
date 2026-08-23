@@ -28,8 +28,10 @@ from packages.contracts.enums import (
     Answer,
     AuditStatus,
     Criticality,
+    DecisionStatus,
     FreightMode,
     Level,
+    OutreachStatus,
     PartClass,
     PolicyRule,
     Stage,
@@ -54,23 +56,29 @@ class Channel(str, Enum):
 class PriceBreak(BaseModel):
     """Buy at least `min_qty` and each unit costs `unit_price`."""
 
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
     min_qty: int
-    unit_price: Decimal
+    unit_price: Money
 
 
 class ExpediteOption(BaseModel):
     """Pay `surcharge` total to pull delivery in by `days`."""
 
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
     days: int
-    surcharge: Decimal
+    surcharge: Money
 
 
 class OutreachBrief(BaseModel):
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
     part_spec: str
     qty: int
     needed_by: date
-    target_price: Decimal | None = None
-    floor_price: Decimal | None = None
+    target_price: Money | None = None
+    floor_price: Money | None = None
     must_ask: list[str] = Field(
         default_factory=lambda: [
             "price_breaks",
@@ -78,16 +86,33 @@ class OutreachBrief(BaseModel):
             "lead_time",
             "incoterm",
             "cert",
+            "stock_status",
         ]
     )
 
 
 class OutreachTask(BaseModel):
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
     task_id: str
     case_id: str
     supplier_ref: str
     channel: Channel
     brief: OutreachBrief
+    round: int = Field(default=1, ge=1)
+    status: OutreachStatus = OutreachStatus.PENDING
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+
+
+class TranscriptTurn(BaseModel):
+    """One thing said on the call, in order."""
+
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
+    offset_seconds: int = 0
+    speaker: str = "unknown"
+    text: str = ""
 
 
 class Quote(BaseModel):
@@ -97,13 +122,15 @@ class Quote(BaseModel):
     and confidence 0.0 — never an exception.
     """
 
+    model_config = ConfigDict(extra="forbid", use_enum_values=False)
+
     task_id: str
     case_id: str
     supplier_ref: str
 
     available: bool = False
     qty_offered: int = 0
-    unit_price: Decimal | None = None
+    unit_price: Money | None = None
     price_breaks: list[PriceBreak] = Field(default_factory=list)
     currency: Currency = Currency.UNKNOWN
     moq: int | None = None
@@ -113,6 +140,9 @@ class Quote(BaseModel):
     certs_claimed: list[str] = Field(default_factory=list)
     payment_terms: str | None = None
     notes: str = ""
+
+    transcript: list[TranscriptTurn] = Field(default_factory=list)
+    summary: str = ""
 
     transcript_url: str | None = None
     recording_url: str | None = None
@@ -257,6 +287,12 @@ class SupplierRecord(Contract):
     price_breaks: list[PriceBreak] = Field(default_factory=list)
 
 
+class IncidentPlant(Contract):
+    plant_id: str
+    name: str
+    production_line: str
+
+
 class Incident(Contract):
     """A shortage, as our own records see it. Claims are not involved yet."""
 
@@ -272,6 +308,7 @@ class Incident(Contract):
     currency: Currency = Currency.EUR
     incumbent_supplier_id: str | None = None
     reason: str = ""
+    plants: list[IncidentPlant] = Field(default_factory=list)
 
     @property
     def shortfall(self) -> int:
@@ -358,6 +395,11 @@ class Strategy(Contract):
     rationale: str = ""
 
 
+class DecisionChecks(Contract):
+    policy_passed: bool
+    cost_model_passed: bool
+
+
 class Decision(Contract):
     case_id: str
     strategies: list[Strategy] = Field(default_factory=list)
@@ -369,6 +411,16 @@ class Decision(Contract):
     pr_url: str | None = None
     devin_session_url: str | None = None
     decided_at: datetime | None = None
+    revision: int = Field(default=1, ge=1)
+    status: DecisionStatus = DecisionStatus.READY
+    checks: DecisionChecks = Field(
+        default_factory=lambda: DecisionChecks(
+            policy_passed=False,
+            cost_model_passed=False,
+        )
+    )
+    approved_at: datetime | None = None
+    approved_by: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -411,6 +463,25 @@ class ShortageAlert(Contract):
     delayed_po_id: str | None = None
 
 
+class InventoryRow(Contract):
+    """A row on the inventory screen: one part, and whether it can be triggered."""
+
+    part_id: str
+    item_code: str
+    item_name: str
+    part_class: str
+    criticality: str
+    plant_id: str
+    on_hand: int
+    reorder_level: int
+    daily_consumption: int
+    days_of_cover: float | None
+    below_reorder: bool
+    delayed_po: str | None
+    suppliers: int
+    open_case_id: str | None
+
+
 class CaseSummary(Contract):
     case_id: str
     part_id: str
@@ -437,3 +508,138 @@ class CaseSnapshot(Contract):
     decision: Decision | None = None
     devin_session_url: str | None = None
     last_event_seq: int = 0
+
+
+class PublicProfileSummary(Contract):
+    company_name: str
+    home_country: str
+    target_currency: Currency
+    policy_labels: list[str] = Field(default_factory=list)
+    sourcing_constraints: list[str] = Field(default_factory=list)
+
+
+class PublicSupplierRecord(Contract):
+    supplier_id: str
+    supplier_name: str
+    country: str = Field(min_length=2, max_length=2)
+    locale: str = "en-GB"
+    phone_masked: str
+    channels: list[Channel] = Field(default_factory=list)
+    part_ids: list[str] = Field(default_factory=list)
+    approved: bool = False
+    preferred: bool = False
+    incumbent: bool = False
+    contract_unit_price: Money | None = None
+    standard_lead_days: int | None = None
+    certifications: list[str] = Field(default_factory=list)
+    certification_expires_at: date | None = None
+    audit_status: AuditStatus = AuditStatus.NEVER_AUDITED
+    known_allocations: int = 0
+    max_historical_fill: int = 0
+    price_breaks: list[PriceBreak] = Field(default_factory=list)
+
+
+class PublicClaim(Contract):
+    task_id: str
+    case_id: str
+    supplier_ref: str
+    available: bool = False
+    qty_offered: int = 0
+    unit_price: Money | None = None
+    price_breaks: list[PriceBreak] = Field(default_factory=list)
+    currency: Currency = Currency.UNKNOWN
+    moq: int | None = None
+    lead_time_days: int | None = None
+    expedite_option: ExpediteOption | None = None
+    incoterm: str | None = None
+    certs_claimed: list[str] = Field(default_factory=list)
+    payment_terms: str | None = None
+    transcript: list[TranscriptTurn] = Field(default_factory=list)
+    summary: str = ""
+    confidence: float = 0.0
+    round: int = 1
+    earliest_ready_text: str = ""
+    stock_status: StockStatus = StockStatus.UNCLEAR
+    price_quoted: Answer = Answer.UNKNOWN
+    part_number_confirmed: Answer = Answer.UNKNOWN
+    certification_current: Answer = Answer.UNKNOWN
+    evidence: list[str] = Field(default_factory=list)
+    received_at: datetime | None = None
+
+
+class PublicDecision(Contract):
+    case_id: str
+    strategies: list[Strategy] = Field(default_factory=list)
+    recommended_strategy_id: str | None = None
+    runner_up_ids: list[str] = Field(default_factory=list)
+    rationale_md: str = ""
+    policy_report_url: str | None = None
+    cost_report_url: str | None = None
+    devin_session_url: str | None = None
+    decided_at: datetime | None = None
+    revision: int = Field(ge=1)
+    status: DecisionStatus
+    checks: DecisionChecks
+    approved_at: datetime | None = None
+    approved_by: str | None = None
+
+
+class PublicEvent(Contract):
+    seq: int = Field(default=0, ge=0)
+    case_id: str
+    ts: datetime
+    actor: Actor
+    stage: Stage
+    level: Level = Level.INFO
+    message: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class PublicCaseSummary(Contract):
+    case_id: str
+    part_id: str
+    item_name: str
+    stage: Stage
+    qty_required: int
+    line_stop_at: datetime
+    opened_at: datetime
+
+
+class PublicCaseSnapshot(Contract):
+    case_id: str
+    stage: Stage
+    incident: Incident
+    part: Part
+    profile_summary: PublicProfileSummary
+    candidates: list[Candidate] = Field(default_factory=list)
+    supplier_records: list[PublicSupplierRecord] = Field(default_factory=list)
+    outreach_tasks: list[OutreachTask] = Field(default_factory=list)
+    claims: list[PublicClaim] = Field(default_factory=list)
+    decision: PublicDecision | None = None
+    devin_session_url: str | None = None
+    last_event_seq: int = Field(default=0, ge=0)
+
+
+class OpenCaseRequest(Contract):
+    part_id: str = Field(min_length=1, max_length=120)
+    qty_required: int | None = Field(default=None, gt=0)
+    needed_by: date | None = None
+    case_id: str | None = Field(default=None, min_length=1, max_length=120)
+
+
+class OpenCaseResponse(Contract):
+    case_id: str
+    incident: Incident
+    session_id: str
+    session_url: str
+    stubbed: bool
+    session_error: str | None = None
+
+
+class OpenedCase(OpenCaseResponse):
+    """PR 22 TypeScript compatibility name for an opened Case response."""
+
+
+class ApproveDecisionRequest(Contract):
+    decision_revision: int = Field(ge=1)
+    approved_by: str = Field(min_length=1, max_length=200)

@@ -98,10 +98,10 @@ Enough to reject a supplier **by name, citing the rule that rejected it** — th
 
 The foundation spec explicitly puts comparison and decision-making out of scope: *"It never compares those claims against the factory's own records or makes any purchasing decision."* That's the right call for Plan 1, but **the Cognition track grades exactly that layer** — the autonomous decision and the artifact it produces. Foundation-only, we have a well-engineered call-logging tool and no answer to "where does Devin do the work?" So Plan 2 (§5, §6 Slice D) is the graded deliverable, not a nice-to-have. Plan 1 is the substrate; Plan 2 is the submission.
 
-**Three genuine conflicts to settle:**
+**Three implementation choices now settled:**
 
-1. **Demo scale.** The spec's demo data is 12 units needed / 4 on hand → shortfall of **8 units**. At 8 units there are no quantity price breaks, no freight-mode trade-off, no split order, no carrying cost — the entire cost engine in §5 has nothing to chew on, and the decision is trivially "call the preferred supplier." **Proposal:** keep the 4-supplier fixture shape exactly as specified, but scale the incident to a realistic production quantity (e.g. 40 000 pcs against a 12-day line stop) and give each supplier record price-break tiers. Small data change, and it's the difference between a demo with a punchline and one without.
-2. **Claims are per-supplier; Decisions are per-case.** SQLite stores both scopes and their relationship. Fixture objects preserve the same boundary until persistence is implemented.
+1. **Demo scale.** CASE-001 needs 40,000 units, has 8,000 on hand, and has a 32,000-unit shortfall. Five Candidates create enough price, freight, allocation, and compliance variation for a split Strategy.
+2. **Claims are per-supplier; Decisions are per-case.** Operational SQLite stores both scopes and their relationship. The fixture-driven Cockpit preserves the same boundary until API integration.
 3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** It stays true in the strict sense: Devin recommends, and a human marks the Decision approved in SupplyOS. Approved is final; there is no PR card or merge approval.
 
 ---
@@ -115,7 +115,7 @@ The five steps, in order — and the order is the whole point. Most hackathon te
 | We assumed we need… | Interrogated | Verdict |
 |---|---|---|
 | A real ERP | Judges see JSON from an endpoint either way | ❌ mock behind the adapter |
-| A production database in this fixture UI | The rehearsal must run with no backend | ⚠️ SQLite intended; fixtures now |
+| A production database in this fixture UI | The Cockpit rehearsal must run with no backend | ⚠️ backend Cases use SQLite; Cockpit uses fixtures now |
 | User accounts / auth | Nobody logs into a 4-minute demo | ❌ delete |
 | A PR-based approve/reject workflow | Approval belongs on the Decision in SupplyOS | ❌ delete PR and merge approval |
 | Transcript→JSON extraction | CALL-E's `recipient_result_schema` does it | ❌ delete |
@@ -130,7 +130,7 @@ The five steps, in order — and the order is the whole point. Most hackathon te
 
 Deleted outright: Postgres, Supabase, auth, Docker Compose orchestration, the email channel *on the MVP path*, Alibaba automation, the extraction layer, WebSockets, and multi-tenancy.
 
-**SQLite is the intended operational datastore.** The current implementation remains fixture-driven and needs no backend. Supabase is explicitly ignored. Files can remain exportable audit artifacts, but the repository is not the operational datastore.
+**SQLite is the operational backend datastore.** The Cockpit remains fixture-driven and needs no backend. Supabase is explicitly ignored. Files can remain exportable audit artifacts, but the repository is not the operational datastore.
 
 > Musk's caveat: if you don't add back ~10% of what you deleted, you didn't delete enough. Expect to re-add the email channel and the PO PDF late. Fine.
 
@@ -139,14 +139,16 @@ Deleted outright: Postgres, Supabase, auth, Docker Compose orchestration, the em
 - **One Turborepo** with three workspaces: `apps/web` owns SupplyOS, `apps/erp` owns the mock system of record UI, and `apps/api` owns FastAPI plus SQLite. Calls and Decisions stay in SupplyOS.
 - **One external entry contract:** the ERP opens `${NEXT_PUBLIC_SUPPLYOS_URL}?case=<case_id>` in a new tab. The URL carries only the Case ID; SupplyOS reads trusted records through FastAPI.
 - **One** FastAPI process serves the Devin tool endpoints *and* the UI read API. No service mesh.
-- **One** contracts module (Pydantic) → JSON Schema exported for the UI **and** for CALL-E's `recipient_result_schema`. One source of truth, three consumers, contract drift impossible.
+- **One** PR 22-derived contracts module uses Pydantic to generate JSON Schema and TypeScript. The UI and CALL-E schema consume those artifacts.
+- **One** `CaseModule` owns Case creation, durable reads, immutable Events, deterministic execution, and final approval.
+- **Two** SQLite boundaries keep trusted ERP records separate from operational Case state. Rebuilding ERP seed data never deletes Cases.
 - **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 Candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 4 Claims — and **the cheapest unit price is not the right answer** (§5).
 - Policy rules and cost functions as pure functions over dataclasses. No rules engine, no DSL.
 
 ### Step 4 — Accelerate cycle time
 
-- `make demo` runs a full case end-to-end in **under 90 seconds** in rehearsal mode with a cached Devin transcript. You should run it 50× on Saturday.
-- `make replay CASE=001` replays a recorded event log into the UI at 4× speed — the frontend never waits on the backend, and it's the fallback if venue wifi dies on stage.
+- `POST /cases` runs a full Case synchronously in deterministic rehearsal.
+- Cockpit Replay restarts the current client fixture without mutating backend Case state.
 - Fixture-first everywhere: every slice ships its fake before its real.
 
 ### Step 5 — Automate (last)
@@ -155,13 +157,13 @@ Only once a human-triggered case runs green end-to-end: switch on the reorder-po
 
 ### The MVP as one testable sentence
 
-> `python -m orchestrator.run --case CASE-001` (or the detector firing) launches a Devin session that reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes landed cost, ranks split-order Strategies, and gets both `pytest` suites green. The Cockpit shows the run, then a human marks the Decision approved in SupplyOS.
+> `POST /cases` starts the configured Case runner, reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes Landed Cost, and persists a checked split-order Strategy. The Cockpit shows the run, then a human marks the Decision approved in SupplyOS.
 
 Everything else in this document is optional.
 
 ### The hour-3 walking skeleton — build this before anything pretty
 
-End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded bearing from the fixture → creates a checked Decision → UI shows ready for approval.
+End-to-end, ugly, all rehearsal, one command: trigger → deterministic Case runner → recorded provider results → checked Decision → UI shows ready for approval.
 
 **Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose.
 
@@ -173,17 +175,19 @@ The single most important artifact of the weekend. Pydantic models, reviewed by 
 
 ```python
 # --- from the foundation spec, unchanged in meaning ---
-Incident       = { case_id, part_id, qty_required, qty_on_hand, line_stop_at,
-                   line_stop_cost_per_hour, expedite_fee, currency }   # shortfall = required - on_hand, floored at 0
+Incident       = { case_id, part_id, plant_id, production_line, plants:[...],
+                   qty_required, qty_on_hand, needed_by, line_stop_at,
+                   line_stop_cost_per_hour, currency }   # shortfall = required - on_hand, floored at 0
 SupplierRecord = { supplier_id, name, phone (E.164, masked on display), country, locale,
                    part_id, approved, preferred, contract_unit_price: Decimal,
                    standard_lead_days, certification, certification_expires_at,
                    known_allocations, max_historical_fill }
-Claim          = { supplier_id, round, call_id, qty_offered, earliest_ready_text,
-                   price_quoted: yes|no|unknown, unit_price: Decimal|None, currency,
+Claim          = { task_id, case_id, supplier_ref, round, call_id, qty_offered,
+                   earliest_ready_text, price_quoted: yes|no|unknown,
+                   unit_price: Money|None, price_breaks:[...], currency,
                    certification_current: yes|no|unknown, part_number_confirmed: yes|no|unknown,
                    stock_status: free_in_stock|in_stock_allocated|to_be_made|unavailable|unclear,
-                   confidence, evidence:[...] }
+                   transcript:[...], summary, confidence, evidence:[...] }
 
 # --- added by this plan ---
 Part        = { part_id, sku, description, spec:{...}, unit, criticality,
@@ -193,20 +197,50 @@ Candidate   = { case_id, supplier_ref, confidence, why_matched, channel,
 OutreachTask= { task_id, case_id, supplier_ref, channel:"voice"|"email"|"marketplace",
                 brief:{part_spec, qty, needed_by, target_price, floor_price,
                        must_ask:[price_breaks, moq, lead_time, incoterm, cert, stock_status]} }
-PriceBreak  = { min_qty, unit_price: Decimal }
+PriceBreak  = { min_qty, unit_price: Money }
 LandedCost  = { supplier_ref, qty, goods_cost, freight, duty, tooling, carrying_cost,
                 expedite_surcharge, total, unit_effective, breakdown_md }
 OrderLine   = { supplier_ref, qty, mode:"air"|"sea"|"road", eta, landed: LandedCost }
 Strategy    = { lines:[OrderLine], total_cost, coverage_date, risk_score, rationale }
-Decision    = { case_id, strategies:[Strategy], recommended, runner_ups,
-                policy_report_url, cost_report_url, status:"ready"|"approved",
-                approved_at, approved_by }
-Event       = { case_id, ts, actor:"devin"|"calle"|"system", stage, level, message, payload }
+Decision    = { case_id, strategies:[Strategy], recommended_strategy_id, runner_up_ids,
+                rationale_md, policy_report_url, cost_report_url, devin_session_url,
+                decided_at, revision, checks:{policy_passed,cost_model_passed},
+                status:"ready"|"approved", approved_at, approved_by }
+Event       = { seq, case_id, ts, actor:"devin"|"calle"|"system"|"human",
+                stage, level, message, payload }
 ```
 
 **`Claim` does double duty**: it is also CALL-E's `recipient_result_schema` (the spec's "answer sheet"), exported as JSON Schema from the same model. `price_breaks` is added to the answer sheet — the call must ask for tiers, not just one price.
 
-The `Event` log is what makes the UI feel alive *and* makes debugging possible: `GET /cases/{id}/events`, append-only, everything writes to it.
+Every monetary field uses exact `Decimal` arithmetic. Public JSON serializes money as text, such as `"1.6400"` and `"94880.00"`.
+
+The `Event` log is append-only. SQLite assigns each per-Case `seq` once at commit. Reads never merge memory Events or renumber stored Events.
+
+### Public Case contract
+
+The Cockpit uses five public routes. `/flow/*`, `/tools/*`, provider routes, and artifact exports are not Cockpit dependencies.
+
+| Route | Success behavior | Main errors |
+|---|---|---|
+| `POST /cases` | `201`; persists the Incident, runs the configured runner, and returns the PR 22-compatible open receipt | `404` unknown Part; `409` duplicate explicit Case ID; `422` invalid body |
+| `GET /cases` | `200`; returns public summaries, newest first with a stable Case-ID tie-breaker | No Cases returns `[]` |
+| `GET /cases/{case_id}` | `200`; returns one consistent public snapshot and its Event high-water mark | `404` unknown Case |
+| `GET /cases/{case_id}/events?since=N` | `200`; returns committed Events where `seq > N`, ordered by `seq` | `404` unknown Case; `422` invalid cursor |
+| `POST /cases/{case_id}/decision/approve` | `200`; atomically approves one ready, passing revision and appends one human Event | `404` missing Case or Decision; `409` conflict; `422` invalid body |
+
+The default backend runner is deterministic and synchronous. It reads recorded provider results from `apps/api/backend/outreach/fixtures/` and makes no network request. Recorded provider output is the only provider fake. The same defensive normalizer handles recorded and provider output.
+
+A malformed result becomes a confidence-zero Claim. Claims below `0.40` remain auditable, but cannot affect policy, Landed Cost, Strategy, or Decision output. Claims remain separate from trusted Supplier Records at every layer.
+
+Operational state lives in `apps/api/backend/casestore/cases.db` by default. It stores Incident snapshots, Candidates, Outreach Tasks, Claims, Decisions, and Events. Trusted Part, stock, Supplier Record, and company-policy data remains in the ERP adapter's separate SQLite database.
+
+Public routes use explicit safe projections. Public Claims exclude raw provider output, call IDs, provider storage URLs, and notes. Public Supplier Records exclude email and marketplace URLs. Public Decisions and summaries exclude pull-request URLs. Event payload keys are allowlisted, and public free text is recursively scrubbed.
+
+`last_event_seq` comes from the same read transaction as the snapshot. `since` is exclusive. Event cursors remain stable after restart.
+
+A Decision exists in `ready` only after policy and cost checks pass. Approval records `approved_at`, `approved_by`, and one `human` Event in the same transaction. An identical retry is idempotent. Approved is final and never places an order.
+
+CASE-001 produces five Candidates and four Claims. Shenzhen fails only `blocked_origin_country`; Munich Motion reports `in_stock_allocated`. The recommendation orders 6,400 SKF units by air and 25,600 FAG units by sea for `"94880.00"` total.
 
 ---
 
@@ -263,7 +297,7 @@ The prototype enters an existing Session, matching an external ERP link. The sid
 | A5 | **Claim versus Supplier Record** — completed-flow messages keep the separation explicit, while call detail keeps Claim evidence available for audit |
 | A6 | **Decision bar** — borderless and fixed above the composer, with details that expand upward for rationale, runner-ups, and checks. A human marks the Decision approved in SupplyOS; approved is final. No PR card or merge approval |
 
-**Data:** SQLite is the intended operational datastore. This implementation remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
+**Data:** The backend Case path uses SQLite. The current Cockpit remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 
 ### SLICE B — Core API, system of record & seed data
 
@@ -272,7 +306,7 @@ Slice B lives in `apps/api`. Its generated SQLite database remains local and git
 | # | Deliverable |
 |---|---|
 | B1 | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
-| B2 | **Case store + event log** — SQLite behind the case API, `GET /cases/{id}/events`; fixtures stand in for it in the current UI |
+| B2 | **Case store + Event log** — operational SQLite behind the five public Case routes; stable cursors, safe projections, and durable approval; fixtures stand in for it in the current UI |
 | B3 | **Devin tool endpoints** — `/tools/part/{id}`, `/tools/stock`, `/tools/suppliers`, `/tools/price_history`, `/tools/alternates`, `POST /tools/outreach`, `POST /tools/claims`. Boring, fast, documented, stable. |
 | B4 | **Shortage detector** — reorder-point + open-PO-delay scan → launches a Devin session. The "no human in the loop" trigger. *(Step 5 — build last.)* |
 | B5 | **Company profile YAML** — legal entity, country, blocked origin countries, required certs **per part class**, audit requirements, budget thresholds, WACC + warehousing rate for carrying cost |
@@ -282,7 +316,7 @@ Slice B lives in `apps/api`. Its generated SQLite database remains local and git
 ### SLICE C — CALL-E outreach & negotiation
 | # | Deliverable |
 |---|---|
-| C1 | **Rehearsal dispatcher first** — `OutreachTask → Claim` from saved results, with price breaks and random delays. Ships hour 1; B and D develop against it all weekend. |
+| C1 | **Rehearsal dispatcher first** — `OutreachTask → recorded provider result → Claim` through the shared normalizer, with price breaks and zero network access. |
 | C2 | **CALL-E integration** — batch `POST /v1/calls`, our `Claim` JSON Schema as `recipient_result_schema`, `Idempotency-Key`, `metadata.case_id` |
 | C3 | **Webhook receiver** — `/calle/webhook` → normalise `structured_result` + `evidence` + `completion_confidence` + `transcript_turns` → `Claim` → event log. **Never raises** (spec rule): garbage in → confidence-0 claim. Needs a public tunnel (ngrok/cloudflared) — **set it up in hour 1, it's a classic time sink.** |
 | C4 | **The call script** — mandatory AI disclosure first, then the answer-sheet questions **including price-break tiers and the free-vs-allocated stock question**, negotiate within `[target, floor]`, never mention our contract price, confirm numbers back before hanging up |
@@ -361,12 +395,12 @@ Two rules that save hackathons: **record the backup video the first time the hap
 | 1 | **Entire doesn't capture Devin's work** → the panel can't see the thing we're judged on | §7 — resolve in hour 1 by asking the sponsors directly |
 | 2 | **Real distributors don't cooperate on the phone** — IVR, gatekeeper, hangs up on a bot, no sales line | Validate in the **first 3 hours**: one person hand-dials two real distributors for 30 minutes and reports what actually happens. Worth more than any code written in that window. Demo with teammate personas. |
 | 3 | 20-call free tier burns out mid-Saturday | Rehearsal default; one account untouched for the demo |
-| 4 | Tunnel/webhook dies on venue wifi | Polling fallback behind the same interface; `make replay` for the UI |
+| 4 | Tunnel/webhook dies on venue wifi | Recorded provider results behind the same interface; Cockpit Replay for the UI |
 | 5 | Devin's decision looks like a black box | Policy tests + `cost_report.md` + runner-ups; show a **rejected** supplier and the exact rule |
 | 6 | Web search returns garbage suppliers | Curated shortlist of real bearing distributors seeded; free search is bonus, not the path |
 | 7 | Integration hell at hour 20 | Walking skeleton at H3 + the two checkpoints are mandatory |
 | 8 | Foundation-only scope means nothing to grade | §2.6 — Plan 2 is the submission, prioritise Slice D accordingly |
-| 9 | Scope creep into "central ERP brain" | Roadmap slide, not MVP. One part, one plant, one scenario. |
+| 9 | Scope creep into "central ERP brain" | Roadmap slide, not MVP. One part, two plants, one scenario. |
 | 10 | ACU budget spent on debugging | Fixture-driven prompt iteration, fast endpoints, webhooks not polling |
 
 ---
@@ -374,6 +408,5 @@ Two rules that save hackathons: **record the backup video the first time the hap
 ## 10. Open, deliberately deferred
 
 - **Slice ownership** — next conversation, after everyone has read this.
-- **The three conflicts in §2.6** — especially the demo scale. Needs a decision before B1 seed data is written.
 - **Session fan-out** (§2.4b) — decide at hour 14 based on whether the happy path is solid. Don't decide now.
 - **Name** — settled as SupplyOS for every product surface. SupplyGuard remains the planning document's historical working name.

@@ -11,12 +11,16 @@ from __future__ import annotations
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from datetime import datetime
+
 from packages.contracts.models import (
+    Claim,
     Currency,
     ExpediteOption,
     PriceBreak,
     Quote,
 )
+from packages.contracts.safe import claim_from_result
 
 
 def _decimal(value: Any) -> Decimal | None:
@@ -123,3 +127,35 @@ def normalize_result(
         confidence=_confidence(payload.get("completion_confidence") if isinstance(payload, dict) else 0.0),
         raw=payload if isinstance(payload, dict) else {},
     )
+
+
+def normalize_claim_result(
+    *,
+    task_id: str,
+    case_id: str,
+    supplier_ref: str,
+    payload: Any,
+    received_at: datetime,
+    round_: int = 1,
+) -> Claim:
+    """Convert any provider envelope through the shared never-raises normalizer."""
+    envelope = payload if isinstance(payload, dict) else {}
+    structured = envelope.get("structured_result")
+    result = dict(structured) if isinstance(structured, dict) else {}
+
+    confidence = envelope.get("completion_confidence")
+    if isinstance(confidence, dict):
+        confidence = confidence.get("score")
+    result["confidence"] = confidence
+    result["summary"] = envelope.get("summary")
+    result["transcript"] = envelope.get("transcript_turns")
+    result["evidence"] = envelope.get("evidence")
+
+    claim = claim_from_result(
+        result,
+        task_id=task_id,
+        case_id=case_id,
+        supplier_ref=supplier_ref,
+        round_=round_,
+    )
+    return claim.model_copy(update={"raw": envelope, "received_at": received_at})

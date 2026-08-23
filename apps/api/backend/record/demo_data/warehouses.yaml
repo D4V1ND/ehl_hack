@@ -11,3 +11,9 @@
   city: Leipzig
   country: DE
   production_lines: [ASSY-1]
+- warehouse: Stores - STR
+  plant_id: PLANT-STR
+  plant_name: Meridian Motors Stuttgart
+  city: Stuttgart
+  country: DE
+  production_lines: [ASSY-7]

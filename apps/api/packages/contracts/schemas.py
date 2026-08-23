@@ -56,18 +56,18 @@ def quote_result_schema() -> dict:
             "stock_status": {
                 "type": "string",
                 "enum": [
-                    "on_hand_unallocated",
-                    "on_hand_allocated",
-                    "in_production",
-                    "not_available",
-                    "unknown",
+                    "free_in_stock",
+                    "in_stock_allocated",
+                    "to_be_made",
+                    "unavailable",
+                    "unclear",
                 ],
                 "description": (
                     "the most important answer: physically in stock and free "
-                    "(on_hand_unallocated), in stock but already promised to "
-                    "another customer (on_hand_allocated), still to be made "
-                    "(in_production), cannot supply (not_available), or they "
-                    "did not say (unknown)"
+                    "(free_in_stock), in stock but already promised to "
+                    "another customer (in_stock_allocated), still to be made "
+                    "(to_be_made), cannot supply (unavailable), or they "
+                    "did not say (unclear)"
                 ),
             },
             "earliest_ready_text": {

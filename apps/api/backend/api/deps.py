@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from backend.api.settings import Settings, get_settings
+from backend.cases.module import CaseModule
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore, get_case_store
 
@@ -35,6 +36,11 @@ def erp() -> SystemOfRecord:
 
 def store() -> CaseStore:
     return get_case_store()
+
+
+def case_module() -> CaseModule:
+    config = get_settings()
+    return CaseModule(records=erp(), database_path=config.case_database_path)
 
 
 def settings() -> Settings:

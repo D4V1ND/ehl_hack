@@ -1,41 +1,111 @@
-"""The split-order search on CASE-001.
+"""The provider-backed Strategy for CASE-001.
 
-The seed data guarantees no single compliant supplier can both cover 36 000
-pieces and beat the line stop. These tests assert the search finds the bridge
-plan, that it beats the plan a hurried buyer would write, and that feasibility is
-decided by simulating the line rather than by comparing one date.
+The trusted Incident is 40,000 required minus 8,000 on hand. Four recorded
+Claims remain auditable, but only eligible stock may shape the 32,000-piece
+recommendation. Feasibility is still verified by simulating the line.
 """
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 import pytest
 
-from packages.contracts.models import Claim
-from packages.contracts.enums import StockStatus
+from packages.contracts.models import OutreachBrief, OutreachTask
 from backend.cost.strategy import Option, StrategyBuilder, round_up_lot, simulate
+from backend.decide.run import DECISION_CONFIDENCE_THRESHOLD, build_recorded_decision
+from backend.outreach.normalize import normalize_claim_result
+from backend.outreach.recorded import RecordedOutreachAdapter
 from backend.policy.screen import screen
 
 CASE = "CASE-001"
 PART = "PRT-6204"
 TODAY = date(2026, 8, 22)
-TAKE_RATE = 350
+TAKE_RATE = 640
+NOW = datetime(2026, 8, 22, 9, 0, tzinfo=timezone.utc)
 
 
 @pytest.fixture
-def compliant(erp):
+def candidates(erp):
     part = erp.get_part(PART)
-    board = screen(
+    return screen(
         case_id=CASE,
         suppliers=erp.get_suppliers_for_part(PART),
         part=part,
         profile=erp.get_company_profile(),
         today=TODAY,
     )
-    cleared = {c.supplier_ref for c in board if c.compliance.passed}
-    return [s for s in erp.get_suppliers_for_part(PART) if s.supplier_id in cleared]
+
+
+@pytest.fixture
+def compliant(erp, candidates):
+    cleared = {candidate.supplier_ref for candidate in candidates if candidate.compliance.passed}
+    return [
+        supplier
+        for supplier in erp.get_suppliers_for_part(PART)
+        if supplier.supplier_id in cleared
+    ]
+
+
+@pytest.fixture
+def recorded_claims(erp, candidates):
+    incident = erp.get_incident(CASE)
+    tasks = [
+        OutreachTask(
+            task_id=f"OUT-{candidate.supplier_ref}",
+            case_id=CASE,
+            supplier_ref=candidate.supplier_ref,
+            channel=candidate.channel,
+            brief=OutreachBrief(
+                part_spec="6204-2RS DIN 625",
+                qty=incident.shortfall,
+                needed_by=incident.needed_by,
+            ),
+        )
+        for candidate in candidates
+        if candidate.compliance.passed
+    ]
+    return [
+        normalize_claim_result(
+            task_id=result.task_id,
+            case_id=result.case_id,
+            supplier_ref=result.supplier_ref,
+            payload=result.payload,
+            received_at=NOW,
+        )
+        for result in RecordedOutreachAdapter().dispatch(tasks)
+    ]
+
+
+@pytest.fixture
+def decision(erp, candidates, recorded_claims):
+    incident = erp.get_incident(CASE)
+    suppliers = erp.get_suppliers_for_part(PART)
+    eligible_claims = {
+        claim.supplier_ref: claim
+        for claim in recorded_claims
+        if claim.confidence >= DECISION_CONFIDENCE_THRESHOLD
+    }
+    checked_candidates = screen(
+        case_id=CASE,
+        suppliers=suppliers,
+        part=erp.get_part(PART),
+        profile=erp.get_company_profile(),
+        today=TODAY,
+        claims=eligible_claims,
+    )
+    return build_recorded_decision(
+        case_id=CASE,
+        incident=incident,
+        part=erp.get_part(PART),
+        profile=erp.get_company_profile(),
+        suppliers=suppliers,
+        candidates=checked_candidates,
+        claims=recorded_claims,
+        today=TODAY,
+        decided_at=NOW,
+    )
 
 
 @pytest.fixture
@@ -51,25 +121,25 @@ def builder(erp, compliant):
 
 
 def test_simulation_catches_a_line_that_runs_dry_before_the_bulk_lands():
-    """4 200 on hand at 350/day is exactly 12 days. A day-21 delivery is too late."""
+    """8,000 on hand cannot reach a day-21 bulk delivery without the bridge."""
     runs, coverage = simulate(
-        arrivals=[(date(2026, 9, 12), 36000)],
-        qty_on_hand=4200,
+        arrivals=[(date(2026, 9, 12), 32000)],
+        qty_on_hand=8000,
         daily_consumption=TAKE_RATE,
         start=TODAY,
-        qty_required=36000,
+        qty_required=32000,
     )
     assert not runs
     assert coverage == date(2026, 9, 12)
 
     runs, _ = simulate(
-        arrivals=[(date(2026, 9, 1), 4000), (date(2026, 9, 12), 32000)],
-        qty_on_hand=4200,
+        arrivals=[(date(2026, 9, 1), 6400), (date(2026, 9, 12), 25600)],
+        qty_on_hand=8000,
         daily_consumption=TAKE_RATE,
         start=TODAY,
-        qty_required=36000,
+        qty_required=32000,
     )
-    assert runs, "a 4 000-piece bridge carries the line to the cheap shipment"
+    assert runs, "the 6,400-piece bridge carries the line to the bulk shipment"
 
 
 def test_lots_are_rounded_up_because_nobody_orders_4137_pieces():
@@ -77,93 +147,65 @@ def test_lots_are_rounded_up_because_nobody_orders_4137_pieces():
     assert round_up_lot(4000) == 4000
 
 
-def test_the_recommended_plan_is_a_split_that_keeps_the_line_running(builder):
-    plans = builder.build()
-    assert plans, "the search found nothing to recommend"
-
-    best = plans[0]
+def test_the_recommended_plan_is_the_approved_provider_backed_split(decision):
+    assert decision.checks.policy_passed
+    assert decision.checks.cost_model_passed
+    best = decision.strategies[0]
     assert best.meets_line_stop
-    assert len(best.lines) >= 2, "a single source cannot solve this case"
-    assert sum(line.qty for line in best.lines) == 36000
+    assert [
+        (line.supplier_ref, line.qty, line.mode.value)
+        for line in best.lines
+    ] == [("SUP-SKF", 6400, "air"), ("SUP-FAG", 25600, "sea")]
+    assert sum(line.qty for line in best.lines) == 32000
+    assert best.total_cost == Decimal("94880.00")
 
 
-def test_the_bridge_plan_beats_the_obvious_split(builder):
-    """The demo's punchline, as a test.
-
-    The obvious plan takes every fast piece on offer and pays a premium on stock
-    that was not needed early. The bridge plan buys only the days it needs.
-    """
-    plans = builder.build()
-    best = plans[0]
-    obvious = next(
-        (p for p in plans if p.label.startswith("Split: everything the fast suppliers")), None
-    )
-    assert obvious is not None, "the naive plan should still be priced for comparison"
-    assert obvious.meets_line_stop, "the naive plan is feasible; it is just expensive"
-
-    saving = (obvious.total_cost - best.total_cost) / obvious.total_cost
-    assert saving > Decimal("0.08"), f"expected >8% better than the naive split, got {saving:.1%}"
+def test_all_four_claims_stay_auditable_while_only_eligible_stock_is_used(
+    decision, recorded_claims
+):
+    assert {claim.supplier_ref for claim in recorded_claims} == {
+        "SUP-SKF",
+        "SUP-FAG",
+        "SUP-NSK",
+        "SUP-MUN",
+    }
+    used = {line.supplier_ref for line in decision.strategies[0].lines}
+    assert used == {"SUP-SKF", "SUP-FAG"}
 
 
-def test_the_cheapest_source_alone_is_ranked_below_any_feasible_plan(builder):
-    """Cheapest landed cost is not the answer if the line stops."""
-    plans = builder.build()
-    rul_alone = next(
-        p
-        for p in plans
-        if len(p.lines) == 1
-        and p.lines[0].supplier_ref == "SUP-RUL"
-        and p.lines[0].mode.value == "road"
-    )
-    assert not rul_alone.meets_line_stop
-    assert rul_alone.total_cost < plans[0].total_cost, "it really is the cheapest cash outlay"
-    assert plans.index(rul_alone) > 0, "and it is still not the recommendation"
+def test_a_low_confidence_bargain_cannot_influence_the_strategy(
+    decision, recorded_claims
+):
+    nsk = next(claim for claim in recorded_claims if claim.supplier_ref == "SUP-NSK")
+    assert nsk.unit_price == Decimal("0.5000")
+    assert nsk.confidence < DECISION_CONFIDENCE_THRESHOLD
+    assert "SUP-NSK" not in {
+        line.supplier_ref for line in decision.strategies[0].lines
+    }
 
 
-def test_downtime_is_priced_so_freight_can_be_worth_it(builder, erp):
-    """Nine days of a stopped ASSY-3 dwarfs any freight bill on this case."""
-    exposure = builder.downtime_cost([(date(2026, 9, 12), 36000)])
-    assert exposure == Decimal("18400.00") * 24 * 9
+def test_downtime_is_priced_so_freight_can_be_worth_it(builder, decision):
+    """Nine days of stopped ASSY-3 production dwarfs the procurement cost."""
+    exposure = builder.downtime_cost([(date(2026, 9, 12), 32000)])
+    assert exposure == Decimal("4000.00") * 24 * 9
 
-    plans = builder.build()
-    assert plans[0].total_cost < exposure, "the whole order costs less than the downtime"
+    assert decision.strategies[0].total_cost < exposure
 
 
-def test_every_plan_reports_its_own_rationale_and_risk(builder):
-    for plan in builder.build():
+def test_every_plan_reports_its_own_rationale_and_risk(decision):
+    for plan in decision.strategies:
         assert plan.rationale.endswith(".")
         assert 0.0 <= plan.risk_score <= 1.0
         assert plan.coverage_date >= TODAY
 
 
-def test_an_allocated_claim_shrinks_the_plan_it_can_appear_in(erp, compliant):
-    """The incumbent says on the phone that only 2 000 are actually free.
-
-    Its own file allows 12 000, so a plan built on the file could lean on it. The
-    claim caps every line it appears in at what was really offered.
-    """
-    allocated = Claim(
-        task_id="T-9",
-        case_id=CASE,
-        supplier_ref="SUP-KBY",
-        available=True,
-        qty_offered=2000,
-        stock_status=StockStatus.IN_STOCK_ALLOCATED,
-        lead_time_days=10,
-        confidence=0.85,
+def test_allocated_munich_stock_cannot_appear_in_the_strategy(
+    decision, recorded_claims
+):
+    munich = next(
+        claim for claim in recorded_claims if claim.supplier_ref == "SUP-MUN"
     )
-    builder = StrategyBuilder(
-        incident=erp.get_incident(CASE),
-        part=erp.get_part(PART),
-        profile=erp.get_company_profile(),
-        options=[
-            Option(supplier=s, claim=allocated if s.supplier_id == "SUP-KBY" else None)
-            for s in compliant
-        ],
-        daily_consumption=TAKE_RATE,
-        today=TODAY,
-    )
-    for plan in builder.build():
-        for line in plan.lines:
-            if line.supplier_ref == "SUP-KBY":
-                assert line.qty <= 2000, "planned more than the supplier actually offered"
+    assert munich.stock_status.value == "in_stock_allocated"
+    assert "SUP-MUN" not in {
+        line.supplier_ref for line in decision.strategies[0].lines
+    }

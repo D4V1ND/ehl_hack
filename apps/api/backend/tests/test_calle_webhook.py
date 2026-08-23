@@ -90,19 +90,16 @@ def test_an_unreadable_delivery_is_acknowledged_and_dropped(client):
     assert client.get("/tools/quotes", params={"case_id": CASE}).json() == []
 
 
-def test_the_answer_shows_up_in_the_one_event_feed(client):
-    client.post("/calle/webhook", json=result(0, unit_price="1.85"))
+def test_a_webhook_cannot_create_a_public_case_or_event_fallback(client):
+    """Legacy CALL-E state stays internal until a Case runner persists it."""
 
-    events = client.get(f"/cases/{CASE}/events").json()
-    landed = [e for e in events if e["payload"].get("task_id") == "OUT-1"]
-    assert landed, "the cockpit feed should show the answer arriving"
-    assert landed[0]["actor"] == "calle"
+    cases_before = client.get("/cases").json()
+    response = client.post("/calle/webhook", json=result(0, unit_price="1.85"))
+    assert response.json() == {"ok": True, "stored": True}
 
-    # The feed names the company, not our internal id -- somebody is watching it.
-    name = next(
-        s["supplier_name"]
-        for s in client.get("/tools/suppliers", params={"part_id": "PRT-6204"}).json()
-        if s["supplier_id"] == "SUP-KBY"
-    )
-    assert name in landed[0]["message"]
-    assert "SUP-KBY" not in landed[0]["message"]
+    missing_events = client.get(f"/cases/{CASE}/events")
+    assert missing_events.status_code == 404
+    assert client.get("/cases").json() == cases_before
+
+    quotes = client.get("/tools/quotes", params={"case_id": CASE}).json()
+    assert [quote["task_id"] for quote in quotes] == ["OUT-1"]

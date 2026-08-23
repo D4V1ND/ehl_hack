@@ -125,7 +125,8 @@ CREATE TABLE tabIncident (
     line_stop_cost_per_hour  TEXT NOT NULL,
     currency                 TEXT NOT NULL DEFAULT 'EUR',
     incumbent_supplier_id    TEXT REFERENCES tabSupplier(supplier_id),
-    reason                   TEXT NOT NULL DEFAULT ''
+    reason                   TEXT NOT NULL DEFAULT '',
+    plants_json              TEXT NOT NULL DEFAULT '[]'
 );
 
 CREATE TABLE tabBOM (
