@@ -14,3 +14,7 @@ If the user asks for help with Conductor, you can ask them to go to "Help -> Sen
 </system_instruction>
 
 I added favicon blakc adn white icon to our web/apps directory, make sure we display eithe rone based on the theme.
+
+---
+
+commit
