@@ -21,6 +21,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date
 
+from backend import plan
 from backend.casestore.case_store import CaseStore
 from backend.decide.run import DecisionOutcome, run as decide
 from backend.flow.claims import claim_from_quote
@@ -29,7 +30,7 @@ from backend.outreach.router import route_channel
 from backend.policy.screen import screen
 from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
-from packages.contracts.enums import Actor, Level, Stage
+from packages.contracts.enums import Actor, Level, PlanGroup, Stage, StepStatus
 from packages.contracts.models import (
     Candidate,
     Claim,
@@ -38,6 +39,34 @@ from packages.contracts.models import (
     OutreachTask,
     Part,
 )
+
+
+def _tick(
+    cases: CaseStore,
+    case_id: str,
+    step_id: str,
+    status: StepStatus,
+    *,
+    detail: str | None = None,
+    label: str | None = None,
+    group: PlanGroup | None = None,
+    supplier_ref: str | None = None,
+) -> None:
+    """Move the checklist along.
+
+    The deterministic run has to tick the same list a Devin session does, or the
+    recorded demo and the live one would show different screens.
+    """
+    plan.upsert(
+        case_id,
+        cases,
+        step_id=step_id,
+        status=status,
+        detail=detail,
+        label=label,
+        group=group,
+        supplier_ref=supplier_ref,
+    )
 
 
 @dataclass(frozen=True)
@@ -86,8 +115,17 @@ def run_case(
         raise ValueError(f"no part {incident.part_id}")
 
     notes: list[str] = []
+    plan.seed(case_id, cases)  # a case run by hand has no checklist yet
 
     # 1. What our own records say about the shortage and the part.
+    _tick(cases, case_id, "intake:incident", StepStatus.DONE, detail=incident.reason or None)
+    for step_id, detail in (
+        ("erp:part", f"{part.item_code}, {part.weight_kg} kg, HS {part.hs_code}"),
+        ("erp:stock", f"{incident.qty_on_hand:,} on hand at {incident.plant_id}"),
+        ("erp:open_pos", incident.reason or "no delivery scheduled in time"),
+        ("erp:price_history", "what we paid before, by quarter"),
+    ):
+        _tick(cases, case_id, step_id, StepStatus.DONE, detail=detail)
     cases.append_event(
         case_id,
         actor=Actor.DEVIN,
@@ -108,10 +146,19 @@ def run_case(
     )
 
     # 2. Who we are allowed to buy from, and why not the others.
+    registered = records.get_suppliers_for_part(incident.part_id)
+    _tick(
+        cases,
+        case_id,
+        "suppliers:list",
+        StepStatus.DONE,
+        detail=f"{len(registered)} approved for {part.item_code}",
+    )
+    _tick(cases, case_id, "screening:policy", StepStatus.ACTIVE)
     claims_before = {c.supplier_ref: c for c in cases.read_claims(case_id)}
     candidates = screen(
         case_id=case_id,
-        suppliers=records.get_suppliers_for_part(incident.part_id),
+        suppliers=registered,
         part=part,
         profile=records.get_company_profile(),
         today=today,
@@ -120,6 +167,20 @@ def run_case(
     cases.write_candidates(case_id, candidates)
     for candidate in candidates:
         rejected = not candidate.compliance.passed
+        _tick(
+            cases,
+            case_id,
+            plan.supplier_step_id(PlanGroup.SCREENING, candidate.supplier_ref),
+            StepStatus.FAILED if rejected else StepStatus.DONE,
+            label=f"Screening {candidate.supplier_name}",
+            group=PlanGroup.SCREENING,
+            supplier_ref=candidate.supplier_ref,
+            detail=(
+                "; ".join(candidate.compliance.explanations.values())
+                if rejected
+                else "cleared policy"
+            ),
+        )
         cases.append_event(
             case_id,
             actor=Actor.DEVIN,
@@ -141,6 +202,20 @@ def run_case(
         )
 
     compliant = [c for c in candidates if c.compliance.passed]
+    _tick(
+        cases,
+        case_id,
+        "screening:policy",
+        StepStatus.DONE,
+        detail=f"{len(compliant)} of {len(candidates)} cleared",
+    )
+    _tick(
+        cases,
+        case_id,
+        "outreach:brief",
+        StepStatus.DONE,
+        detail=f"{incident.qty_required:,} pcs by {incident.needed_by}",
+    )
     cases.append_event(
         case_id,
         actor=Actor.DEVIN,
@@ -155,6 +230,18 @@ def run_case(
     # 3. Ask them. One supplier can be held back for a live call.
     tasks: list[OutreachTask] = []
     for candidate in compliant:
+        # Every compliant supplier gets a line before any of them is called, so
+        # the screen shows the fan-out starting together.
+        _tick(
+            cases,
+            case_id,
+            plan.supplier_step_id(PlanGroup.OUTREACH, candidate.supplier_ref),
+            StepStatus.ACTIVE,
+            label=f"Calling {candidate.supplier_name}",
+            group=PlanGroup.OUTREACH,
+            supplier_ref=candidate.supplier_ref,
+            detail="holding for the live call" if candidate.supplier_ref == hold_for else None,
+        )
         if candidate.supplier_ref == hold_for:
             continue
         tasks.append(_task(incident, part, candidate.supplier_ref, candidate.country))
@@ -189,6 +276,17 @@ def run_case(
         )
         cases.write_claim(claim)
         filed.append(claim)
+        _tick(
+            cases,
+            case_id,
+            plan.supplier_step_id(PlanGroup.OUTREACH, task.supplier_ref),
+            StepStatus.DONE,
+            supplier_ref=task.supplier_ref,
+            detail=(
+                f"{claim.stock_status.value}, {claim.qty_offered:,} pcs"
+                + (f" at EUR {claim.unit_price}" if claim.unit_price is not None else "")
+            ),
+        )
         cases.append_event(
             case_id,
             actor=Actor.CALLE,
@@ -210,7 +308,33 @@ def run_case(
         )
 
     # 4. Price every plan and write the review package.
+    _tick(
+        cases,
+        case_id,
+        "claims:normalise",
+        StepStatus.DONE,
+        detail=f"{len(filed)} answers turned into claims",
+    )
+    _tick(cases, case_id, "costing:landed", StepStatus.ACTIVE)
     outcome = decide(case_id=case_id, records=records, cases=cases, today=today)
+    _tick(
+        cases,
+        case_id,
+        "costing:landed",
+        StepStatus.DONE,
+        detail=f"{len(outcome.strategies)} plans priced",
+    )
+    _tick(
+        cases,
+        case_id,
+        "review:package",
+        StepStatus.DONE,
+        detail=(
+            f"recommended {outcome.recommended.strategy_id}"
+            if outcome.recommended is not None
+            else "no plan keeps the line running"
+        ),
+    )
     if outcome.recommended is None:
         notes.append("no plan keeps the line running; a buyer has to intervene")
 

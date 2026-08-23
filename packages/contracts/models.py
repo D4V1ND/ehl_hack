@@ -31,8 +31,10 @@ from packages.contracts.enums import (
     FreightMode,
     Level,
     PartClass,
+    PlanGroup,
     PolicyRule,
     Stage,
+    StepStatus,
     StockStatus,
 )
 from packages.contracts.money import Money
@@ -456,3 +458,65 @@ class CaseSnapshot(Contract):
     decision: Decision | None = None
     devin_session_url: str | None = None
     last_event_seq: int = 0
+
+
+# ---------------------------------------------------------------------------
+# The checklist. What the agent is doing, as a to-do list a human can watch.
+# ---------------------------------------------------------------------------
+
+
+class PlanStep(Contract):
+    """One line on the checklist.
+
+    `step_id` is stable and chosen by whoever creates the step, so the same call
+    made twice updates one line instead of appending a second one. Fixed steps
+    use the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by
+    their group, e.g. `outreach:SUP-KBY`.
+    """
+
+    step_id: str
+    case_id: str
+    group: PlanGroup
+    label: str
+    status: StepStatus = StepStatus.PENDING
+    detail: str | None = Field(default=None, description="One line under the label. Optional.")
+    supplier_ref: str | None = Field(default=None, description="Set on per-supplier steps")
+    dynamic: bool = Field(default=False, description="Created during the run, not seeded")
+    seq: int = Field(default=0, description="Order within the group")
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+
+
+class PlanSection(Contract):
+    """A fixed header plus its steps. Status is derived from the steps."""
+
+    group: PlanGroup
+    label: str
+    status: StepStatus
+    steps: list[PlanStep] = Field(default_factory=list)
+
+
+class CasePlan(Contract):
+    """The whole checklist for a case, ready to render."""
+
+    case_id: str
+    sections: list[PlanSection] = Field(default_factory=list)
+    active_step_id: str | None = None
+    updated_at: datetime | None = None
+    done: int = 0
+    total: int = 0
+
+
+class PlanStepUpdate(Contract):
+    """One transition, as posted to `/tools/plan/steps`.
+
+    `label` and `group` are optional only for a step that already exists; a new
+    id without them is a 422 rather than an unlabelled line on the screen.
+    """
+
+    step_id: str
+    status: StepStatus
+    label: str | None = None
+    group: PlanGroup | None = None
+    detail: str | None = None
+    supplier_ref: str | None = None

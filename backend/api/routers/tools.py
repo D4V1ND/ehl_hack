@@ -10,12 +10,13 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from backend.api.deps import erp, settings, store
-from packages.contracts.enums import Actor, Level, Stage
+from packages.contracts.enums import Actor, Level, PlanGroup, Stage, StepStatus
 from packages.contracts.models import (
     Candidate,
+    CasePlan,
     Channel,
     Claim,
     Event,
@@ -24,11 +25,14 @@ from packages.contracts.models import (
     OutreachBrief,
     OutreachTask,
     Part,
+    PlanStep,
+    PlanStepUpdate,
     StockLevel,
     SupplierPriceRecord,
     SupplierRecord,
 )
 from packages.contracts.safe import claim_from_result
+from backend import plan
 from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
@@ -234,3 +238,113 @@ def post_event(
     return cases.append_event(
         case_id, actor=actor, stage=stage, message=message, level=level, payload=payload
     )
+
+
+# ---------------------------------------------------------------------------
+# The checklist. The cockpit renders this as a to-do list, so a step that is
+# never ticked reads as "the agent is stuck there" — which is the point.
+# ---------------------------------------------------------------------------
+
+
+PLAN_STAGE: dict[PlanGroup, Stage] = {
+    PlanGroup.INTAKE: Stage.DETECTED,
+    PlanGroup.ERP: Stage.RESEARCHING,
+    PlanGroup.SUPPLIERS: Stage.RESEARCHING,
+    PlanGroup.SCREENING: Stage.RESEARCHING,
+    PlanGroup.OUTREACH: Stage.CALLING,
+    PlanGroup.CLAIMS: Stage.CALLING,
+    PlanGroup.COSTING: Stage.COSTING,
+    PlanGroup.REVIEW: Stage.DECIDED,
+}
+
+
+def _narrate(cases: CaseStore, step: PlanStep) -> None:
+    """A checklist move is also a line in the event log; the two never disagree."""
+    verb = {
+        StepStatus.ACTIVE: "started",
+        StepStatus.DONE: "finished",
+        StepStatus.FAILED: "failed",
+        StepStatus.SKIPPED: "skipped",
+        StepStatus.PENDING: "queued",
+    }[step.status]
+    cases.append_event(
+        step.case_id,
+        actor=Actor.DEVIN,
+        stage=PLAN_STAGE[step.group],
+        level=Level.ERROR if step.status is StepStatus.FAILED else Level.INFO,
+        message=f"{verb}: {step.label}" + (f" — {step.detail}" if step.detail else ""),
+        payload={"step_id": step.step_id, "status": step.status.value, "plan": True},
+    )
+
+
+@router.get("/plan", response_model=CasePlan, summary="The checklist for a case")
+def get_plan(case_id: str = Query(...), cases: CaseStore = Depends(store)) -> CasePlan:
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    return plan.read(case_id, cases)
+
+
+@router.post("/plan/step", response_model=CasePlan, summary="Tick off or start one checklist step")
+def post_plan_step(
+    case_id: str = Query(...),
+    step_id: str = Query(..., description="Seeded id, or a new one like outreach:SUP-KBY"),
+    status: StepStatus = Query(...),
+    label: str | None = Query(default=None, description="Required when the step is new"),
+    group: PlanGroup | None = Query(default=None, description="Required when the step is new"),
+    detail: str | None = Query(default=None),
+    supplier_ref: str | None = Query(default=None),
+    cases: CaseStore = Depends(store),
+) -> CasePlan:
+    """One HTTP call per step transition, which is all an agent should have to do.
+
+    New ids are allowed on purpose: how many suppliers get researched or called is
+    the agent's decision, and the frontend finds out by them appearing here.
+    """
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    try:
+        step = plan.upsert(
+            case_id,
+            cases,
+            step_id=step_id,
+            group=group,
+            label=label,
+            status=status,
+            detail=detail,
+            supplier_ref=supplier_ref,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    _narrate(cases, step)
+    return plan.read(case_id, cases)
+
+
+@router.post("/plan/steps", response_model=CasePlan, summary="Announce several steps at once")
+def post_plan_steps(
+    case_id: str = Query(...),
+    steps: list[PlanStepUpdate] = Body(...),
+    cases: CaseStore = Depends(store),
+) -> CasePlan:
+    """The fan-out door: five suppliers being called in parallel is one request.
+
+    They all appear on the checklist in the same poll, so the UI can show them
+    starting together instead of trickling in.
+    """
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    for update in steps:
+        try:
+            step = plan.upsert(
+                case_id,
+                cases,
+                step_id=update.step_id,
+                group=update.group,
+                label=update.label,
+                status=update.status,
+                detail=update.detail,
+                supplier_ref=update.supplier_ref,
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        _narrate(cases, step)
+    return plan.read(case_id, cases)

@@ -108,6 +108,219 @@
     "title": "Candidate",
     "type": "object"
   },
+  "CasePlan": {
+    "$defs": {
+      "PlanGroup": {
+        "description": "The rigid headers of the checklist.\n\nThese never change and never depend on the part, so the frontend can lay the\nscreen out before a case exists. Everything variable \u2014 which suppliers get\nresearched, who gets called \u2014 is a step *inside* one of these.",
+        "enum": [
+          "intake",
+          "erp",
+          "suppliers",
+          "screening",
+          "outreach",
+          "claims",
+          "costing",
+          "review"
+        ],
+        "title": "PlanGroup",
+        "type": "string"
+      },
+      "PlanSection": {
+        "additionalProperties": false,
+        "description": "A fixed header plus its steps. Status is derived from the steps.",
+        "properties": {
+          "group": {
+            "$ref": "#/$defs/PlanGroup"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/$defs/StepStatus"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/$defs/PlanStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "group",
+          "label",
+          "status"
+        ],
+        "title": "PlanSection",
+        "type": "object"
+      },
+      "PlanStep": {
+        "additionalProperties": false,
+        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+        "properties": {
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "group": {
+            "$ref": "#/$defs/PlanGroup"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/$defs/StepStatus",
+            "default": "pending"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "One line under the label. Optional.",
+            "title": "Detail"
+          },
+          "supplier_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Set on per-supplier steps",
+            "title": "Supplier Ref"
+          },
+          "dynamic": {
+            "default": false,
+            "description": "Created during the run, not seeded",
+            "title": "Dynamic",
+            "type": "boolean"
+          },
+          "seq": {
+            "default": 0,
+            "description": "Order within the group",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Completed At"
+          }
+        },
+        "required": [
+          "step_id",
+          "case_id",
+          "group",
+          "label"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      },
+      "StepStatus": {
+        "description": "Where a checklist step is. `ACTIVE` is what the cockpit animates.",
+        "enum": [
+          "pending",
+          "active",
+          "done",
+          "failed",
+          "skipped"
+        ],
+        "title": "StepStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The whole checklist for a case, ready to render.",
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "sections": {
+        "items": {
+          "$ref": "#/$defs/PlanSection"
+        },
+        "title": "Sections",
+        "type": "array"
+      },
+      "active_step_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Active Step Id"
+      },
+      "updated_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Updated At"
+      },
+      "done": {
+        "default": 0,
+        "title": "Done",
+        "type": "integer"
+      },
+      "total": {
+        "default": 0,
+        "title": "Total",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "case_id"
+    ],
+    "title": "CasePlan",
+    "type": "object"
+  },
   "CaseSnapshot": {
     "$defs": {
       "Answer": {
@@ -3314,6 +3527,383 @@
       "standard_cost"
     ],
     "title": "Part",
+    "type": "object"
+  },
+  "PlanSection": {
+    "$defs": {
+      "PlanGroup": {
+        "description": "The rigid headers of the checklist.\n\nThese never change and never depend on the part, so the frontend can lay the\nscreen out before a case exists. Everything variable \u2014 which suppliers get\nresearched, who gets called \u2014 is a step *inside* one of these.",
+        "enum": [
+          "intake",
+          "erp",
+          "suppliers",
+          "screening",
+          "outreach",
+          "claims",
+          "costing",
+          "review"
+        ],
+        "title": "PlanGroup",
+        "type": "string"
+      },
+      "PlanStep": {
+        "additionalProperties": false,
+        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+        "properties": {
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "group": {
+            "$ref": "#/$defs/PlanGroup"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/$defs/StepStatus",
+            "default": "pending"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "One line under the label. Optional.",
+            "title": "Detail"
+          },
+          "supplier_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Set on per-supplier steps",
+            "title": "Supplier Ref"
+          },
+          "dynamic": {
+            "default": false,
+            "description": "Created during the run, not seeded",
+            "title": "Dynamic",
+            "type": "boolean"
+          },
+          "seq": {
+            "default": 0,
+            "description": "Order within the group",
+            "title": "Seq",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Completed At"
+          }
+        },
+        "required": [
+          "step_id",
+          "case_id",
+          "group",
+          "label"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      },
+      "StepStatus": {
+        "description": "Where a checklist step is. `ACTIVE` is what the cockpit animates.",
+        "enum": [
+          "pending",
+          "active",
+          "done",
+          "failed",
+          "skipped"
+        ],
+        "title": "StepStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "A fixed header plus its steps. Status is derived from the steps.",
+    "properties": {
+      "group": {
+        "$ref": "#/$defs/PlanGroup"
+      },
+      "label": {
+        "title": "Label",
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/$defs/StepStatus"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "title": "Steps",
+        "type": "array"
+      }
+    },
+    "required": [
+      "group",
+      "label",
+      "status"
+    ],
+    "title": "PlanSection",
+    "type": "object"
+  },
+  "PlanStep": {
+    "$defs": {
+      "PlanGroup": {
+        "description": "The rigid headers of the checklist.\n\nThese never change and never depend on the part, so the frontend can lay the\nscreen out before a case exists. Everything variable \u2014 which suppliers get\nresearched, who gets called \u2014 is a step *inside* one of these.",
+        "enum": [
+          "intake",
+          "erp",
+          "suppliers",
+          "screening",
+          "outreach",
+          "claims",
+          "costing",
+          "review"
+        ],
+        "title": "PlanGroup",
+        "type": "string"
+      },
+      "StepStatus": {
+        "description": "Where a checklist step is. `ACTIVE` is what the cockpit animates.",
+        "enum": [
+          "pending",
+          "active",
+          "done",
+          "failed",
+          "skipped"
+        ],
+        "title": "StepStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+    "properties": {
+      "step_id": {
+        "title": "Step Id",
+        "type": "string"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "group": {
+        "$ref": "#/$defs/PlanGroup"
+      },
+      "label": {
+        "title": "Label",
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/$defs/StepStatus",
+        "default": "pending"
+      },
+      "detail": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "One line under the label. Optional.",
+        "title": "Detail"
+      },
+      "supplier_ref": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Set on per-supplier steps",
+        "title": "Supplier Ref"
+      },
+      "dynamic": {
+        "default": false,
+        "description": "Created during the run, not seeded",
+        "title": "Dynamic",
+        "type": "boolean"
+      },
+      "seq": {
+        "default": 0,
+        "description": "Order within the group",
+        "title": "Seq",
+        "type": "integer"
+      },
+      "started_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Started At"
+      },
+      "completed_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Completed At"
+      }
+    },
+    "required": [
+      "step_id",
+      "case_id",
+      "group",
+      "label"
+    ],
+    "title": "PlanStep",
+    "type": "object"
+  },
+  "PlanStepUpdate": {
+    "$defs": {
+      "PlanGroup": {
+        "description": "The rigid headers of the checklist.\n\nThese never change and never depend on the part, so the frontend can lay the\nscreen out before a case exists. Everything variable \u2014 which suppliers get\nresearched, who gets called \u2014 is a step *inside* one of these.",
+        "enum": [
+          "intake",
+          "erp",
+          "suppliers",
+          "screening",
+          "outreach",
+          "claims",
+          "costing",
+          "review"
+        ],
+        "title": "PlanGroup",
+        "type": "string"
+      },
+      "StepStatus": {
+        "description": "Where a checklist step is. `ACTIVE` is what the cockpit animates.",
+        "enum": [
+          "pending",
+          "active",
+          "done",
+          "failed",
+          "skipped"
+        ],
+        "title": "StepStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One transition, as posted to `/tools/plan/steps`.\n\n`label` and `group` are optional only for a step that already exists; a new\nid without them is a 422 rather than an unlabelled line on the screen.",
+    "properties": {
+      "step_id": {
+        "title": "Step Id",
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/$defs/StepStatus"
+      },
+      "label": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Label"
+      },
+      "group": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/PlanGroup"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "detail": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Detail"
+      },
+      "supplier_ref": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Supplier Ref"
+      }
+    },
+    "required": [
+      "step_id",
+      "status"
+    ],
+    "title": "PlanStepUpdate",
     "type": "object"
   },
   "PriceBreak": {

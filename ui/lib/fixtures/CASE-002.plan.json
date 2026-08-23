@@ -1,0 +1,260 @@
+{
+  "case_id": "CASE-002",
+  "sections": [
+    {
+      "group": "intake",
+      "label": "Reading the incident",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "intake:incident",
+          "case_id": "CASE-002",
+          "group": "intake",
+          "label": "Reading the shortage the ERP raised",
+          "status": "done",
+          "detail": "Consumption on ASSY-1 ran 18% above forecast for six weeks; on-hand is now below the reorder point with no open PO covering the quarter.",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 0,
+          "started_at": "2026-08-23T03:01:09.594421Z",
+          "completed_at": "2026-08-23T03:01:09.594423Z"
+        }
+      ]
+    },
+    {
+      "group": "erp",
+      "label": "Pulling part data",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "erp:part",
+          "case_id": "CASE-002",
+          "group": "erp",
+          "label": "Pulling the part record, spec, weight and HS code",
+          "status": "done",
+          "detail": "DIN933-M8x40-A2, 0.022 kg, HS 7318.15.69",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 1,
+          "started_at": "2026-08-23T03:01:09.595130Z",
+          "completed_at": "2026-08-23T03:01:09.595131Z"
+        },
+        {
+          "step_id": "erp:stock",
+          "case_id": "CASE-002",
+          "group": "erp",
+          "label": "Reading on-hand stock, reservations and take rate",
+          "status": "done",
+          "detail": "22,000 on hand at PLANT-LEI",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 2,
+          "started_at": "2026-08-23T03:01:09.596319Z",
+          "completed_at": "2026-08-23T03:01:09.596320Z"
+        },
+        {
+          "step_id": "erp:open_pos",
+          "case_id": "CASE-002",
+          "group": "erp",
+          "label": "Checking open purchase orders for a delivery",
+          "status": "done",
+          "detail": "Consumption on ASSY-1 ran 18% above forecast for six weeks; on-hand is now below the reorder point with no open PO covering the quarter.",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 3,
+          "started_at": "2026-08-23T03:01:09.597085Z",
+          "completed_at": "2026-08-23T03:01:09.597086Z"
+        },
+        {
+          "step_id": "erp:price_history",
+          "case_id": "CASE-002",
+          "group": "erp",
+          "label": "Reading what we paid for it before",
+          "status": "done",
+          "detail": "what we paid before, by quarter",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 4,
+          "started_at": "2026-08-23T03:01:09.598098Z",
+          "completed_at": "2026-08-23T03:01:09.598100Z"
+        }
+      ]
+    },
+    {
+      "group": "suppliers",
+      "label": "Finding registered suppliers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "suppliers:list",
+          "case_id": "CASE-002",
+          "group": "suppliers",
+          "label": "Listing the approved suppliers for this part",
+          "status": "done",
+          "detail": "2 approved for DIN933-M8x40-A2",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 5,
+          "started_at": "2026-08-23T03:01:09.599461Z",
+          "completed_at": "2026-08-23T03:01:09.599462Z"
+        }
+      ]
+    },
+    {
+      "group": "screening",
+      "label": "Screening against procurement policy",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "screening:policy",
+          "case_id": "CASE-002",
+          "group": "screening",
+          "label": "Applying the procurement policy to each supplier",
+          "status": "done",
+          "detail": "2 of 2 cleared",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 6,
+          "started_at": "2026-08-23T03:01:09.600306Z",
+          "completed_at": "2026-08-23T03:01:09.610221Z"
+        },
+        {
+          "step_id": "screening:SUP-SHW",
+          "case_id": "CASE-002",
+          "group": "screening",
+          "label": "Screening Schrauben Werk Schwaben GmbH",
+          "status": "done",
+          "detail": "cleared policy",
+          "supplier_ref": "SUP-SHW",
+          "dynamic": true,
+          "seq": 101,
+          "started_at": "2026-08-23T03:01:09.603933Z",
+          "completed_at": "2026-08-23T03:01:09.603935Z"
+        },
+        {
+          "step_id": "screening:SUP-FBP",
+          "case_id": "CASE-002",
+          "group": "screening",
+          "label": "Screening Fixando Bolt Praha s.r.o.",
+          "status": "done",
+          "detail": "cleared policy",
+          "supplier_ref": "SUP-FBP",
+          "dynamic": true,
+          "seq": 102,
+          "started_at": "2026-08-23T03:01:09.606818Z",
+          "completed_at": "2026-08-23T03:01:09.606819Z"
+        }
+      ]
+    },
+    {
+      "group": "outreach",
+      "label": "Calling suppliers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "outreach:brief",
+          "case_id": "CASE-002",
+          "group": "outreach",
+          "label": "Writing the call brief",
+          "status": "done",
+          "detail": "180,000 pcs by 2026-09-11",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 7,
+          "started_at": "2026-08-23T03:01:09.611188Z",
+          "completed_at": "2026-08-23T03:01:09.611189Z"
+        },
+        {
+          "step_id": "outreach:SUP-SHW",
+          "case_id": "CASE-002",
+          "group": "outreach",
+          "label": "Calling Schrauben Werk Schwaben GmbH",
+          "status": "done",
+          "detail": "free_in_stock, 180,000 pcs at EUR 0.1800",
+          "supplier_ref": "SUP-SHW",
+          "dynamic": true,
+          "seq": 101,
+          "started_at": "2026-08-23T03:01:09.614798Z",
+          "completed_at": "2026-08-23T03:01:09.619963Z"
+        },
+        {
+          "step_id": "outreach:SUP-FBP",
+          "case_id": "CASE-002",
+          "group": "outreach",
+          "label": "Calling Fixando Bolt Praha s.r.o.",
+          "status": "done",
+          "detail": "free_in_stock, 180,000 pcs at EUR 0.1695",
+          "supplier_ref": "SUP-FBP",
+          "dynamic": true,
+          "seq": 102,
+          "started_at": "2026-08-23T03:01:09.616316Z",
+          "completed_at": "2026-08-23T03:01:09.622500Z"
+        }
+      ]
+    },
+    {
+      "group": "claims",
+      "label": "Collecting answers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "claims:normalise",
+          "case_id": "CASE-002",
+          "group": "claims",
+          "label": "Turning every answer into a structured claim",
+          "status": "done",
+          "detail": "2 answers turned into claims",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 8,
+          "started_at": "2026-08-23T03:01:09.625704Z",
+          "completed_at": "2026-08-23T03:01:09.625706Z"
+        }
+      ]
+    },
+    {
+      "group": "costing",
+      "label": "Pricing every option",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "costing:landed",
+          "case_id": "CASE-002",
+          "group": "costing",
+          "label": "Costing single-source and split plans",
+          "status": "done",
+          "detail": "4 plans priced",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 9,
+          "started_at": "2026-08-23T03:01:09.626599Z",
+          "completed_at": "2026-08-23T03:01:09.635236Z"
+        }
+      ]
+    },
+    {
+      "group": "review",
+      "label": "Handing a ranked shortlist to the buyer",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "review:package",
+          "case_id": "CASE-002",
+          "group": "review",
+          "label": "Writing the review package for a buyer",
+          "status": "done",
+          "detail": "recommended STR-01",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 10,
+          "started_at": "2026-08-23T03:01:09.637730Z",
+          "completed_at": "2026-08-23T03:01:09.637732Z"
+        }
+      ]
+    }
+  ],
+  "active_step_id": null,
+  "updated_at": "2026-08-23T03:01:09.637732Z",
+  "done": 15,
+  "total": 15
+}

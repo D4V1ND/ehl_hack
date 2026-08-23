@@ -89,6 +89,34 @@ class Level(str, Enum):
     ERROR = "error"
 
 
+class StepStatus(str, Enum):
+    """Where a checklist step is. `ACTIVE` is what the cockpit animates."""
+
+    PENDING = "pending"
+    ACTIVE = "active"
+    DONE = "done"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class PlanGroup(str, Enum):
+    """The rigid headers of the checklist.
+
+    These never change and never depend on the part, so the frontend can lay the
+    screen out before a case exists. Everything variable — which suppliers get
+    researched, who gets called — is a step *inside* one of these.
+    """
+
+    INTAKE = "intake"
+    ERP = "erp"
+    SUPPLIERS = "suppliers"
+    SCREENING = "screening"
+    OUTREACH = "outreach"
+    CLAIMS = "claims"
+    COSTING = "costing"
+    REVIEW = "review"
+
+
 class PolicyRule(str, Enum):
     """The four rules. A rejection always cites one of these by name."""
 

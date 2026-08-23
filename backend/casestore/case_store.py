@@ -18,7 +18,15 @@ from typing import Any
 import yaml
 
 from packages.contracts.enums import Actor, Level, Stage
-from packages.contracts.models import Candidate, Claim, Decision, Event, Incident, OutreachTask
+from packages.contracts.models import (
+    Candidate,
+    Claim,
+    Decision,
+    Event,
+    Incident,
+    OutreachTask,
+    PlanStep,
+)
 from backend.casestore import events as event_log
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -167,6 +175,24 @@ class CaseStore:
             return Decision(**row)
         except (ValueError, TypeError):
             return None
+
+    # -- the checklist ------------------------------------------------------
+
+    def write_plan_steps(self, case_id: str, steps: list[PlanStep]) -> None:
+        _atomic_write(
+            self.case_dir(case_id) / "plan.json",
+            json.dumps([json.loads(s.model_dump_json()) for s in steps], indent=2) + "\n",
+        )
+
+    def read_plan_steps(self, case_id: str) -> list[PlanStep]:
+        rows = self._read_json(self.case_dir(case_id) / "plan.json", [])
+        steps: list[PlanStep] = []
+        for row in rows:
+            try:
+                steps.append(PlanStep(**row))
+            except (ValueError, TypeError):
+                continue  # one broken line must not blank the whole checklist
+        return steps
 
     # -- free-form artifacts (Devin writes most of these) -------------------
 

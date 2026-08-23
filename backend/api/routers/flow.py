@@ -22,6 +22,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from backend import plan
 from backend.api.deps import erp, settings, store
 from backend.api.settings import LIVE_CALLS_CONFIRMATION, Settings
 from backend.casestore.case_store import CaseStore
@@ -34,7 +35,7 @@ from backend.outreach.router import route_channel
 from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.store import STORE
-from packages.contracts.enums import Actor, Level, Stage
+from packages.contracts.enums import Actor, Level, PlanGroup, Stage, StepStatus
 from packages.contracts.models import OutreachBrief, OutreachTask
 
 router = APIRouter(prefix="/flow", tags=["launcher"])
@@ -175,6 +176,16 @@ def post_call(
     else:
         provider = RehearsalOutreachProvider(records)
 
+    plan.upsert(
+        case_id,
+        cases,
+        step_id=plan.supplier_step_id(PlanGroup.OUTREACH, supplier_ref),
+        group=PlanGroup.OUTREACH,
+        label=f"Calling {supplier.supplier_name}",
+        supplier_ref=supplier_ref,
+        status=StepStatus.ACTIVE,
+        detail="dialling now, live" if live else "rehearsal",
+    )
     cases.append_event(
         case_id,
         actor=Actor.DEVIN,
@@ -189,6 +200,13 @@ def post_call(
     try:
         receipt = provider.dispatch([task])
     except (RuntimeError, ValueError) as exc:
+        plan.upsert(
+            case_id,
+            cases,
+            step_id=plan.supplier_step_id(PlanGroup.OUTREACH, supplier_ref),
+            status=StepStatus.FAILED,
+            detail=str(exc)[:120],
+        )
         cases.append_event(
             case_id,
             actor=Actor.CALLE,
@@ -241,6 +259,19 @@ def post_collect(
         )
         cases.write_claim(claim)
         filed.append(claim.supplier_ref)
+        plan.upsert(
+            case_id,
+            cases,
+            step_id=plan.supplier_step_id(PlanGroup.OUTREACH, claim.supplier_ref),
+            group=PlanGroup.OUTREACH,
+            label=f"Calling {claim.supplier_ref}",
+            supplier_ref=claim.supplier_ref,
+            status=StepStatus.DONE,
+            detail=(
+                f"{claim.stock_status.value}, {claim.qty_offered:,} pcs"
+                + (f" at EUR {claim.unit_price}" if claim.unit_price is not None else "")
+            ),
+        )
         cases.append_event(
             case_id,
             actor=Actor.CALLE,
@@ -259,7 +290,21 @@ def post_collect(
         )
 
     if filed:
-        decide(case_id=case_id, records=records, cases=cases, today=today)
+        plan.upsert(
+            case_id,
+            cases,
+            step_id="claims:normalise",
+            status=StepStatus.DONE,
+            detail=f"{len(cases.read_claims(case_id))} claims on file",
+        )
+        outcome = decide(case_id=case_id, records=records, cases=cases, today=today)
+        plan.upsert(
+            case_id,
+            cases,
+            step_id="costing:landed",
+            status=StepStatus.DONE,
+            detail=f"re-priced: {len(outcome.strategies)} plans",
+        )
 
     return {
         "case_id": case_id,

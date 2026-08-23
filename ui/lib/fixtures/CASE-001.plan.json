@@ -1,0 +1,325 @@
+{
+  "case_id": "CASE-001",
+  "sections": [
+    {
+      "group": "intake",
+      "label": "Reading the incident",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "intake:incident",
+          "case_id": "CASE-001",
+          "group": "intake",
+          "label": "Reading the shortage the ERP raised",
+          "status": "done",
+          "detail": "PO-2291 (30 000 pcs, Kugellager Bayern) slipped from 2026-08-26 to 2026-09-17. On-hand cover is 12 days at the ASSY-3 take rate of 350/day.",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 0,
+          "started_at": "2026-08-23T03:01:09.530949Z",
+          "completed_at": "2026-08-23T03:01:09.530953Z"
+        }
+      ]
+    },
+    {
+      "group": "erp",
+      "label": "Pulling part data",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "erp:part",
+          "case_id": "CASE-001",
+          "group": "erp",
+          "label": "Pulling the part record, spec, weight and HS code",
+          "status": "done",
+          "detail": "6204-2RS, 0.102 kg, HS 8482.10.10",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 1,
+          "started_at": "2026-08-23T03:01:09.533537Z",
+          "completed_at": "2026-08-23T03:01:09.533538Z"
+        },
+        {
+          "step_id": "erp:stock",
+          "case_id": "CASE-001",
+          "group": "erp",
+          "label": "Reading on-hand stock, reservations and take rate",
+          "status": "done",
+          "detail": "4,200 on hand at PLANT-MUC",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 2,
+          "started_at": "2026-08-23T03:01:09.534848Z",
+          "completed_at": "2026-08-23T03:01:09.534849Z"
+        },
+        {
+          "step_id": "erp:open_pos",
+          "case_id": "CASE-001",
+          "group": "erp",
+          "label": "Checking open purchase orders for a delivery",
+          "status": "done",
+          "detail": "PO-2291 (30 000 pcs, Kugellager Bayern) slipped from 2026-08-26 to 2026-09-17. On-hand cover is 12 days at the ASSY-3 take rate of 350/day.",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 3,
+          "started_at": "2026-08-23T03:01:09.536536Z",
+          "completed_at": "2026-08-23T03:01:09.536539Z"
+        },
+        {
+          "step_id": "erp:price_history",
+          "case_id": "CASE-001",
+          "group": "erp",
+          "label": "Reading what we paid for it before",
+          "status": "done",
+          "detail": "what we paid before, by quarter",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 4,
+          "started_at": "2026-08-23T03:01:09.538982Z",
+          "completed_at": "2026-08-23T03:01:09.538985Z"
+        }
+      ]
+    },
+    {
+      "group": "suppliers",
+      "label": "Finding registered suppliers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "suppliers:list",
+          "case_id": "CASE-001",
+          "group": "suppliers",
+          "label": "Listing the approved suppliers for this part",
+          "status": "done",
+          "detail": "6 approved for 6204-2RS",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 5,
+          "started_at": "2026-08-23T03:01:09.542947Z",
+          "completed_at": "2026-08-23T03:01:09.542949Z"
+        }
+      ]
+    },
+    {
+      "group": "screening",
+      "label": "Screening against procurement policy",
+      "status": "failed",
+      "steps": [
+        {
+          "step_id": "screening:policy",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Applying the procurement policy to each supplier",
+          "status": "done",
+          "detail": "3 of 6 cleared",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 6,
+          "started_at": "2026-08-23T03:01:09.545019Z",
+          "completed_at": "2026-08-23T03:01:09.563194Z"
+        },
+        {
+          "step_id": "screening:SUP-KBY",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening Kugellager Bayern GmbH",
+          "status": "done",
+          "detail": "cleared policy",
+          "supplier_ref": "SUP-KBY",
+          "dynamic": true,
+          "seq": 101,
+          "started_at": "2026-08-23T03:01:09.549439Z",
+          "completed_at": "2026-08-23T03:01:09.549441Z"
+        },
+        {
+          "step_id": "screening:SUP-NPB",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening Ningbo Precision Bearing Co. Ltd",
+          "status": "failed",
+          "detail": "CN is on the blocked-origin list (CN, RU, BY, IR, KP).",
+          "supplier_ref": "SUP-NPB",
+          "dynamic": true,
+          "seq": 102,
+          "started_at": "2026-08-23T03:01:09.551398Z",
+          "completed_at": "2026-08-23T03:01:09.551399Z"
+        },
+        {
+          "step_id": "screening:SUP-PUL",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening Pulman AG",
+          "status": "failed",
+          "detail": "rolling_bearing requires ISO_9001, DIN_625_CONFORMITY; SUP-PUL ISO_9001, DIN_625_CONFORMITY lapsed on 2026-03-31.",
+          "supplier_ref": "SUP-PUL",
+          "dynamic": true,
+          "seq": 103,
+          "started_at": "2026-08-23T03:01:09.553135Z",
+          "completed_at": "2026-08-23T03:01:09.553137Z"
+        },
+        {
+          "step_id": "screening:SUP-RUL",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening Rulmenti Est SRL",
+          "status": "done",
+          "detail": "cleared policy",
+          "supplier_ref": "SUP-RUL",
+          "dynamic": true,
+          "seq": 104,
+          "started_at": "2026-08-23T03:01:09.554576Z",
+          "completed_at": "2026-08-23T03:01:09.554577Z"
+        },
+        {
+          "step_id": "screening:SUP-NBT",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening NordBearing Trading ApS",
+          "status": "failed",
+          "detail": "6204-2RS is high criticality, which requires an on-site audit; SUP-NBT is never_audited.",
+          "supplier_ref": "SUP-NBT",
+          "dynamic": true,
+          "seq": 105,
+          "started_at": "2026-08-23T03:01:09.558076Z",
+          "completed_at": "2026-08-23T03:01:09.558078Z"
+        },
+        {
+          "step_id": "screening:SUP-SKF",
+          "case_id": "CASE-001",
+          "group": "screening",
+          "label": "Screening SKF Deutschland Vertrieb GmbH",
+          "status": "done",
+          "detail": "cleared policy",
+          "supplier_ref": "SUP-SKF",
+          "dynamic": true,
+          "seq": 106,
+          "started_at": "2026-08-23T03:01:09.560289Z",
+          "completed_at": "2026-08-23T03:01:09.560291Z"
+        }
+      ]
+    },
+    {
+      "group": "outreach",
+      "label": "Calling suppliers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "outreach:brief",
+          "case_id": "CASE-001",
+          "group": "outreach",
+          "label": "Writing the call brief",
+          "status": "done",
+          "detail": "36,000 pcs by 2026-09-03",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 7,
+          "started_at": "2026-08-23T03:01:09.565284Z",
+          "completed_at": "2026-08-23T03:01:09.565286Z"
+        },
+        {
+          "step_id": "outreach:SUP-KBY",
+          "case_id": "CASE-001",
+          "group": "outreach",
+          "label": "Calling Kugellager Bayern GmbH",
+          "status": "done",
+          "detail": "in_stock_allocated, 12,000 pcs at EUR 1.4897",
+          "supplier_ref": "SUP-KBY",
+          "dynamic": true,
+          "seq": 101,
+          "started_at": "2026-08-23T03:01:09.566983Z",
+          "completed_at": "2026-08-23T03:01:09.571672Z"
+        },
+        {
+          "step_id": "outreach:SUP-RUL",
+          "case_id": "CASE-001",
+          "group": "outreach",
+          "label": "Calling Rulmenti Est SRL",
+          "status": "done",
+          "detail": "to_be_made, 36,000 pcs at EUR 1.3087",
+          "supplier_ref": "SUP-RUL",
+          "dynamic": true,
+          "seq": 102,
+          "started_at": "2026-08-23T03:01:09.568300Z",
+          "completed_at": "2026-08-23T03:01:09.573992Z"
+        },
+        {
+          "step_id": "outreach:SUP-SKF",
+          "case_id": "CASE-001",
+          "group": "outreach",
+          "label": "Calling SKF Deutschland Vertrieb GmbH",
+          "status": "done",
+          "detail": "in_stock_allocated, 8,000 pcs at EUR 2.1871",
+          "supplier_ref": "SUP-SKF",
+          "dynamic": true,
+          "seq": 103,
+          "started_at": "2026-08-23T03:01:09.569318Z",
+          "completed_at": "2026-08-23T03:01:09.578055Z"
+        }
+      ]
+    },
+    {
+      "group": "claims",
+      "label": "Collecting answers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "claims:normalise",
+          "case_id": "CASE-001",
+          "group": "claims",
+          "label": "Turning every answer into a structured claim",
+          "status": "done",
+          "detail": "3 answers turned into claims",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 8,
+          "started_at": "2026-08-23T03:01:09.581522Z",
+          "completed_at": "2026-08-23T03:01:09.581524Z"
+        }
+      ]
+    },
+    {
+      "group": "costing",
+      "label": "Pricing every option",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "costing:landed",
+          "case_id": "CASE-001",
+          "group": "costing",
+          "label": "Costing single-source and split plans",
+          "status": "done",
+          "detail": "7 plans priced",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 9,
+          "started_at": "2026-08-23T03:01:09.583163Z",
+          "completed_at": "2026-08-23T03:01:09.591303Z"
+        }
+      ]
+    },
+    {
+      "group": "review",
+      "label": "Handing a ranked shortlist to the buyer",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "review:package",
+          "case_id": "CASE-001",
+          "group": "review",
+          "label": "Writing the review package for a buyer",
+          "status": "done",
+          "detail": "recommended STR-03",
+          "supplier_ref": null,
+          "dynamic": false,
+          "seq": 10,
+          "started_at": "2026-08-23T03:01:09.592421Z",
+          "completed_at": "2026-08-23T03:01:09.592423Z"
+        }
+      ]
+    }
+  ],
+  "active_step_id": null,
+  "updated_at": "2026-08-23T03:01:09.592423Z",
+  "done": 17,
+  "total": 20
+}

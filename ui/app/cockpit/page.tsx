@@ -8,15 +8,17 @@ import {
   DATA_SOURCE,
   collectCalls,
   getCase,
+  getPlan,
   getProfile,
   getShortages,
   initialCase,
+  initialPlan,
   initialProfile,
   initialShortages,
   placeCall,
   runFlow,
 } from "@/lib/api/client"
-import type { CaseSnapshot, CompanyProfile, ShortageAlert, Stage } from "@/lib/contracts"
+import type { CasePlan, CaseSnapshot, CompanyProfile, ShortageAlert, Stage } from "@/lib/contracts"
 import { useEvents } from "@/lib/api/use-events"
 import { stageMeta } from "@/lib/stages"
 import { Card, Kicker, Mono, Section } from "@/components/cockpit/primitives"
@@ -27,6 +29,7 @@ import { DecisionPanel } from "@/components/cockpit/decision-panel"
 import { StrategyTable } from "@/components/cockpit/strategy-table"
 import { EventDock } from "@/components/cockpit/event-dock"
 import { IncidentPanel } from "@/components/cockpit/incident-panel"
+import { PlanChecklist } from "@/components/cockpit/plan-checklist"
 import { ShortageStrip } from "@/components/cockpit/shortage-strip"
 import { StageRail } from "@/components/cockpit/stage-rail"
 import { SupplierTable } from "@/components/cockpit/supplier-table"
@@ -54,6 +57,7 @@ export default function CockpitPage() {
   const [profile, setProfile] = React.useState<CompanyProfile | null>(initialProfile)
   const [caseId, setCaseId] = React.useState("CASE-001")
   const [snapshot, setSnapshot] = React.useState<CaseSnapshot | null>(() => initialCase("CASE-001"))
+  const [plan, setPlan] = React.useState<CasePlan | null>(() => initialPlan("CASE-001"))
   const [running, setRunning] = React.useState(false)
   const [busy, setBusy] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -68,9 +72,11 @@ export default function CockpitPage() {
     setRunning(false)
     if (!LIVE) {
       setSnapshot(initialCase(caseId))
+      setPlan(initialPlan(caseId))
       return
     }
     getCase(caseId).then(setSnapshot).catch(() => setSnapshot(null))
+    getPlan(caseId).then(setPlan).catch(() => setPlan(null))
   }, [caseId])
 
   // The case is joined server-side, so one poll refreshes candidates, claims and
@@ -80,6 +86,11 @@ export default function CockpitPage() {
     const timer = setInterval(() => {
       getCase(caseId)
         .then((fresh) => setSnapshot((prior) => fresh ?? prior))
+        .catch(() => undefined)
+      // The checklist moves several times per phase, so it is polled with the
+      // case rather than waiting for one: a tick a human can see is the point.
+      getPlan(caseId)
+        .then((fresh) => setPlan((prior) => fresh ?? prior))
         .catch(() => undefined)
     }, 3000)
     return () => clearInterval(timer)
@@ -101,6 +112,8 @@ export default function CockpitPage() {
       await action()
       const fresh = await getCase(caseId)
       if (fresh) setSnapshot(fresh)
+      const freshPlan = await getPlan(caseId)
+      if (freshPlan) setPlan(freshPlan)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
     } finally {
@@ -209,6 +222,9 @@ export default function CockpitPage() {
             }
           >
             <IncidentPanel snapshot={snapshot} />
+            <div className="mt-4 xl:hidden">
+              <PlanChecklist plan={plan} />
+            </div>
           </Section>
 
           <Section
@@ -330,8 +346,11 @@ export default function CockpitPage() {
         </main>
 
         <div className="hidden w-[320px] shrink-0 xl:block">
-          <div className="sticky top-16 h-[calc(100dvh-4rem)]">
-            <EventDock events={events} replaying={LIVE ? busy !== null : running && !complete} />
+          <div className="sticky top-16 flex h-[calc(100dvh-4rem)] flex-col gap-3 overflow-y-auto border-l border-hairline pl-4 pt-4">
+            <PlanChecklist plan={plan} />
+            <div className="min-h-[280px] flex-1">
+              <EventDock events={events} replaying={LIVE ? busy !== null : running && !complete} />
+            </div>
           </div>
         </div>
       </div>

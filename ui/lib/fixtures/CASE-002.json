@@ -172,7 +172,7 @@
   ],
   "outreach_tasks": [
     {
-      "task_id": "OUT-CASE-002-SUP-SHW-262102",
+      "task_id": "OUT-CASE-002-SUP-SHW-cbafca",
       "case_id": "CASE-002",
       "supplier_ref": "SUP-SHW",
       "channel": "voice",
@@ -192,7 +192,7 @@
       }
     },
     {
-      "task_id": "OUT-CASE-002-SUP-FBP-09b3bf",
+      "task_id": "OUT-CASE-002-SUP-FBP-125073",
       "case_id": "CASE-002",
       "supplier_ref": "SUP-FBP",
       "channel": "email",
@@ -214,7 +214,7 @@
   ],
   "claims": [
     {
-      "task_id": "OUT-CASE-002-SUP-FBP-09b3bf",
+      "task_id": "OUT-CASE-002-SUP-FBP-125073",
       "case_id": "CASE-002",
       "supplier_ref": "SUP-FBP",
       "available": true,
@@ -264,10 +264,10 @@
         "named on the call: ISO_9001",
         "read DIN933-M8x40-A2 back on the call"
       ],
-      "received_at": "2026-08-23T02:00:46.251901Z"
+      "received_at": "2026-08-23T03:01:09.621718Z"
     },
     {
-      "task_id": "OUT-CASE-002-SUP-SHW-262102",
+      "task_id": "OUT-CASE-002-SUP-SHW-cbafca",
       "case_id": "CASE-002",
       "supplier_ref": "SUP-SHW",
       "available": true,
@@ -321,7 +321,7 @@
         "named on the call: ISO_9001",
         "read DIN933-M8x40-A2 back on the call"
       ],
-      "received_at": "2026-08-23T02:00:46.247452Z"
+      "received_at": "2026-08-23T03:01:09.618894Z"
     }
   ],
   "decision": {
@@ -471,8 +471,8 @@
     "cost_report_url": "cost_report.md",
     "pr_url": null,
     "devin_session_url": null,
-    "decided_at": "2026-08-23T02:00:46.257675Z"
+    "decided_at": "2026-08-23T03:01:09.629490Z"
   },
   "devin_session_url": null,
-  "last_event_seq": 9
+  "last_event_seq": 16
 }

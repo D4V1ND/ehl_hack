@@ -1,4 +1,5 @@
 import type {
+  CasePlan,
   CaseSnapshot,
   CaseSummary,
   CompanyProfile,
@@ -11,9 +12,11 @@ import type {
 import caseOne from "@/lib/fixtures/CASE-001.json"
 import caseOneEvents from "@/lib/fixtures/CASE-001.events.json"
 import caseOneArtifacts from "@/lib/fixtures/CASE-001.artifacts.json"
+import caseOnePlan from "@/lib/fixtures/CASE-001.plan.json"
 import caseTwo from "@/lib/fixtures/CASE-002.json"
 import caseTwoEvents from "@/lib/fixtures/CASE-002.events.json"
 import caseTwoArtifacts from "@/lib/fixtures/CASE-002.artifacts.json"
+import caseTwoPlan from "@/lib/fixtures/CASE-002.plan.json"
 import casesIndex from "@/lib/fixtures/cases.json"
 import profileFixture from "@/lib/fixtures/profile.json"
 import shortagesFixture from "@/lib/fixtures/shortages.json"
@@ -43,6 +46,10 @@ const FIXTURES = {
     "CASE-001": caseOneEvents as unknown as Event[],
     "CASE-002": caseTwoEvents as unknown as Event[],
   } as Record<string, Event[]>,
+  plans: {
+    "CASE-001": caseOnePlan as unknown as CasePlan,
+    "CASE-002": caseTwoPlan as unknown as CasePlan,
+  } as Record<string, CasePlan>,
   artifacts: {
     "CASE-001": caseOneArtifacts as Record<string, string>,
     "CASE-002": caseTwoArtifacts as Record<string, string>,
@@ -75,6 +82,21 @@ export async function getEvents(caseId: string, since = 0): Promise<Event[]> {
     return (FIXTURES.events[caseId] ?? []).filter((event) => (event.seq ?? 0) > since)
   }
   return live<Event[]>(`/cases/${caseId}/events?since=${since}`)
+}
+
+/**
+ * The checklist: fixed headers plus whatever per-supplier lines the run created.
+ *
+ * This is the screen the audience watches, so it is its own read: it changes on
+ * every step transition, far more often than the joined case snapshot.
+ */
+export async function getPlan(caseId: string): Promise<CasePlan | null> {
+  if (DATA_SOURCE === "fixtures") return FIXTURES.plans[caseId] ?? null
+  return live<CasePlan>(`/cases/${caseId}/plan`)
+}
+
+export function initialPlan(caseId: string): CasePlan | null {
+  return DATA_SOURCE === "fixtures" ? (FIXTURES.plans[caseId] ?? null) : null
 }
 
 export async function getArtifacts(caseId: string): Promise<Record<string, string>> {
