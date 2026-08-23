@@ -26,32 +26,34 @@ import { DotLoader } from "@/components/cockpit/dot-loader"
 import { IncidentHeader } from "@/components/cockpit/incident-header"
 import { IncidentRequestMessage } from "@/components/cockpit/incident-request-message"
 import { MessageComposer } from "@/components/cockpit/message-composer"
-import { FINAL_MESSAGE, SCRIPT, TICK_MS } from "@/lib/case-001"
+import { useDeterministicRehearsal } from "@/hooks/use-deterministic-rehearsal"
+import { FINAL_MESSAGE, SCRIPT, SEND_DELAY_MS } from "@/lib/case-001"
 
 export function CockpitChat() {
-  const [visible, setVisible] = useState(0)
+  const rehearsal = useDeterministicRehearsal()
   const [approved, setApproved] = useState(false)
   const [candidatesOpen, setCandidatesOpen] = useState(true)
   const [draft, setDraft] = useState("")
   const [messages, setMessages] = useState<string[]>([])
-  const running = visible < SCRIPT.length
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+  const running = rehearsal.running
+  const visible = rehearsal.revealedSteps
 
   useEffect(() => {
-    if (!running) return
+    if (pendingMessage === null) return
 
-    const id = window.setInterval(() => {
-      setVisible((count) => Math.min(count + 1, SCRIPT.length))
-    }, TICK_MS)
-    return () => window.clearInterval(id)
-  }, [running])
+    const timeout = window.setTimeout(() => {
+      setMessages((current) => [...current, pendingMessage])
+      setPendingMessage(null)
+    }, SEND_DELAY_MS)
 
-  const latestStep = SCRIPT[Math.min(visible, SCRIPT.length) - 1]
+    return () => window.clearTimeout(timeout)
+  }, [pendingMessage])
+
   const currentStep =
-    visible === 0
-      ? "Launching"
-      : latestStep.kind === "decision"
-        ? "Decision ready"
-        : latestStep.stepName
+    rehearsal.currentStepIndex === null
+      ? null
+      : SCRIPT[rehearsal.currentStepIndex]
   const checksPassed = isStepVisible("tests", visible)
   const decisionExists = isStepVisible("strategy", visible)
   const decisionStatus: DecisionStatus = approved
@@ -63,20 +65,27 @@ export function CockpitChat() {
         : "evaluating"
 
   function replay() {
-    const skipTicks = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches
-    setVisible(skipTicks ? SCRIPT.length : 0)
+    rehearsal.replay()
     setApproved(false)
   }
 
   function sendMessage(message: string) {
     const text = message.trim()
-    if (!text) return
+    if (!text || running || pendingMessage !== null) return
 
-    setMessages((current) => [...current, text])
     setDraft("")
+    setPendingMessage(text)
   }
+
+  const composerStatus = running
+    ? "streaming"
+    : pendingMessage !== null
+      ? "submitted"
+      : "ready"
+  const conversationStepCount =
+    rehearsal.completedSteps + (rehearsal.currentStepIndex === null ? 0 : 1)
+  const complete =
+    visible === SCRIPT.length && rehearsal.currentStepIndex === null
 
   return (
     <CockpitShell
@@ -104,15 +113,7 @@ export function CockpitChat() {
             scrollClassName="chat-scrollbar overflow-x-hidden overflow-y-auto"
           >
             <IncidentRequestMessage />
-            {running ? (
-              SCRIPT.slice(0, visible).map((step, index) => (
-                <AssistantTurn
-                  key={step.id}
-                  step={step}
-                  latest={index === visible - 1}
-                />
-              ))
-            ) : (
+            {complete ? (
               <>
                 <CompletedRunSummary steps={SCRIPT} />
                 <Message from="assistant" className="max-w-full">
@@ -121,11 +122,28 @@ export function CockpitChat() {
                   </MessageContent>
                 </Message>
               </>
+            ) : (
+              SCRIPT.slice(0, conversationStepCount).map((step, index) => {
+                const current = index === rehearsal.currentStepIndex
+
+                return (
+                  <AssistantTurn
+                    key={step.id}
+                    step={step}
+                    phase={
+                      current && rehearsal.currentPhase
+                        ? rehearsal.currentPhase
+                        : "complete"
+                    }
+                    text={current ? rehearsal.currentText : undefined}
+                  />
+                )
+              })
             )}
             {running ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <DotLoader className="size-4" />
-                <span>{currentStep}</span>
+                <span>{currentStep?.stepName ?? "Launching"}</span>
               </div>
             ) : null}
             {messages.map((message, index) => (
@@ -148,8 +166,10 @@ export function CockpitChat() {
           ) : null}
           <MessageComposer
             value={draft}
+            status={composerStatus}
             onChange={setDraft}
             onSend={sendMessage}
+            onStop={rehearsal.stop}
           />
         </div>
       </div>

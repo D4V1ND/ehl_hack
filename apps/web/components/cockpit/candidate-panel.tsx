@@ -120,7 +120,7 @@ function CandidateRow({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="border-t border-border bg-background/50 px-3 py-3">
+        <div className="border-t border-border bg-background/50 px-3 py-2.5">
           {rejected ? (
             <RejectedCandidate candidate={candidate} />
           ) : (

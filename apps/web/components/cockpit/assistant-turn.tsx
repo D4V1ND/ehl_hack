@@ -36,8 +36,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { CANDIDATES, type ScriptStep } from "@/lib/case-001"
+import { CANDIDATES, getStepResponse, type ScriptStep } from "@/lib/case-001"
 import { useStickToBottomContext } from "use-stick-to-bottom"
+
+type AssistantTurnPhase = "pending" | "streaming" | "stopped" | "complete"
 
 export function CompletedRunSummary({ steps }: { steps: ScriptStep[] }) {
   const toolCalls = steps.filter((step) => step.method && step.path)
@@ -58,11 +60,8 @@ export function CompletedRunSummary({ steps }: { steps: ScriptStep[] }) {
   }
 
   return (
-    <Collapsible
-      className="not-prose w-full"
-      onOpenChange={preserveViewport}
-    >
-      <CollapsibleTrigger className="group/run-summary flex w-full items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+    <Collapsible className="not-prose w-full" onOpenChange={preserveViewport}>
+      <CollapsibleTrigger className="group/run-summary flex w-full items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none">
         <ChevronRightIcon className="size-3.5 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-[panel-open]/run-summary:rotate-90 motion-reduce:transition-none" />
         <span>
           {toolCalls.length} tool calls, {steps.length} messages
@@ -82,7 +81,7 @@ export function CompletedRunSummary({ steps }: { steps: ScriptStep[] }) {
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 pt-2">
         {steps.map((step) => (
-          <AssistantTurn key={step.id} step={step} latest={false} />
+          <AssistantTurn key={step.id} step={step} phase="complete" />
         ))}
       </CollapsibleContent>
     </Collapsible>
@@ -105,35 +104,44 @@ function toolIconFor(step: ScriptStep): IconComponent {
 
 export function AssistantTurn({
   step,
-  latest,
+  phase,
+  text,
 }: {
   step: ScriptStep
-  latest: boolean
+  phase: AssistantTurnPhase
+  text?: string
 }) {
+  const pending = phase === "pending"
+  const response = text ?? getStepResponse(step)
+
+  if (pending && !(step.method && step.path)) return null
+
   return (
     <Message from="assistant" className="max-w-full">
       <MessageContent className="w-full max-w-full">
-        <MessageResponse>
-          {step.kind === "decision"
-            ? "Decision ready for human review."
-            : step.summary}
-        </MessageResponse>
+        {!pending && response ? (
+          <MessageResponse isAnimating={phase === "streaming"}>
+            {response}
+          </MessageResponse>
+        ) : null}
         {step.method && step.path ? (
           <Tool defaultOpen={false} className="mb-0">
             <ToolHeader
               type={`tool-${step.id}`}
-              state={latest ? "input-available" : "output-available"}
+              state={pending ? "input-available" : "output-available"}
               title={`${step.method} ${step.path}`}
             />
-            <ToolContent>
-              <ToolOutput
-                output={<p className="p-3 text-pretty">{step.detail}</p>}
-                errorText={undefined}
-              />
-            </ToolContent>
+            {!pending ? (
+              <ToolContent>
+                <ToolOutput
+                  output={<p className="p-3 text-pretty">{step.detail}</p>}
+                  errorText={undefined}
+                />
+              </ToolContent>
+            ) : null}
           </Tool>
         ) : null}
-        <StepExtras step={step} />
+        {phase === "complete" ? <StepExtras step={step} /> : null}
       </MessageContent>
     </Message>
   )
@@ -188,7 +196,7 @@ function OutreachTasks() {
         {candidates.map((candidate) => (
           <TaskItem
             key={candidate.name}
-            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border px-2.5 py-2"
+            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border px-2.5 py-1.5"
           >
             <span className="min-w-0">
               <span className="block truncate text-foreground">

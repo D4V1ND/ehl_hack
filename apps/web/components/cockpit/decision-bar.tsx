@@ -29,7 +29,7 @@ export function DecisionBar({
   return (
     <div className="mx-auto w-full max-w-[50vw] px-4 pt-3">
       <Collapsible>
-        <Card size="sm" className="w-full gap-0 py-0 ring-0 bg-accent">
+        <Card size="sm" className="w-full gap-0 bg-accent py-0 ring-0">
           <CollapsibleContent className="border-b border-border/70 px-3 py-3">
             <DecisionDetails checksPassed={checksPassed} />
           </CollapsibleContent>
