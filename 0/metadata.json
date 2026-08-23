@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0P05V6GDE8VQTBQE2BBNY0Y",
+  "session_id": "01a02bbc-1a41-7dd0-bbd0-2cd2c80613af",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T00:26:25.936306Z",
+  "branch": "lorenzkrinner/consolidate-cockpit-calls",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/components/ai-elements/tool.tsx",
+    "apps/web/components/cockpit/assistant-turn.tsx",
+    "apps/web/components/cockpit/candidate-panel.tsx",
+    "apps/web/components/cockpit/cockpit-chat.tsx",
+    "apps/web/components/cockpit/decision-bar.tsx",
+    "apps/web/components/cockpit/incident-header.tsx",
+    "apps/web/components/cockpit/session-sidebar.tsx",
+    "docs/PLAN.md",
+    "docs/design.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "e75905b72aa1",
+  "checkpoint_transcript_start": 771,
+  "transcript_lines_at_start": 771,
+  "compact_transcript_start": 159,
+  "token_usage": {
+    "input_tokens": 10823,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 101888,
+    "output_tokens": 384,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T00:26:25.821601Z",
+    "agent_lines": 240,
+    "agent_removed": 114,
+    "human_added": 323,
+    "human_modified": 5,
+    "human_removed": 0,
+    "total_committed": 568,
+    "total_lines_changed": 683,
+    "agent_percentage": 51.83016105417276,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
