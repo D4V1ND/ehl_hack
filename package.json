@@ -1,0 +1,16 @@
+{
+  "name": "supplyguard",
+  "version": "0.0.1",
+  "private": true,
+  "description": "pnpm aliases for run.py, which is the real cross-platform entry point.",
+  "scripts": {
+    "dev": "node scripts/run-py.mjs",
+    "dev:ui": "node scripts/run-py.mjs ui",
+    "dev:api": "node scripts/run-py.mjs api",
+    "setup": "node scripts/run-py.mjs setup",
+    "build": "node scripts/run-py.mjs build",
+    "test": "node scripts/run-py.mjs test",
+    "db": "node scripts/run-py.mjs db",
+    "fixtures": "node scripts/run-py.mjs fixtures"
+  }
+}
