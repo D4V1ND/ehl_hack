@@ -2,7 +2,6 @@ import { API_BASE } from "@/lib/live/config"
 import type {
   CaseEvent,
   CaseSnapshot,
-  LiveFlowState,
   OpenedCase,
   SessionInfo,
 } from "@/lib/live/types"
@@ -69,7 +68,7 @@ const dialedCases = new Set<string>()
 const dialing = new Set<string>()
 
 export function alreadyLiveDialed(events: CaseEvent[]): boolean {
-  return events.some((event) => event.stage === "call_accepted")
+  return events.some((event) => event.payload.live === true)
 }
 
 /** One live CALL-E dial. Every supplier number is overridden by DEMO_CALL_DESTINATION. */
@@ -78,7 +77,6 @@ export async function placeLiveCall(
   supplierRef: string
 ): Promise<void> {
   if (dialedCases.has(caseId) || dialing.has(caseId)) return
-  dialedCases.add(caseId)
   dialing.add(caseId)
   try {
     const query = new URLSearchParams({
@@ -91,6 +89,7 @@ export async function placeLiveCall(
       cache: "no-store",
     })
     if (!response.ok) {
+      dialedCases.add(caseId)
       throw new Error(await readError(response, `POST /flow/call -> ${response.status}`))
     }
     dialedCases.add(caseId)
@@ -112,21 +111,4 @@ export function sessionFromEvents(events: CaseEvent[]): SessionInfo | null {
     }
   }
   return null
-}
-
-/** The priced review package: every plan ranked, and the one the agent recommends. */
-export async function fetchFlowState(
-  caseId: string
-): Promise<LiveFlowState | null> {
-  const response = await fetch(
-    `${API_BASE}/flow/state?case_id=${encodeURIComponent(caseId)}`,
-    { cache: "no-store" }
-  )
-  if (response.status === 404) return null
-  if (!response.ok) {
-    throw new Error(
-      await readError(response, `GET /flow/state -> ${response.status}`)
-    )
-  }
-  return (await response.json()) as LiveFlowState
 }
