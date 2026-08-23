@@ -67,6 +67,15 @@ def seed(case_id: str, cases: CaseStore) -> CasePlan:
     existing = cases.read_plan_steps(case_id)
     if existing:
         return read(case_id, cases)
+    return reset(case_id, cases)
+
+
+def reset(case_id: str, cases: CaseStore) -> CasePlan:
+    """A fresh checklist: every fixed step pending again, dynamic steps dropped.
+
+    A re-run replaces the plan rather than appending to it, so the cockpit shows
+    one run's progress and not the remains of the previous one.
+    """
     steps = [
         PlanStep(
             step_id=step_id,
