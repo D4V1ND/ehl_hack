@@ -80,7 +80,8 @@ def build_calle_payload(
 ) -> dict:
     """Pure. The ONLY place a raw phone number is allowed to appear.
 
-    CALL-E's real API rejects a `metadata` field on recipient objects
+    One recipient per request. CALL-E's real API rejects a `metadata`
+    field on recipient objects
     (confirmed: 422 "Extra inputs are not permitted" at
     recipients[0].metadata). There is no verified way to tell, from a
     webhook result, which recipient of a multi-recipient request it
@@ -92,17 +93,17 @@ def build_calle_payload(
     if not tasks:
         raise ValueError("no tasks to dispatch")
 
-    recipients = []
-    for task in tasks:
-        raw = phones_by_supplier.get(task.supplier_ref)
-        if raw is None:
-            raise InvalidPhoneNumber(f"no phone number for {task.supplier_ref}")
-        recipients.append({"phones": [validate_e164(raw)]})
-
     first = tasks[0]
+    raw = phones_by_supplier.get(first.supplier_ref)
+    if raw is None:
+        raise InvalidPhoneNumber(f"no phone number for {first.supplier_ref}")
+
     return {
         "task": build_task_text(first, buyer_name=buyer_name),
-        "recipients": recipients,
+        # Singular `recipient`. The plural `recipients` array is refused with
+        # provider_unavailable/503, which reads like a CALL-E outage rather than
+        # the schema mismatch it is.
+        "recipient": {"phones": [validate_e164(raw)]},
         # One recipient, so the task-level schema is the answer sheet.
         # Sending both result_schema and recipient_result_schema made CALL-E
         # 503 the plan compiler (provider_unavailable).
@@ -133,16 +134,14 @@ def _record_calle_failure(case_id: str, task: OutreachTask, exc: CalleAPIError) 
 
 def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask) -> dict:
     """Second try: the shape CALL-E's own docs use for a one-recipient call."""
-    phone = payload["recipients"][0]["phones"][0]
+    phone = payload["recipient"]["phones"][0]
     minimal = {
         "task": payload["task"],
-        "recipients": [
-            {
-                "phones": [phone],
-                "region": settings.CALLE_REGION,
-                "locale": settings.CALLE_LOCALE,
-            }
-        ],
+        "recipient": {
+            "phones": [phone],
+            "region": settings.CALLE_REGION,
+            "locale": settings.CALLE_LOCALE,
+        },
         "result_schema": {
             "type": "object",
             "required": ["part_available"],
@@ -169,12 +168,14 @@ def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask)
 
 MAX_LIVE_CALLS = int(os.environ.get("MAX_LIVE_CALLS", "0") or 0)
 
-_placed = 0
+_placed: dict[str, int] = {}
+_placed_lock = threading.Lock()
 
 
-def live_calls_placed() -> int:
-    """How many real calls this process has placed."""
-    return _placed
+def live_calls_placed(case_id: str) -> int:
+    """How many real calls this case has placed."""
+    with _placed_lock:
+        return _placed.get(case_id, 0)
 
 
 class LiveCallBudgetSpent(RuntimeError):
@@ -182,30 +183,36 @@ class LiveCallBudgetSpent(RuntimeError):
 
 
 def _check_call_budget(task: OutreachTask) -> None:
-    """Refuse the dial when the budget for this process is gone.
+    """Refuse the dial when this case has already had its real call.
 
     A demo has one phone on stage and every supplier is redirected to it, so a
-    caller that loops over suppliers rings that phone once per supplier. The cap
-    lives here, at the last point before the network, so it holds no matter who
-    asks -- the API, a script, or an agent driving the flow.
+    caller that loops over suppliers would ring that phone once per supplier.
+    The cap lives here, at the last point before the network, so it holds no
+    matter who asks -- the API, a script, or an agent driving the flow.
+
+    It counts per case rather than per process: a session usually runs several
+    cases one after another, and each of those deserves its live moment.
 
     Unset or 0 means no cap, which keeps existing behaviour the default.
     """
-    if MAX_LIVE_CALLS and _placed >= MAX_LIVE_CALLS:
+    if not MAX_LIVE_CALLS:
+        return
+    spent = live_calls_placed(task.case_id)
+    if spent >= MAX_LIVE_CALLS:
         raise LiveCallBudgetSpent(
             f"refusing to dial {task.supplier_ref}: MAX_LIVE_CALLS={MAX_LIVE_CALLS} "
-            f"already spent on {_placed} call(s) this run"
+            f"already spent on {spent} call(s) for {task.case_id}"
         )
 
 
-def _record_call_placed() -> None:
+def _record_call_placed(case_id: str) -> None:
     """Spend the budget only once CALL-E has accepted the call.
 
     Counting the attempt instead would let one upstream 503 burn the single
-    call a demo gets, and the phone would never ring.
+    call a case gets, and the phone would never ring.
     """
-    global _placed
-    _placed += 1
+    with _placed_lock:
+        _placed[case_id] = _placed.get(case_id, 0) + 1
 
 
 class CalleOutreachProvider:
@@ -233,7 +240,7 @@ class CalleOutreachProvider:
                 case_id,
                 actor="calle",
                 stage="outreach_dispatched",
-                message=f"Dialling {mask(payload['recipients'][0]['phones'][0])}",
+                message=f"Dialling {mask(payload['recipient']['phones'][0])}",
                 payload={"task_id": task.task_id},
             )
 
@@ -253,7 +260,7 @@ class CalleOutreachProvider:
                         f"{exc} (code={exc.code} status={exc.status_code} details={exc.details})"
                     ) from exc
 
-            _record_call_placed()
+            _record_call_placed(case_id)
 
             call_id = accepted.get("id")
             STORE.append_event(

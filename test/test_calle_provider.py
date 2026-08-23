@@ -48,13 +48,13 @@ def test_payload_carries_the_answer_sheet_and_the_case_id():
     assert '"' in first
 
 
-def test_the_raw_number_appears_only_in_the_recipients_array():
+def test_the_raw_number_appears_only_in_the_recipient():
     payload = build_calle_payload(
         [_task()],
         phones_by_supplier={"SUP-ATLAS": "+447700900123"},
         buyer_name="Meridian Motors",
     )
-    assert payload["recipients"][0]["phones"] == ["+447700900123"]
+    assert payload["recipient"]["phones"] == ["+447700900123"]
     assert "+447700900123" not in payload["task"]
 
 
@@ -82,8 +82,8 @@ def test_the_call_is_placed_in_english():
         phones_by_supplier={"SUP-ATLAS": "+447700900123"},
         buyer_name="Meridian Motors",
     )
-    assert "locale" not in payload["recipients"][0]
-    assert "region" not in payload["recipients"][0]
+    assert "locale" not in payload["recipient"]
+    assert "region" not in payload["recipient"]
     assert "English" in payload["task"]
 
 
@@ -100,13 +100,22 @@ def test_mask_hides_the_middle():
     assert mask("+447700900123") == "+4*******0123"
 
 
-def test_batching_puts_every_supplier_in_one_request():
+def test_one_call_carries_one_recipient():
+    """CALL-E takes a singular `recipient`.
+
+    A `recipients` array is refused with provider_unavailable/503, which reads
+    like an outage rather than the schema mismatch it is. Correlation rides in
+    the top-level metadata anyway, which names a single task, so dispatch sends
+    one request per supplier and the extra tasks here are not batched in.
+    """
     payload = build_calle_payload(
         [_task("T-001", "SUP-A"), _task("T-002", "SUP-B")],
         phones_by_supplier={"SUP-A": "+447700900123", "SUP-B": "+447700900124"},
         buyer_name="Meridian Motors",
     )
-    assert len(payload["recipients"]) == 2
+    assert "recipients" not in payload
+    assert payload["recipient"]["phones"] == ["+447700900123"]
+    assert payload["metadata"]["task_id"] == "T-001"
 
 
 def test_webhook_turns_a_result_into_a_stored_quote():

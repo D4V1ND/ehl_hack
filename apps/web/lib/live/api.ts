@@ -2,6 +2,7 @@ import { API_BASE } from "@/lib/live/config"
 import type {
   CaseEvent,
   CaseSnapshot,
+  LiveFlowState,
   OpenedCase,
   SessionInfo,
 } from "@/lib/live/types"
@@ -111,4 +112,21 @@ export function sessionFromEvents(events: CaseEvent[]): SessionInfo | null {
     }
   }
   return null
+}
+
+/** The priced review package: every plan ranked, and the one the agent recommends. */
+export async function fetchFlowState(
+  caseId: string
+): Promise<LiveFlowState | null> {
+  const response = await fetch(
+    `${API_BASE}/flow/state?case_id=${encodeURIComponent(caseId)}`,
+    { cache: "no-store" }
+  )
+  if (response.status === 404) return null
+  if (!response.ok) {
+    throw new Error(
+      await readError(response, `GET /flow/state -> ${response.status}`)
+    )
+  }
+  return (await response.json()) as LiveFlowState
 }
