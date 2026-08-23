@@ -1,0 +1,56 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/seville directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+This a convo i had with a agent:
+
+Find the commit id whcih merge our ui from the ui consolidation branch into main
+The UI branch (ui) was merged into main in:
+
+64a2bb67948ac5c99a83a512df43290a6ea5141e — “Merge pull request #8 from D4V1ND/ui”.
+what did it do exactly, explain it to me in a couple of words, what got removed / adjusted etc? 
+i-have-adhd
+In short: it turned the simple root UI into a separate ui/ cockpit app.
+
+Moved frontend files/config from the repo root into ui/.
+Replaced the old basic layout/styles with a supplier-shortage “cockpit.”
+Added UI pieces: supplier table, incident panel, countdown, event feed.
+Added the supporting FastAPI API, demo ERP data, and shared contracts.
+Removed the old root app layout/styles and stale test-cache files.
+
+-----
+
+I would like to add back some stuff.
+
+- First of all the composer at the bottom
+- The sidebar, even though it's just a stup right now
+- The collapsible functionality (displaying only the data we have available) + agent calling card in the collapsible trigger when getting called.
+
+How would you go about doing that?
+
+---
+
+The composer would be disabled for now. IT shold be fully wired uo into our UI though, so the data model should fit. What can we not display here that way that we previously could?
+
+---
+
+Okay how can we hand this off to a new agent in a new branch which we can then merge into this branch after the refactor currently udnerway is done?
+
+---
+
+[handoff](/Users/lorenzkrinner/.agents/skills/handoff/SKILL.md)
+
+---
+
+full url to the file
