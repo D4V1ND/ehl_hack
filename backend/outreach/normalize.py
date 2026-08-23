@@ -88,6 +88,14 @@ def _transcript(value: Any) -> list[TranscriptTurn]:
     return turns
 
 
+def _available(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"yes", "true", "1"}
+    return False
+
+
 def _confidence(value: Any) -> float:
     # CALL-E sends {"score": 0.82, "label": "high"}, not a bare float.
     if isinstance(value, dict):
@@ -109,6 +117,8 @@ def normalize_result(
         result = payload["structured_result"]
 
     certs = result.get("certs_claimed")
+    if isinstance(certs, str):
+        certs = [part.strip() for part in certs.split(",") if part.strip()]
     if not isinstance(certs, list):
         certs = []
 
@@ -122,7 +132,7 @@ def normalize_result(
         task_id=task_id,
         case_id=case_id,
         supplier_ref=supplier_ref,
-        available=bool(result.get("available", False)),
+        available=_available(result.get("available", result.get("part_available"))),
         qty_offered=_int(result.get("qty_offered")) or 0,
         unit_price=_decimal(result.get("unit_price")),
         price_breaks=_price_breaks(result.get("price_breaks")),
