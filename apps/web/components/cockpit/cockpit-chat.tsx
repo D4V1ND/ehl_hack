@@ -17,6 +17,7 @@ import {
 } from "@/components/cockpit/message-composer";
 import { PlanChecklist } from "@/components/cockpit/plan-checklist";
 import { SessionSidebar } from "@/components/cockpit/session-sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { useDevinCase } from "@/hooks/use-devin-case";
 import { buildCockpitView } from "@/lib/live/cockpit-view";
 
@@ -114,6 +115,7 @@ function DevinCockpit() {
               view={cockpitView}
               launching={devin.status === "launching"}
             />
+            {devin.running ? <DevinWorkingIndicator /> : null}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -125,6 +127,19 @@ function DevinCockpit() {
         />
       </div>
     </CockpitShell>
+  );
+}
+
+function DevinWorkingIndicator() {
+  return (
+    <div
+      className="flex items-center gap-2 px-1 py-2 text-sm text-muted-foreground"
+      role="status"
+      aria-live="polite"
+    >
+      <Spinner className="size-4" aria-hidden="true" />
+      <span>Devin is working…</span>
+    </div>
   );
 }
 
