@@ -3,7 +3,7 @@
   "checkpoint_id": "01M0R07YTQ0DYM8KW7DQP6APRG",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/supplyos-cockpit-ui-handoff",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     ".env.example",
     "Makefile",
@@ -14,6 +14,8 @@
     "backend/tests/test_plan.py",
     "cases/CASE-001/events.jsonl",
     "cases/CASE-001/plan.json",
+    "cases/CASE-6204-2RS-7/events.jsonl",
+    "cases/CASE-6204-2RS-7/plan.json",
     "cases/CASE-6204-2RS-8/events.jsonl",
     "cases/CASE-6204-2RS-8/plan.json",
     "docs/demo-run-sheet.md",
@@ -30,13 +32,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 465724,
+    "input_tokens": 548129,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 7542784,
-    "output_tokens": 47450,
-    "api_call_count": 77
+    "cache_read_tokens": 8287488,
+    "output_tokens": 52178,
+    "api_call_count": 92
   }
 }

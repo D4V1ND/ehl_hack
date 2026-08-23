@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0R07YTQ0DYM8KW7DQP6APRG",
+  "session_id": "01a02eb3-3228-7a12-9313-a03e08f71de7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T19:06:03.42129Z",
+  "branch": "lorenzkrinner/supplyos-cockpit-ui-handoff",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    ".env.example",
+    "Makefile",
+    "README.md",
+    "backend/api/routers/launch.py",
+    "backend/launch/devin.py",
+    "backend/tests/test_launch.py",
+    "backend/tests/test_plan.py",
+    "cases/CASE-001/events.jsonl",
+    "cases/CASE-001/plan.json",
+    "cases/CASE-6204-2RS-7/events.jsonl",
+    "cases/CASE-6204-2RS-7/plan.json",
+    "docs/demo-run-sheet.md",
+    "run.py",
+    "ui/next.config.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "c0c6949fb460",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 82405,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 744704,
+    "output_tokens": 4728,
+    "api_call_count": 15
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T19:06:03.403882Z",
+    "agent_lines": 632,
+    "agent_removed": 113,
+    "human_added": 2944,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 3577,
+    "total_lines_changed": 3726,
+    "agent_percentage": 19.99463231347289,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
