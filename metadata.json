@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0Q00KEQKXS70NP9Y1WVMC2X",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "README.md",
+    "backend/api/routers/flow.py",
+    "backend/launch/devin.py",
+    "backend/outreach/prompts.py",
+    "cases/CASE-6204-2RS-26/events.jsonl",
+    "cases/CASE-6204-2RS-26/plan.json",
+    "cases/CASE-6204-2RS-27/events.jsonl",
+    "cases/CASE-6204-2RS-27/plan.json",
+    "cases/CASE-6204-2RS-28/events.jsonl",
+    "cases/CASE-6204-2RS-28/plan.json",
+    "cases/CASE-6205-2RS-2/events.jsonl",
+    "cases/CASE-6205-2RS-2/plan.json",
+    "cases/CASE-6205-2RS/events.jsonl",
+    "cases/CASE-6205-2RS/plan.json",
+    "cases/CASE-6305-2RS/events.jsonl",
+    "cases/CASE-6305-2RS/plan.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 920,
+    "cache_creation_tokens": 1667828,
+    "cache_read_tokens": 134965333,
+    "output_tokens": 265182,
+    "api_call_count": 461
+  }
+}
