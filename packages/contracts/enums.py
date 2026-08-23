@@ -31,8 +31,7 @@ class StockStatus(str, Enum):
     UNCLEAR = "unclear"
 
 
-# Channel and Currency are Slice C's and live in models.py alongside Quote.
-# Importing them from there keeps one definition rather than two that drift.
+# Channel and Currency live beside the outreach models that consume them.
 
 
 class FreightMode(str, Enum):

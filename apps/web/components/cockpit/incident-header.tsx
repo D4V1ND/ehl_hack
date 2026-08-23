@@ -7,34 +7,30 @@ import {
   PanelRightOpenIcon,
   PartIcon,
   QuantityIcon,
-  RotateCcwIcon,
   WarehouseIcon,
-} from "@/components/icons"
-import { DotLoader } from "@/components/cockpit/dot-loader"
-import { Button } from "@/components/ui/button"
+} from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import type { Incident, Part } from "@/lib/live/types"
+} from "@/components/ui/tooltip";
+import type { Incident, Part } from "@/lib/live/types";
 
 type IncidentHeaderProps = {
-  caseId: string | null
-  incident: Incident | null
-  part: Part | null
-  sessionUrl: string | null
-  stubbed: boolean
-  running: boolean
-  onReplay: () => void
-  showOpenCandidates: boolean
-  onOpenCandidates: () => void
-}
+  caseId: string | null;
+  incident: Incident | null;
+  part: Part | null;
+  sessionUrl: string | null;
+  stubbed: boolean;
+  showOpenCandidates: boolean;
+  onOpenCandidates: () => void;
+};
 
 export function IncidentHeader(props: IncidentHeaderProps) {
   return (
@@ -44,9 +40,7 @@ export function IncidentHeader(props: IncidentHeaderProps) {
           className="group/incident-trigger flex min-w-0 flex-1 items-center gap-4 rounded-md px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           aria-label="Toggle Incident details"
         >
-          <span className="font-mono text-sm">
-            {props.caseId ?? "No case"}
-          </span>
+          <span className="font-mono text-sm">{props.caseId ?? "No case"}</span>
           <span className="hidden text-sm md:inline">
             {lineStopLabel(props.incident)}
           </span>
@@ -77,9 +71,9 @@ export function IncidentHeader(props: IncidentHeaderProps) {
                 String(
                   Math.max(
                     props.incident.qty_required - props.incident.qty_on_hand,
-                    0
-                  )
-                )
+                    0,
+                  ),
+                ),
               )}
             />
             <IncidentProperty
@@ -100,33 +94,17 @@ export function IncidentHeader(props: IncidentHeaderProps) {
           </dl>
         ) : (
           <p className="px-4 py-4 text-sm text-muted-foreground">
-            {props.running
-              ? "Opening a Devin session…"
-              : "No Devin session yet."}
+            Select a shortage in ERP to open it in SupplyOS.
           </p>
         )}
       </CollapsibleContent>
     </Collapsible>
-  )
+  );
 }
 
 function HeaderActions(props: IncidentHeaderProps) {
   return (
     <div className="ml-auto flex shrink-0 items-center gap-1">
-      <Button
-        type="button"
-        size="sm"
-        variant="secondary"
-        disabled={props.running}
-        onClick={props.onReplay}
-      >
-        {props.running ? (
-          <DotLoader />
-        ) : (
-          <RotateCcwIcon data-icon="inline-start" />
-        )}
-        {props.running ? "Running" : "New session"}
-      </Button>
       {props.sessionUrl ? (
         <a
           href={props.sessionUrl}
@@ -156,7 +134,7 @@ function HeaderActions(props: IncidentHeaderProps) {
         </Tooltip>
       ) : null}
     </div>
-  )
+  );
 }
 
 function IncidentProperty({
@@ -164,9 +142,9 @@ function IncidentProperty({
   label,
   value,
 }: {
-  icon: IconComponent
-  label: string
-  value: string
+  icon: IconComponent;
+  label: string;
+  value: string;
 }) {
   return (
     <div className="grid min-w-0 grid-cols-[1.25rem_minmax(0,1fr)] gap-x-2.5">
@@ -182,14 +160,14 @@ function IncidentProperty({
         </dd>
       </div>
     </div>
-  )
+  );
 }
 
 function formatQuantity(quantity: string): string {
-  return Number(quantity).toLocaleString("en-US").replaceAll(",", "\u00a0")
+  return Number(quantity).toLocaleString("en-US").replaceAll(",", "\u00a0");
 }
 
 function lineStopLabel(incident: Incident | null): string {
-  if (!incident) return "Waiting for Devin"
-  return `Line stop ${incident.line_stop_at.slice(0, 10)}`
+  if (!incident) return "Waiting for ERP handoff";
+  return `Line stop ${incident.line_stop_at.slice(0, 10)}`;
 }

@@ -1,21 +1,48 @@
-## Agent skills
+# Repository guide
 
-### Issue tracker
+SupplyOS is a monorepo with three applications and one shared contract package:
 
-Issues live as GitHub issues in this repo and are managed with the `gh` CLI. See `docs/agents/issue-tracker.md`.
+- `apps/erp/` is the mock ERP and system-of-record interface.
+- `apps/web/` is the SupplyOS product interface.
+- `apps/api/` is the only Python service; its import package is `supplyos_api`.
+- `packages/contracts/` owns shared Pydantic models, JSON Schema, and generated
+  TypeScript contracts.
 
-### Triage labels
+The product flow and ownership boundaries live in `docs/PLAN.md`. Read the
+nearest app-level `AGENTS.md` before changing an application.
 
-Use the five canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+## Commands
 
-### Domain docs
+Run repository workflows from the root:
 
-Single-context repo. Read the root `CONTEXT.md` (when it exists) and `docs/adr/`. See `docs/agents/domain.md`.
+- `python run.py setup` installs both Python distributions and both Next apps.
+- `python run.py test` runs API tests plus ERP and SupplyOS checks offline.
+- `python run.py build` builds both Next apps.
+- `python run.py` starts the API, ERP, and SupplyOS together.
+- `python run.py api`, `python run.py erp`, and `python run.py web` start one app.
+- `python -m supplyos_api.cli ...` drives sourcing cases through the API.
 
-### Tech stack
+## Boundaries
 
-See `docs/agents/tech-stack.md` for the tools this repo uses and their documentation links.
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+Keep one FastAPI entry point: `supplyos_api.main:app`. ERP opens an incident and
+hands its case ID to SupplyOS; SupplyOS presents and works that case. Shared wire
+and domain types belong in `packages/contracts/`; frontend code imports the
+generated `packages/contracts/generated/contracts.ts`. Run
+`python run.py contracts` after changing contracts and commit the generated
+outputs.
+
+Rehearsal is the default. Tests, setup, and ordinary development stay offline
+and may not place calls. Preserve exact `Decimal` money values, mask phone
+numbers outside the literal outbound-call request, and keep secrets and real
+numbers out of Git. Live calling requires both the server confirmation and an
+explicit CLI/UI request.
+
+## References
+
+- Runtime flow, setup, and safety: `README.md`
+- Product decisions and ownership: `docs/PLAN.md`
+- Detailed behavior: `docs/specs/`
+- Stack-specific documentation: `docs/agents/tech-stack.md`
+- Issues and labels: `docs/agents/issue-tracker.md` and
+  `docs/agents/triage-labels.md`
+- Domain context and ADR routing: `docs/agents/domain.md`

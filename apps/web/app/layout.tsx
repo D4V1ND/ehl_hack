@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   },
   description:
     "Auditable sourcing for factory shortages, from supplier Claims to a human-recorded Decision.",
+  icons: {
+    icon: {
+      url: "/favicon-white.png",
+      type: "image/png",
+    },
+  },
 }
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })

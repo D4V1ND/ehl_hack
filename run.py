@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""One command to run Slice B, on Windows, macOS and Linux.
+"""One command to run SupplyOS on Windows, macOS and Linux.
 
-    python run.py            build the database, start the API and the cockpit
-    python run.py ui         cockpit only (it runs offline; this is the demo path)
-    python run.py web        the apps/web chat cockpit only
+    python run.py            build the database, start API, ERP, and SupplyOS
+    python run.py erp        mock ERP only
+    python run.py web        SupplyOS only
     python run.py api        API only
-    python run.py test       every test, plus the UI typecheck. Touches no network.
+    python run.py test       API tests plus both app checks. Touches no network.
     python run.py db         rebuild the SQL system of record from the seed YAML
     python run.py db-export  copy the database somewhere a GUI can open it
+    python run.py contracts  regenerate shared schemas and TypeScript contracts
     python run.py setup      install Python and Node dependencies
 
 Python rather than a shell script on purpose: Python 3.11+ is already a hard
-dependency of the backend, so it is guaranteed present on every machine, whereas
+dependency of the API, so it is guaranteed present on every machine, whereas
 `bash` is absent on Windows and stuck at 3.2 on macOS (no `local`, no reliable
 `/dev/tcp`). This file replaces run.sh; run.sh now just calls it.
 
@@ -22,10 +23,8 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import json
 import os
 import shutil
-import signal
 import socket
 import subprocess
 import sys
@@ -33,13 +32,15 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-UI = ROOT / "ui"
+API = ROOT / "apps" / "api"
+API_DATA = API / "data"
+ERP = ROOT / "apps" / "erp"
 WEB = ROOT / "apps" / "web"
 VENV = ROOT / ".venv"
 WINDOWS = os.name == "nt"
 
 API_PORT_DEFAULT = int(os.environ.get("API_PORT", 8010))
-UI_PORT_DEFAULT = int(os.environ.get("UI_PORT", 3000))
+ERP_PORT_DEFAULT = int(os.environ.get("ERP_PORT", 3000))
 WEB_PORT_DEFAULT = int(os.environ.get("WEB_PORT", 3001))
 
 MIN_NODE_MAJOR = 20  # Next 16 requires >= 20.9
@@ -96,7 +97,7 @@ def venv_python() -> Path:
     return VENV / ("Scripts/python.exe" if WINDOWS else "bin/python")
 
 
-def ensure_python() -> Path:
+def ensure_python(*, force_install: bool = False) -> Path:
     """Bootstrap from a clean clone: create the venv and install if missing.
 
     This is the situation for a teammate who has just cloned, for a judge
@@ -115,14 +116,27 @@ def ensure_python() -> Path:
         py = venv_python()
 
     probe = subprocess.run(
-        [str(py), "-c", "import calle, fastapi, pydantic, yaml, uvicorn"],
+        [
+            str(py),
+            "-c",
+            "import calle, fastapi, packages.contracts, pydantic, supplyos_api, uvicorn, yaml",
+        ],
         capture_output=True, env=clean,
     )
-    if probe.returncode != 0:
+    if force_install or probe.returncode != 0:
         warn("installing Python dependencies")
+        pip_probe = subprocess.run(
+            [str(py), "-m", "pip", "--version"], capture_output=True, env=clean
+        )
+        if pip_probe.returncode != 0:
+            subprocess.run([str(py), "-m", "ensurepip", "--upgrade"], env=clean, check=True)
         subprocess.run([str(py), "-m", "pip", "install", "--quiet", "--upgrade", "pip"],
                        env=clean, check=True)
-        subprocess.run([str(py), "-m", "pip", "install", "--quiet", "-e", ".[dev]"],
+        # The API depends on the shared contracts distribution. Install both as
+        # editables, in dependency order, so imports work without PYTHONPATH.
+        subprocess.run([str(py), "-m", "pip", "install", "--quiet", "-e", "."],
+                       cwd=ROOT, env=clean, check=True)
+        subprocess.run([str(py), "-m", "pip", "install", "--quiet", "-e", "apps/api[dev]"],
                        cwd=ROOT, env=clean, check=True)
     return py
 
@@ -182,10 +196,10 @@ def ensure_node() -> None:
         return
     if major < MIN_NODE_MAJOR:
         hint = _nvm_hint() or f"  Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org"
-        die(f"node {version} is too old for Next 16 (ui/.nvmrc pins 22).\n{hint}")
+        die(f"node {version} is too old for Next 16 (.nvmrc pins Node 22).\n{hint}")
 
 
-def ensure_node_modules(app: Path = UI) -> None:
+def ensure_node_modules(app: Path) -> None:
     if not (app / "node_modules").exists():
         rel = app.relative_to(ROOT).as_posix()
         warn(f"{rel}/node_modules missing — installing (this takes a minute)")
@@ -230,27 +244,26 @@ def next_dev_argv(app: Path, port: int) -> list[str]:
 
 
 def cmd_db(py: Path | None = None) -> None:
-    run_module(py or ensure_python(), "backend.record.seed_db", check=True)
+    run_module(py or ensure_python(), "supplyos_api.record.seed_db", check=True)
 
 
 def ensure_db(py: Path) -> None:
-    if not (ROOT / "backend/record/supplyguard.db").exists():
+    if not (API_DATA / "erp.db").exists():
         warn("no database yet — building it from the seed YAML")
         cmd_db(py)
 
 
-def cmd_fixtures() -> None:
+def cmd_contracts() -> None:
     run_module(ensure_python(), "packages.contracts.export", check=True)
 
 
 def cmd_setup() -> None:
     bold("Installing dependencies")
-    py = ensure_python()
+    py = ensure_python(force_install=True)
     ok(f"python ({py})")
     ensure_node()
-    subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
-    if WEB.is_dir():
-        subprocess.run([node_cmd("npm"), "install"], cwd=WEB, check=True)
+    for app in (ERP, WEB):
+        subprocess.run([node_cmd("npm"), "install"], cwd=app, check=True)
     ok(f"node {subprocess.run([shutil.which('node'), '-v'], capture_output=True, text=True).stdout.strip()}")
     cmd_db(py)
     ok("database")
@@ -258,19 +271,28 @@ def cmd_setup() -> None:
 
 def cmd_test() -> None:
     py = ensure_python()
-    bold("Backend tests")
-    env = {**os.environ, "PYTHONPATH": "", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"}
+    bold("API tests")
+    env = {
+        **os.environ,
+        "PYTHONPATH": "",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "FAKE_CALLS": "1",
+        "LIVE_CALLS": "",
+    }
     result = subprocess.run(
         [str(py), "-m", "pytest", "-q", "-m", "not live"], cwd=ROOT, env=env
     )
     if result.returncode != 0:
         raise SystemExit(result.returncode)
-    bold("UI typecheck")
+    bold("ERP tests")
     ensure_node()
-    ensure_node_modules()
-    if subprocess.run([node_cmd("npx"), "tsc", "--noEmit"], cwd=UI).returncode != 0:
-        raise SystemExit(1)
-    ok("no type errors")
+    for app, scripts in ((ERP, ("test", "typecheck")), (WEB, ("typecheck",))):
+        ensure_node_modules(app)
+        for script in scripts:
+            bold(f"{app.name}: {script}")
+            if subprocess.run([node_cmd("npm"), "run", script], cwd=app).returncode != 0:
+                raise SystemExit(1)
+    ok("offline checks passed")
 
 
 def cmd_api() -> None:
@@ -281,18 +303,23 @@ def cmd_api() -> None:
     # Watch only the Python source. Watching the whole repo restarts the API
     # whenever npm touches a node_modules tree (some packages ship .py files).
     run_module(
-        py, "uvicorn", "backend.api.main:app", "--reload",
-        "--reload-dir", "backend", "--reload-dir", "packages",
+        py, "uvicorn", "supplyos_api.main:app", "--reload",
+        "--reload-dir", "apps/api/src", "--reload-dir", "packages",
         "--port", str(port),
     )
 
 
-def cmd_ui() -> None:
+def cmd_erp() -> None:
     ensure_node()
-    ensure_node_modules()
-    port = pick_port(UI_PORT_DEFAULT)
-    bold(f"Cockpit on http://localhost:{port}/cockpit")
-    subprocess.run(next_dev_argv(UI, port), cwd=UI)
+    ensure_node_modules(ERP)
+    port = pick_port(ERP_PORT_DEFAULT)
+    bold(f"ERP on http://localhost:{port}/inventory")
+    env = {
+        **os.environ,
+        "NEXT_PUBLIC_API_BASE": f"http://localhost:{API_PORT_DEFAULT}",
+        "NEXT_PUBLIC_SUPPLYOS_URL": f"http://localhost:{WEB_PORT_DEFAULT}",
+    }
+    subprocess.run(next_dev_argv(ERP, port), cwd=ERP, env=env)
 
 
 def cmd_web() -> None:
@@ -301,59 +328,68 @@ def cmd_web() -> None:
     ensure_node()
     ensure_node_modules(WEB)
     port = pick_port(WEB_PORT_DEFAULT)
-    bold(f"Chat cockpit on http://localhost:{port}/chat")
-    subprocess.run(next_dev_argv(WEB, port), cwd=WEB)
+    bold(f"SupplyOS on http://localhost:{port}/chat")
+    env = {**os.environ, "NEXT_PUBLIC_API_BASE": f"http://localhost:{API_PORT_DEFAULT}"}
+    subprocess.run(next_dev_argv(WEB, port), cwd=WEB, env=env)
 
 
 def cmd_build() -> None:
     ensure_node()
-    ensure_node_modules()
-    subprocess.run([node_cmd("npm"), "run", "build"], cwd=UI, check=True)
+    for app in (ERP, WEB):
+        ensure_node_modules(app)
+        bold(f"Building {app.name}")
+        subprocess.run([node_cmd("npm"), "run", "build"], cwd=app, check=True)
 
 
 def cmd_all() -> None:
     py = ensure_python()
     ensure_node()
-    ensure_node_modules()
+    ensure_node_modules(ERP)
+    ensure_node_modules(WEB)
     ensure_db(py)
 
-    # apps/web is a second, separate cockpit and is not on every branch.
-    with_web = WEB.is_dir()
-    if with_web:
-        ensure_node_modules(WEB)
-
     api_port = pick_port(API_PORT_DEFAULT)
-    ui_port = pick_port(UI_PORT_DEFAULT)
-    web_port = pick_port(max(WEB_PORT_DEFAULT, ui_port + 1)) if with_web else None
+    erp_port = pick_port(ERP_PORT_DEFAULT)
+    web_port = pick_port(max(WEB_PORT_DEFAULT, erp_port + 1))
 
     logs = ROOT / ".logs"
     logs.mkdir(exist_ok=True)
     api_log = (logs / "api.log").open("w")
-    ui_log = (logs / "ui.log").open("w")
-    web_log = (logs / "web.log").open("w") if with_web else None
+    erp_log = (logs / "erp.log").open("w")
+    web_log = (logs / "web.log").open("w")
 
     # A new process group on Windows so Ctrl-C reaches the children the same way
     # a POSIX signal would.
     flags = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if WINDOWS else {}
     api_base = {"NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}"}
+    erp_env = {
+        **os.environ,
+        **api_base,
+        "NEXT_PUBLIC_SUPPLYOS_URL": f"http://localhost:{web_port}",
+    }
 
     api = subprocess.Popen(
-        [str(py), "-m", "uvicorn", "backend.api.main:app", "--port", str(api_port)],
+        [str(py), "-m", "uvicorn", "supplyos_api.main:app", "--port", str(api_port)],
         cwd=ROOT, env={**os.environ, "PYTHONPATH": ""},
         stdout=api_log, stderr=subprocess.STDOUT, **flags,
     )
-    ui = subprocess.Popen(
-        next_dev_argv(UI, ui_port),
-        cwd=UI, env={**os.environ, **api_base},
-        stdout=ui_log, stderr=subprocess.STDOUT, **flags,
+    erp = subprocess.Popen(
+        next_dev_argv(ERP, erp_port),
+        cwd=ERP, env=erp_env,
+        stdout=erp_log, stderr=subprocess.STDOUT, **flags,
     )
     web = subprocess.Popen(
         next_dev_argv(WEB, web_port),
-        cwd=WEB, env={**os.environ, **api_base},
+        cwd=WEB,
+        env={
+            **os.environ,
+            **api_base,
+            "NEXT_PUBLIC_ERP_URL": f"http://localhost:{erp_port}",
+        },
         stdout=web_log, stderr=subprocess.STDOUT, **flags,
-    ) if with_web else None
+    )
 
-    children = [p for p in (api, ui, web) if p is not None]
+    children = [api, erp, web]
 
     try:
         # Wait for the API rather than guessing with a sleep.
@@ -370,10 +406,9 @@ def cmd_all() -> None:
             die("the API never became ready — see .logs/api.log")
 
         print()
-        bold("Stockout — Slice B")
-        ok(f"cockpit   http://localhost:{ui_port}/cockpit")
-        if with_web:
-            ok(f"chat      http://localhost:{web_port}/chat")
+        bold("SupplyOS")
+        ok(f"ERP       http://localhost:{erp_port}/inventory")
+        ok(f"SupplyOS  http://localhost:{web_port}/chat")
         ok(f"API       http://localhost:{api_port}/docs")
         dim(f"  logs      {logs}")
         dim("  Ctrl-C to stop everything")
@@ -384,11 +419,11 @@ def cmd_all() -> None:
             time.sleep(0.5)
 
         for name, proc, log in (
-            ("cockpit", ui, "ui.log"),
-            ("chat cockpit", web, "web.log"),
+            ("ERP", erp, "erp.log"),
+            ("SupplyOS", web, "web.log"),
             ("API", api, "api.log"),
         ):
-            if proc is None or proc.poll() is None:
+            if proc.poll() is None:
                 continue
             warn(f"the {name} stopped")
             with contextlib.suppress(OSError):
@@ -406,9 +441,8 @@ def cmd_all() -> None:
                     proc.wait(timeout=8)
                 except subprocess.TimeoutExpired:
                     proc.kill()
-        for handle in (api_log, ui_log, web_log):
-            if handle is not None:
-                handle.close()
+        for handle in (api_log, erp_log, web_log):
+            handle.close()
 
 
 def cmd_db_export(dest: str | None) -> None:
@@ -429,18 +463,22 @@ def cmd_db_export(dest: str | None) -> None:
         windows_homes = sorted(Path("/mnt/c/Users").glob("*/Downloads")) if Path("/mnt/c/Users").is_dir() else []
         skip = {"All Users", "Default", "Default User", "Public"}
         windows_homes = [p for p in windows_homes if p.parent.name not in skip]
-        target = windows_homes[0] / "supplyguard.db" if windows_homes else Path.home() / "supplyguard.db"
+        target = windows_homes[0] / "erp.db" if windows_homes else Path.home() / "erp.db"
 
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
         target.unlink()
     code = (
         "import sqlite3, sys;"
-        "c = sqlite3.connect('backend/record/supplyguard.db');"
-        "c.execute('VACUUM INTO ?', (sys.argv[1],));"
+        "c = sqlite3.connect(sys.argv[1]);"
+        "c.execute('VACUUM INTO ?', (sys.argv[2],));"
         "c.close()"
     )
-    subprocess.run([str(py), "-c", code, str(target)], cwd=ROOT, check=True)
+    subprocess.run(
+        [str(py), "-c", code, str(API_DATA / "erp.db"), str(target)],
+        cwd=ROOT,
+        check=True,
+    )
     ok(f"snapshot written ({target.stat().st_size // 1024} KB)")
     dim(f"  {target}")
     if shutil.which("wslpath"):
@@ -453,13 +491,13 @@ def cmd_db_export(dest: str | None) -> None:
 
 COMMANDS = {
     "all": lambda a: cmd_all(),
-    "ui": lambda a: cmd_ui(),
+    "erp": lambda a: cmd_erp(),
     "web": lambda a: cmd_web(),
     "api": lambda a: cmd_api(),
     "test": lambda a: cmd_test(),
     "db": lambda a: cmd_db(),
     "db-export": lambda a: cmd_db_export(a.dest),
-    "fixtures": lambda a: cmd_fixtures(),
+    "contracts": lambda a: cmd_contracts(),
     "setup": lambda a: cmd_setup(),
     "build": lambda a: cmd_build(),
 }

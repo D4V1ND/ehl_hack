@@ -1,0 +1,350 @@
+"""The Devin tool endpoints. Boring, fast, documented, stable.
+
+Devin burns ACUs while it waits, so every handler here is an in-memory lookup
+over data parsed once at startup. Nothing in this module does I/O per request,
+and nothing here returns a raw phone number.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+
+from supplyos_api.deps import erp, settings, store
+from packages.contracts.enums import Actor, Level, PlanGroup, Stage, StepStatus
+from packages.contracts.models import (
+    Candidate,
+    CasePlan,
+    Channel,
+    Claim,
+    Event,
+    Incident,
+    OpenPurchaseOrder,
+    OutreachBrief,
+    OutreachTask,
+    Part,
+    PlanStep,
+    PlanStepUpdate,
+    StockLevel,
+    SupplierPriceRecord,
+    SupplierRecord,
+)
+from packages.contracts.safe import claim_from_result
+from supplyos_api import plan
+from supplyos_api.launch.resolve import resolve_incident
+from supplyos_api.record.ports import SystemOfRecord
+from supplyos_api.casestore.case_store import CaseStore
+
+router = APIRouter(prefix="/tools", tags=["devin-tools"])
+
+
+@router.get("/part/{part_id}", response_model=Part, summary="One part, with its spec, weight and HS code")
+def get_part(part_id: str, records: SystemOfRecord = Depends(erp)) -> Part:
+    part = records.get_part(part_id)
+    if part is None:
+        raise HTTPException(status_code=404, detail=f"no part {part_id}")
+    return part
+
+
+@router.get("/parts", response_model=list[Part], summary="The whole item master")
+def list_parts(records: SystemOfRecord = Depends(erp)) -> list[Part]:
+    return records.list_parts()
+
+
+@router.get("/stock", response_model=list[StockLevel], summary="On-hand, reserved, reorder point and take rate")
+def get_stock(
+    part_id: str = Query(...),
+    plant_id: str | None = Query(default=None),
+    records: SystemOfRecord = Depends(erp),
+) -> list[StockLevel]:
+    return records.get_stock(part_id, plant_id)
+
+
+@router.get("/suppliers", response_model=list[SupplierRecord], summary="Approved suppliers for a part, in call order")
+def get_suppliers(
+    part_id: str = Query(...),
+    approved_only: bool = Query(default=True),
+    records: SystemOfRecord = Depends(erp),
+) -> list[SupplierRecord]:
+    """Deterministic order: preferred first, then cheapest contract price, then id.
+
+    Who gets called first is a business decision, never a sampling artefact.
+    Phone numbers come back masked; there is no field here for a raw one.
+    """
+    if approved_only:
+        return records.get_suppliers_for_part(part_id)
+    return [s for s in records.list_suppliers() if part_id in s.part_ids]
+
+
+@router.get("/price_history", response_model=list[SupplierPriceRecord], summary="What we actually paid, by quarter")
+def get_price_history(
+    part_id: str = Query(...),
+    supplier_id: str | None = Query(default=None),
+    records: SystemOfRecord = Depends(erp),
+) -> list[SupplierPriceRecord]:
+    return records.get_price_history(part_id, supplier_id)
+
+
+@router.get("/alternates", response_model=list[Part], summary="Same class, same primary dimension, different part")
+def get_alternates(part_id: str = Query(...), records: SystemOfRecord = Depends(erp)) -> list[Part]:
+    return records.get_alternates(part_id)
+
+
+@router.get("/open_pos", response_model=list[OpenPurchaseOrder], summary="Open POs, including slipped ones")
+def get_open_pos(part_id: str | None = Query(default=None), records: SystemOfRecord = Depends(erp)) -> list[OpenPurchaseOrder]:
+    return records.get_open_pos(part_id)
+
+
+@router.get("/incident/{case_id}", response_model=Incident, summary="The shortage, as our own records see it")
+def get_incident(
+    case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)
+) -> Incident:
+    incident = resolve_incident(case_id, records, cases)
+    if incident is None:
+        raise HTTPException(status_code=404, detail=f"no incident {case_id}")
+    return incident
+
+
+# ---------------------------------------------------------------------------
+# Writes
+# ---------------------------------------------------------------------------
+
+
+@router.post("/candidates", response_model=list[Candidate], summary="File the candidate list for a case")
+def post_candidates(
+    case_id: str,
+    candidates: list[Candidate],
+    cases: CaseStore = Depends(store),
+) -> list[Candidate]:
+    cases.write_candidates(case_id, candidates)
+    rejected = [c for c in candidates if not c.compliance.passed]
+    cases.append_event(
+        case_id,
+        actor=Actor.DEVIN,
+        stage=Stage.RESEARCHING,
+        message=f"{len(candidates)} candidates, {len(rejected)} rejected by policy",
+        payload={
+            "rejected": [
+                {"supplier_ref": c.supplier_ref, "rules": [r.value for r in c.compliance.failed_rules]}
+                for c in rejected
+            ]
+        },
+    )
+    return candidates
+
+
+@router.post("/outreach", response_model=list[OutreachTask], summary="Turn compliant candidates into outreach tasks")
+def post_outreach(
+    case_id: str,
+    supplier_ids: list[str],
+    qty: int,
+    records: SystemOfRecord = Depends(erp),
+    cases: CaseStore = Depends(store),
+    config=Depends(settings),
+) -> list[OutreachTask]:
+    """Build provider-independent outreach tasks.
+
+    The channel is chosen by geography, not preference: CALL-E has no CN region,
+    so a Chinese supplier routes to email rather than voice. Same `Claim` comes
+    back either way after provider dispatch and normalization.
+    """
+    incident = resolve_incident(case_id, records, cases)
+    if incident is None:
+        raise HTTPException(status_code=404, detail=f"no incident {case_id}")
+    part = records.get_part(incident.part_id)
+
+    tasks: list[OutreachTask] = []
+    for supplier_id in supplier_ids:
+        supplier = records.get_supplier(supplier_id)
+        if supplier is None:
+            raise HTTPException(status_code=404, detail=f"no supplier {supplier_id}")
+        channel = Channel.VOICE if Channel.VOICE in supplier.channels else (
+            Channel.EMAIL if Channel.EMAIL in supplier.channels else Channel.MARKETPLACE
+        )
+        tasks.append(
+            OutreachTask(
+                task_id=f"OUT-{case_id}-{supplier_id}-{uuid.uuid4().hex[:6]}",
+                case_id=case_id,
+                supplier_ref=supplier_id,
+                channel=channel,
+                brief=OutreachBrief(
+                    part_spec=f"{part.item_code} — {part.description}" if part else incident.part_id,
+                    qty=qty,
+                    needed_by=incident.needed_by,
+                    target_price=supplier.contract_unit_price,
+                    floor_price=None,
+                ),
+            )
+        )
+
+    cases.write_outreach_tasks(case_id, tasks)
+    cases.append_event(
+        case_id,
+        actor=Actor.SYSTEM,
+        stage=Stage.CALLING,
+        message=f"{len(tasks)} outreach tasks queued in {config.call_mode} mode",
+        payload={"mode": config.call_mode, "channels": [t.channel.value for t in tasks]},
+    )
+    return tasks
+
+
+@router.post("/claims", response_model=Claim, summary="File what a supplier said. Never raises.")
+def post_claim(
+    case_id: str,
+    task_id: str,
+    supplier_ref: str,
+    result: dict | None = None,
+    call_id: str | None = None,
+    round_: int = 1,
+    cases: CaseStore = Depends(store),
+) -> Claim:
+    """Accepts whatever the call returned, however garbled.
+
+    A truncated or nonsense result becomes a confidence-0 claim with its fields
+    defaulted to unknown, not a 422. One bad call must not kill a five-supplier
+    case mid-run.
+    """
+    claim = claim_from_result(
+        result, task_id=task_id, case_id=case_id, supplier_ref=supplier_ref,
+        call_id=call_id, round_=round_,
+    )
+    cases.write_claim(claim)
+    cases.append_event(
+        case_id,
+        actor=Actor.CALLE,
+        stage=Stage.CALLING,
+        level=Level.WARN if claim.confidence < 0.4 else Level.INFO,
+        message=(
+            f"{supplier_ref}: {claim.stock_status.value}, "
+            f"{claim.qty_offered} pcs, confidence {claim.confidence:.0%}"
+        ),
+        payload={"supplier_ref": supplier_ref, "stock_status": claim.stock_status.value},
+    )
+    return claim
+
+
+@router.post("/events", response_model=Event, summary="Narrate progress into the case log")
+def post_event(
+    case_id: str,
+    stage: Stage,
+    message: str,
+    actor: Actor = Actor.DEVIN,
+    level: Level = Level.INFO,
+    payload: dict | None = None,
+    cases: CaseStore = Depends(store),
+) -> Event:
+    return cases.append_event(
+        case_id, actor=actor, stage=stage, message=message, level=level, payload=payload
+    )
+
+
+# ---------------------------------------------------------------------------
+# The checklist. The cockpit renders this as a to-do list, so a step that is
+# never ticked reads as "the agent is stuck there" — which is the point.
+# ---------------------------------------------------------------------------
+
+
+PLAN_STAGE: dict[PlanGroup, Stage] = {
+    PlanGroup.INTAKE: Stage.DETECTED,
+    PlanGroup.ERP: Stage.RESEARCHING,
+    PlanGroup.SUPPLIERS: Stage.RESEARCHING,
+    PlanGroup.SCREENING: Stage.RESEARCHING,
+    PlanGroup.OUTREACH: Stage.CALLING,
+    PlanGroup.CLAIMS: Stage.CALLING,
+    PlanGroup.COSTING: Stage.COSTING,
+    PlanGroup.REVIEW: Stage.DECIDED,
+}
+
+
+def _narrate(cases: CaseStore, step: PlanStep) -> None:
+    """A checklist move is also a line in the event log; the two never disagree."""
+    verb = {
+        StepStatus.ACTIVE: "started",
+        StepStatus.DONE: "finished",
+        StepStatus.FAILED: "failed",
+        StepStatus.SKIPPED: "skipped",
+        StepStatus.PENDING: "queued",
+    }[step.status]
+    cases.append_event(
+        step.case_id,
+        actor=Actor.DEVIN,
+        stage=PLAN_STAGE[step.group],
+        level=Level.ERROR if step.status is StepStatus.FAILED else Level.INFO,
+        message=f"{verb}: {step.label}" + (f" — {step.detail}" if step.detail else ""),
+        payload={"step_id": step.step_id, "status": step.status.value, "plan": True},
+    )
+
+
+@router.get("/plan", response_model=CasePlan, summary="The checklist for a case")
+def get_plan(case_id: str = Query(...), cases: CaseStore = Depends(store)) -> CasePlan:
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    return plan.read(case_id, cases)
+
+
+@router.post("/plan/step", response_model=CasePlan, summary="Tick off or start one checklist step")
+def post_plan_step(
+    case_id: str = Query(...),
+    step_id: str = Query(..., description="Seeded id, or a new one like outreach:SUP-KBY"),
+    status: StepStatus = Query(...),
+    label: str | None = Query(default=None, description="Required when the step is new"),
+    group: PlanGroup | None = Query(default=None, description="Required when the step is new"),
+    detail: str | None = Query(default=None),
+    supplier_ref: str | None = Query(default=None),
+    cases: CaseStore = Depends(store),
+) -> CasePlan:
+    """One HTTP call per step transition, which is all an agent should have to do.
+
+    New ids are allowed on purpose: how many suppliers get researched or called is
+    the agent's decision, and the frontend finds out by them appearing here.
+    """
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    try:
+        step = plan.upsert(
+            case_id,
+            cases,
+            step_id=step_id,
+            group=group,
+            label=label,
+            status=status,
+            detail=detail,
+            supplier_ref=supplier_ref,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    _narrate(cases, step)
+    return plan.read(case_id, cases)
+
+
+@router.post("/plan/steps", response_model=CasePlan, summary="Announce several steps at once")
+def post_plan_steps(
+    case_id: str = Query(...),
+    steps: list[PlanStepUpdate] = Body(...),
+    cases: CaseStore = Depends(store),
+) -> CasePlan:
+    """The fan-out door: five suppliers being called in parallel is one request.
+
+    They all appear on the checklist in the same poll, so the UI can show them
+    starting together instead of trickling in.
+    """
+    if not cases.exists(case_id):
+        raise HTTPException(status_code=404, detail=f"no case {case_id}")
+    for update in steps:
+        try:
+            step = plan.upsert(
+                case_id,
+                cases,
+                step_id=update.step_id,
+                group=update.group,
+                label=update.label,
+                status=update.status,
+                detail=update.detail,
+                supplier_ref=update.supplier_ref,
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        _narrate(cases, step)
+    return plan.read(case_id, cases)

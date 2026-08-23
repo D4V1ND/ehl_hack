@@ -215,7 +215,7 @@ function PriceBreaks({
 
 function FailedPolicy({ candidate }: { candidate: LiveCandidate }) {
   const explanations = candidate.compliance.explanations ?? {}
-  const rules = candidate.compliance.failed_rules
+  const rules = candidate.compliance.failed_rules ?? []
 
   return (
     <section>

@@ -1,0 +1,36 @@
+[project]
+name = "supplyos-api"
+version = "0.1.0"
+description = "SupplyOS sourcing API and system of record"
+requires-python = ">=3.11"
+dependencies = [
+    "supplyos-contracts>=0.1.0",
+    "calle-ai>=0.6",
+    "fastapi>=0.141",
+    "uvicorn[standard]>=0.52",
+    "pydantic>=2.13",
+    "pyyaml>=6.0",
+    "httpx>=0.28",
+    "python-dotenv>=1.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["supplyos_api*"]
+
+[tool.setuptools.package-data]
+"supplyos_api" = [
+    "fixtures/*.json",
+    "record/demo_data/*.yaml",
+    "record/schema.sql",
+]
+
+[tool.uv.sources]
+supplyos-contracts = { path = "../..", editable = true }

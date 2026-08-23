@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --color-canvas: #f7f7f4;
+  --color-surface-card: #ffffff;
+  --color-ink: #26251e;
+  --color-muted-ink: #807d72;
+  --color-hairline: #e6e5e0;
+  --color-primary: #d9480f;
+  --color-muted-foreground: #5a5852;
+}
+
+@layer base {
+  body {
+    margin: 0;
+  }
+}
