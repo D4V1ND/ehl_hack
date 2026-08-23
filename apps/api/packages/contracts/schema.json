@@ -1,0 +1,4198 @@
+{
+  "Candidate": {
+    "$defs": {
+      "Channel": {
+        "enum": [
+          "voice",
+          "email",
+          "marketplace"
+        ],
+        "title": "Channel",
+        "type": "string"
+      },
+      "ComplianceResult": {
+        "additionalProperties": false,
+        "properties": {
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "failed_rules": {
+            "items": {
+              "$ref": "#/$defs/PolicyRule"
+            },
+            "title": "Failed Rules",
+            "type": "array"
+          },
+          "explanations": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Rule -> one plain sentence. What the UI prints next to the rule name.",
+            "propertyNames": {
+              "$ref": "#/$defs/PolicyRule"
+            },
+            "title": "Explanations",
+            "type": "object"
+          }
+        },
+        "required": [
+          "passed"
+        ],
+        "title": "ComplianceResult",
+        "type": "object"
+      },
+      "PolicyRule": {
+        "description": "The four rules. A rejection always cites one of these by name.",
+        "enum": [
+          "blocked_origin_country",
+          "missing_required_certification",
+          "audit_required_and_not_audited",
+          "lead_time_after_line_stop"
+        ],
+        "title": "PolicyRule",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "supplier_name": {
+        "title": "Supplier Name",
+        "type": "string"
+      },
+      "country": {
+        "title": "Country",
+        "type": "string"
+      },
+      "confidence": {
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "why_matched": {
+        "title": "Why Matched",
+        "type": "string"
+      },
+      "channel": {
+        "$ref": "#/$defs/Channel"
+      },
+      "source": {
+        "default": "erp",
+        "description": "\"erp\" for an approved supplier, \"web\" for one researched online",
+        "title": "Source",
+        "type": "string"
+      },
+      "compliance": {
+        "$ref": "#/$defs/ComplianceResult"
+      }
+    },
+    "required": [
+      "case_id",
+      "supplier_ref",
+      "supplier_name",
+      "country",
+      "confidence",
+      "why_matched",
+      "channel",
+      "compliance"
+    ],
+    "title": "Candidate",
+    "type": "object"
+  },
+  "CaseSnapshot": {
+    "$defs": {
+      "Answer": {
+        "description": "A three-state answer. `UNKNOWN` is legal everywhere `YES`/`NO` are.",
+        "enum": [
+          "yes",
+          "no",
+          "unknown"
+        ],
+        "title": "Answer",
+        "type": "string"
+      },
+      "AuditStatus": {
+        "enum": [
+          "audited",
+          "audit_expired",
+          "never_audited"
+        ],
+        "title": "AuditStatus",
+        "type": "string"
+      },
+      "Candidate": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "supplier_name": {
+            "title": "Supplier Name",
+            "type": "string"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "why_matched": {
+            "title": "Why Matched",
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/$defs/Channel"
+          },
+          "source": {
+            "default": "erp",
+            "description": "\"erp\" for an approved supplier, \"web\" for one researched online",
+            "title": "Source",
+            "type": "string"
+          },
+          "compliance": {
+            "$ref": "#/$defs/ComplianceResult"
+          }
+        },
+        "required": [
+          "case_id",
+          "supplier_ref",
+          "supplier_name",
+          "country",
+          "confidence",
+          "why_matched",
+          "channel",
+          "compliance"
+        ],
+        "title": "Candidate",
+        "type": "object"
+      },
+      "Channel": {
+        "enum": [
+          "voice",
+          "email",
+          "marketplace"
+        ],
+        "title": "Channel",
+        "type": "string"
+      },
+      "Claim": {
+        "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "available": {
+            "default": false,
+            "title": "Available",
+            "type": "boolean"
+          },
+          "qty_offered": {
+            "default": 0,
+            "title": "Qty Offered",
+            "type": "integer"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Price"
+          },
+          "price_breaks": {
+            "items": {
+              "$ref": "#/$defs/PriceBreak"
+            },
+            "title": "Price Breaks",
+            "type": "array"
+          },
+          "currency": {
+            "$ref": "#/$defs/Currency",
+            "default": "unknown"
+          },
+          "moq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Moq"
+          },
+          "lead_time_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Lead Time Days"
+          },
+          "expedite_option": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ExpediteOption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "incoterm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Incoterm"
+          },
+          "certs_claimed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Certs Claimed",
+            "type": "array"
+          },
+          "payment_terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Payment Terms"
+          },
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "transcript_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Transcript Url"
+          },
+          "recording_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recording Url"
+          },
+          "confidence": {
+            "default": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "raw": {
+            "additionalProperties": true,
+            "title": "Raw",
+            "type": "object"
+          },
+          "round": {
+            "default": 1,
+            "title": "Round",
+            "type": "integer"
+          },
+          "call_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Call Id"
+          },
+          "earliest_ready_text": {
+            "default": "",
+            "title": "Earliest Ready Text",
+            "type": "string"
+          },
+          "stock_status": {
+            "$ref": "#/$defs/StockStatus",
+            "default": "unclear"
+          },
+          "price_quoted": {
+            "$ref": "#/$defs/Answer",
+            "default": "unknown"
+          },
+          "part_number_confirmed": {
+            "$ref": "#/$defs/Answer",
+            "default": "unknown"
+          },
+          "certification_current": {
+            "$ref": "#/$defs/Answer",
+            "default": "unknown"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Received At"
+          }
+        },
+        "required": [
+          "task_id",
+          "case_id",
+          "supplier_ref"
+        ],
+        "title": "Claim",
+        "type": "object"
+      },
+      "ComplianceResult": {
+        "additionalProperties": false,
+        "properties": {
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "failed_rules": {
+            "items": {
+              "$ref": "#/$defs/PolicyRule"
+            },
+            "title": "Failed Rules",
+            "type": "array"
+          },
+          "explanations": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Rule -> one plain sentence. What the UI prints next to the rule name.",
+            "propertyNames": {
+              "$ref": "#/$defs/PolicyRule"
+            },
+            "title": "Explanations",
+            "type": "object"
+          }
+        },
+        "required": [
+          "passed"
+        ],
+        "title": "ComplianceResult",
+        "type": "object"
+      },
+      "Criticality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Criticality",
+        "type": "string"
+      },
+      "Currency": {
+        "enum": [
+          "EUR",
+          "USD",
+          "GBP",
+          "unknown"
+        ],
+        "title": "Currency",
+        "type": "string"
+      },
+      "Decision": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/$defs/Strategy"
+            },
+            "title": "Strategies",
+            "type": "array"
+          },
+          "recommended_strategy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recommended Strategy Id"
+          },
+          "runner_up_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Runner Up Ids",
+            "type": "array"
+          },
+          "rationale_md": {
+            "default": "",
+            "title": "Rationale Md",
+            "type": "string"
+          },
+          "policy_report_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Policy Report Url"
+          },
+          "cost_report_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Report Url"
+          },
+          "pr_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pr Url"
+          },
+          "devin_session_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Devin Session Url"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Decided At"
+          }
+        },
+        "required": [
+          "case_id"
+        ],
+        "title": "Decision",
+        "type": "object"
+      },
+      "ExpediteOption": {
+        "description": "Pay `surcharge` total to pull delivery in by `days`.",
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Surcharge"
+          }
+        },
+        "required": [
+          "days",
+          "surcharge"
+        ],
+        "title": "ExpediteOption",
+        "type": "object"
+      },
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      },
+      "Incident": {
+        "additionalProperties": false,
+        "description": "A shortage, as our own records see it. Claims are not involved yet.",
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "part_id": {
+            "title": "Part Id",
+            "type": "string"
+          },
+          "plant_id": {
+            "title": "Plant Id",
+            "type": "string"
+          },
+          "production_line": {
+            "title": "Production Line",
+            "type": "string"
+          },
+          "qty_required": {
+            "title": "Qty Required",
+            "type": "integer"
+          },
+          "qty_on_hand": {
+            "title": "Qty On Hand",
+            "type": "integer"
+          },
+          "needed_by": {
+            "format": "date",
+            "title": "Needed By",
+            "type": "string"
+          },
+          "line_stop_at": {
+            "format": "date-time",
+            "title": "Line Stop At",
+            "type": "string"
+          },
+          "line_stop_cost_per_hour": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Line Stop Cost Per Hour"
+          },
+          "currency": {
+            "$ref": "#/$defs/Currency",
+            "default": "EUR"
+          },
+          "incumbent_supplier_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Incumbent Supplier Id"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "part_id",
+          "plant_id",
+          "production_line",
+          "qty_required",
+          "qty_on_hand",
+          "needed_by",
+          "line_stop_at",
+          "line_stop_cost_per_hour"
+        ],
+        "title": "Incident",
+        "type": "object"
+      },
+      "LandedCost": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "goods_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Goods Cost"
+          },
+          "freight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Freight"
+          },
+          "duty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Duty"
+          },
+          "tooling": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Tooling"
+          },
+          "carrying_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Carrying Cost"
+          },
+          "expedite_surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Expedite Surcharge"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "breakdown_md": {
+            "default": "",
+            "title": "Breakdown Md",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "qty",
+          "mode",
+          "goods_cost",
+          "freight",
+          "duty",
+          "carrying_cost",
+          "expedite_surcharge",
+          "total",
+          "unit_effective"
+        ],
+        "title": "LandedCost",
+        "type": "object"
+      },
+      "OrderLine": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "supplier_name": {
+            "title": "Supplier Name",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "eta": {
+            "format": "date",
+            "title": "Eta",
+            "type": "string"
+          },
+          "landed": {
+            "$ref": "#/$defs/LandedCost"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "supplier_name",
+          "qty",
+          "mode",
+          "eta",
+          "landed"
+        ],
+        "title": "OrderLine",
+        "type": "object"
+      },
+      "OutreachBrief": {
+        "properties": {
+          "part_spec": {
+            "title": "Part Spec",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "needed_by": {
+            "format": "date",
+            "title": "Needed By",
+            "type": "string"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Target Price"
+          },
+          "floor_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Floor Price"
+          },
+          "must_ask": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Must Ask",
+            "type": "array"
+          }
+        },
+        "required": [
+          "part_spec",
+          "qty",
+          "needed_by"
+        ],
+        "title": "OutreachBrief",
+        "type": "object"
+      },
+      "OutreachTask": {
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/$defs/Channel"
+          },
+          "brief": {
+            "$ref": "#/$defs/OutreachBrief"
+          }
+        },
+        "required": [
+          "task_id",
+          "case_id",
+          "supplier_ref",
+          "channel",
+          "brief"
+        ],
+        "title": "OutreachTask",
+        "type": "object"
+      },
+      "Part": {
+        "additionalProperties": false,
+        "properties": {
+          "part_id": {
+            "title": "Part Id",
+            "type": "string"
+          },
+          "item_code": {
+            "description": "ERPNext `item_code`",
+            "title": "Item Code",
+            "type": "string"
+          },
+          "item_name": {
+            "title": "Item Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "spec": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Free-form technical spec, e.g. bore/OD/width/seal",
+            "title": "Spec",
+            "type": "object"
+          },
+          "stock_uom": {
+            "default": "Nos",
+            "title": "Stock Uom",
+            "type": "string"
+          },
+          "criticality": {
+            "$ref": "#/$defs/Criticality",
+            "default": "medium"
+          },
+          "part_class": {
+            "$ref": "#/$defs/PartClass"
+          },
+          "weight_kg": {
+            "description": "Per piece. Drives freight cost.",
+            "exclusiveMinimum": 0,
+            "title": "Weight Kg",
+            "type": "number"
+          },
+          "hs_code": {
+            "description": "Customs tariff code. Drives duty by origin.",
+            "title": "Hs Code",
+            "type": "string"
+          },
+          "standard_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Standard Cost"
+          }
+        },
+        "required": [
+          "part_id",
+          "item_code",
+          "item_name",
+          "description",
+          "part_class",
+          "weight_kg",
+          "hs_code",
+          "standard_cost"
+        ],
+        "title": "Part",
+        "type": "object"
+      },
+      "PartClass": {
+        "description": "Selects which policy rules and cost parameters apply.\n\nThis is the seam that keeps the system from being bearing-specific: adding a\npart class means adding a row to the company profile, not changing code.",
+        "enum": [
+          "rolling_bearing",
+          "fastener",
+          "seal",
+          "electronic_component"
+        ],
+        "title": "PartClass",
+        "type": "string"
+      },
+      "PolicyRule": {
+        "description": "The four rules. A rejection always cites one of these by name.",
+        "enum": [
+          "blocked_origin_country",
+          "missing_required_certification",
+          "audit_required_and_not_audited",
+          "lead_time_after_line_stop"
+        ],
+        "title": "PolicyRule",
+        "type": "string"
+      },
+      "PriceBreak": {
+        "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+        "properties": {
+          "min_qty": {
+            "title": "Min Qty",
+            "type": "integer"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "required": [
+          "min_qty",
+          "unit_price"
+        ],
+        "title": "PriceBreak",
+        "type": "object"
+      },
+      "Stage": {
+        "description": "The five stages of a case. One stage, one colour, everywhere in the UI.",
+        "enum": [
+          "detected",
+          "researching",
+          "calling",
+          "costing",
+          "decided"
+        ],
+        "title": "Stage",
+        "type": "string"
+      },
+      "StockStatus": {
+        "description": "What the supplier says about the stock they hold.\n\n`IN_STOCK_ALLOCATED` is the whole point of asking: \"yes, we have some\"\nfrequently means \"yes, but it is already promised to someone else.\"",
+        "enum": [
+          "free_in_stock",
+          "in_stock_allocated",
+          "to_be_made",
+          "unavailable",
+          "unclear"
+        ],
+        "title": "StockStatus",
+        "type": "string"
+      },
+      "Strategy": {
+        "additionalProperties": false,
+        "properties": {
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "label": {
+            "description": "Human name, e.g. \"Split: fast bridge + cheap bulk\"",
+            "title": "Label",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/$defs/OrderLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "coverage_date": {
+            "description": "When the full quantity is on site",
+            "format": "date",
+            "title": "Coverage Date",
+            "type": "string"
+          },
+          "meets_line_stop": {
+            "title": "Meets Line Stop",
+            "type": "boolean"
+          },
+          "risk_score": {
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Risk Score",
+            "type": "number"
+          },
+          "rationale": {
+            "default": "",
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy_id",
+          "label",
+          "lines",
+          "total_cost",
+          "unit_effective",
+          "coverage_date",
+          "meets_line_stop",
+          "risk_score"
+        ],
+        "title": "Strategy",
+        "type": "object"
+      },
+      "SupplierRecord": {
+        "additionalProperties": false,
+        "description": "What our files say about a supplier. The baseline a claim is checked against.\n\n`phone_masked` is the only phone field that exists. There is deliberately no\nplace to put a raw number.",
+        "properties": {
+          "supplier_id": {
+            "title": "Supplier Id",
+            "type": "string"
+          },
+          "supplier_name": {
+            "description": "ERPNext `supplier_name`",
+            "title": "Supplier Name",
+            "type": "string"
+          },
+          "country": {
+            "description": "ISO 3166-1 alpha-2",
+            "maxLength": 2,
+            "minLength": 2,
+            "title": "Country",
+            "type": "string"
+          },
+          "locale": {
+            "default": "en-GB",
+            "title": "Locale",
+            "type": "string"
+          },
+          "phone_masked": {
+            "description": "Never the raw number. See contracts.phone.",
+            "title": "Phone Masked",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Email"
+          },
+          "marketplace_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Marketplace Url"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/$defs/Channel"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "part_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Part Ids",
+            "type": "array"
+          },
+          "approved": {
+            "default": false,
+            "title": "Approved",
+            "type": "boolean"
+          },
+          "preferred": {
+            "default": false,
+            "title": "Preferred",
+            "type": "boolean"
+          },
+          "incumbent": {
+            "default": false,
+            "title": "Incumbent",
+            "type": "boolean"
+          },
+          "contract_unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Contract Unit Price"
+          },
+          "standard_lead_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Door-to-door days on the contracted mode, not ex-works",
+            "title": "Standard Lead Days"
+          },
+          "certifications": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Certifications",
+            "type": "array"
+          },
+          "certification_expires_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Certification Expires At"
+          },
+          "audit_status": {
+            "$ref": "#/$defs/AuditStatus",
+            "default": "never_audited"
+          },
+          "known_allocations": {
+            "default": 0,
+            "description": "Units our records show already promised elsewhere",
+            "title": "Known Allocations",
+            "type": "integer"
+          },
+          "max_historical_fill": {
+            "default": 0,
+            "description": "Largest order they have actually delivered for us",
+            "title": "Max Historical Fill",
+            "type": "integer"
+          },
+          "price_breaks": {
+            "items": {
+              "$ref": "#/$defs/PriceBreak"
+            },
+            "title": "Price Breaks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "supplier_id",
+          "supplier_name",
+          "country",
+          "phone_masked"
+        ],
+        "title": "SupplierRecord",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Everything the case page needs, in one response.",
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "stage": {
+        "$ref": "#/$defs/Stage"
+      },
+      "incident": {
+        "$ref": "#/$defs/Incident"
+      },
+      "part": {
+        "$ref": "#/$defs/Part"
+      },
+      "profile_summary": {
+        "additionalProperties": true,
+        "title": "Profile Summary",
+        "type": "object"
+      },
+      "candidates": {
+        "items": {
+          "$ref": "#/$defs/Candidate"
+        },
+        "title": "Candidates",
+        "type": "array"
+      },
+      "supplier_records": {
+        "items": {
+          "$ref": "#/$defs/SupplierRecord"
+        },
+        "title": "Supplier Records",
+        "type": "array"
+      },
+      "outreach_tasks": {
+        "items": {
+          "$ref": "#/$defs/OutreachTask"
+        },
+        "title": "Outreach Tasks",
+        "type": "array"
+      },
+      "claims": {
+        "items": {
+          "$ref": "#/$defs/Claim"
+        },
+        "title": "Claims",
+        "type": "array"
+      },
+      "decision": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Decision"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "devin_session_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Devin Session Url"
+      },
+      "last_event_seq": {
+        "default": 0,
+        "title": "Last Event Seq",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "case_id",
+      "stage",
+      "incident",
+      "part"
+    ],
+    "title": "CaseSnapshot",
+    "type": "object"
+  },
+  "CaseSummary": {
+    "$defs": {
+      "Stage": {
+        "description": "The five stages of a case. One stage, one colour, everywhere in the UI.",
+        "enum": [
+          "detected",
+          "researching",
+          "calling",
+          "costing",
+          "decided"
+        ],
+        "title": "Stage",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "item_name": {
+        "title": "Item Name",
+        "type": "string"
+      },
+      "stage": {
+        "$ref": "#/$defs/Stage"
+      },
+      "qty_required": {
+        "title": "Qty Required",
+        "type": "integer"
+      },
+      "line_stop_at": {
+        "format": "date-time",
+        "title": "Line Stop At",
+        "type": "string"
+      },
+      "opened_at": {
+        "format": "date-time",
+        "title": "Opened At",
+        "type": "string"
+      },
+      "pr_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Pr Url"
+      }
+    },
+    "required": [
+      "case_id",
+      "part_id",
+      "item_name",
+      "stage",
+      "qty_required",
+      "line_stop_at",
+      "opened_at"
+    ],
+    "title": "CaseSummary",
+    "type": "object"
+  },
+  "Claim": {
+    "$defs": {
+      "Answer": {
+        "description": "A three-state answer. `UNKNOWN` is legal everywhere `YES`/`NO` are.",
+        "enum": [
+          "yes",
+          "no",
+          "unknown"
+        ],
+        "title": "Answer",
+        "type": "string"
+      },
+      "Currency": {
+        "enum": [
+          "EUR",
+          "USD",
+          "GBP",
+          "unknown"
+        ],
+        "title": "Currency",
+        "type": "string"
+      },
+      "ExpediteOption": {
+        "description": "Pay `surcharge` total to pull delivery in by `days`.",
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Surcharge"
+          }
+        },
+        "required": [
+          "days",
+          "surcharge"
+        ],
+        "title": "ExpediteOption",
+        "type": "object"
+      },
+      "PriceBreak": {
+        "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+        "properties": {
+          "min_qty": {
+            "title": "Min Qty",
+            "type": "integer"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "required": [
+          "min_qty",
+          "unit_price"
+        ],
+        "title": "PriceBreak",
+        "type": "object"
+      },
+      "StockStatus": {
+        "description": "What the supplier says about the stock they hold.\n\n`IN_STOCK_ALLOCATED` is the whole point of asking: \"yes, we have some\"\nfrequently means \"yes, but it is already promised to someone else.\"",
+        "enum": [
+          "free_in_stock",
+          "in_stock_allocated",
+          "to_be_made",
+          "unavailable",
+          "unclear"
+        ],
+        "title": "StockStatus",
+        "type": "string"
+      }
+    },
+    "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+    "properties": {
+      "task_id": {
+        "title": "Task Id",
+        "type": "string"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "available": {
+        "default": false,
+        "title": "Available",
+        "type": "boolean"
+      },
+      "qty_offered": {
+        "default": 0,
+        "title": "Qty Offered",
+        "type": "integer"
+      },
+      "unit_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit Price"
+      },
+      "price_breaks": {
+        "items": {
+          "$ref": "#/$defs/PriceBreak"
+        },
+        "title": "Price Breaks",
+        "type": "array"
+      },
+      "currency": {
+        "$ref": "#/$defs/Currency",
+        "default": "unknown"
+      },
+      "moq": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Moq"
+      },
+      "lead_time_days": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Lead Time Days"
+      },
+      "expedite_option": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ExpediteOption"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "incoterm": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Incoterm"
+      },
+      "certs_claimed": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Certs Claimed",
+        "type": "array"
+      },
+      "payment_terms": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Payment Terms"
+      },
+      "notes": {
+        "default": "",
+        "title": "Notes",
+        "type": "string"
+      },
+      "transcript_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Transcript Url"
+      },
+      "recording_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recording Url"
+      },
+      "confidence": {
+        "default": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "raw": {
+        "additionalProperties": true,
+        "title": "Raw",
+        "type": "object"
+      },
+      "round": {
+        "default": 1,
+        "title": "Round",
+        "type": "integer"
+      },
+      "call_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Call Id"
+      },
+      "earliest_ready_text": {
+        "default": "",
+        "title": "Earliest Ready Text",
+        "type": "string"
+      },
+      "stock_status": {
+        "$ref": "#/$defs/StockStatus",
+        "default": "unclear"
+      },
+      "price_quoted": {
+        "$ref": "#/$defs/Answer",
+        "default": "unknown"
+      },
+      "part_number_confirmed": {
+        "$ref": "#/$defs/Answer",
+        "default": "unknown"
+      },
+      "certification_current": {
+        "$ref": "#/$defs/Answer",
+        "default": "unknown"
+      },
+      "evidence": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence",
+        "type": "array"
+      },
+      "received_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Received At"
+      }
+    },
+    "required": [
+      "task_id",
+      "case_id",
+      "supplier_ref"
+    ],
+    "title": "Claim",
+    "type": "object"
+  },
+  "CompanyProfile": {
+    "$defs": {
+      "Criticality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Criticality",
+        "type": "string"
+      },
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      },
+      "PartClass": {
+        "description": "Selects which policy rules and cost parameters apply.\n\nThis is the seam that keeps the system from being bearing-specific: adding a\npart class means adding a row to the company profile, not changing code.",
+        "enum": [
+          "rolling_bearing",
+          "fastener",
+          "seal",
+          "electronic_component"
+        ],
+        "title": "PartClass",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The rules of the house. Every policy rule reads exactly one field here.",
+    "properties": {
+      "legal_entity": {
+        "title": "Legal Entity",
+        "type": "string"
+      },
+      "country": {
+        "title": "Country",
+        "type": "string"
+      },
+      "blocked_origin_countries": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Blocked Origin Countries",
+        "type": "array"
+      },
+      "required_certifications": {
+        "additionalProperties": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "propertyNames": {
+          "$ref": "#/$defs/PartClass"
+        },
+        "title": "Required Certifications",
+        "type": "object"
+      },
+      "audit_required_above_criticality": {
+        "$ref": "#/$defs/Criticality",
+        "default": "high"
+      },
+      "single_po_budget_eur": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Single Po Budget Eur"
+      },
+      "requires_second_quote_above_eur": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Requires Second Quote Above Eur"
+      },
+      "wacc": {
+        "description": "Weighted average cost of capital, for carrying cost",
+        "title": "Wacc",
+        "type": "number"
+      },
+      "warehousing_eur_per_pallet_month": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Warehousing Eur Per Pallet Month"
+      },
+      "pieces_per_pallet": {
+        "title": "Pieces Per Pallet",
+        "type": "integer"
+      },
+      "duty_rates": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "origin country -> ad valorem rate",
+        "title": "Duty Rates",
+        "type": "object"
+      },
+      "freight_eur_per_kg": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ]
+        },
+        "propertyNames": {
+          "$ref": "#/$defs/FreightMode"
+        },
+        "title": "Freight Eur Per Kg",
+        "type": "object"
+      },
+      "transit_days": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "propertyNames": {
+          "$ref": "#/$defs/FreightMode"
+        },
+        "title": "Transit Days",
+        "type": "object"
+      }
+    },
+    "required": [
+      "legal_entity",
+      "country",
+      "single_po_budget_eur",
+      "requires_second_quote_above_eur",
+      "wacc",
+      "warehousing_eur_per_pallet_month",
+      "pieces_per_pallet"
+    ],
+    "title": "CompanyProfile",
+    "type": "object"
+  },
+  "ComplianceResult": {
+    "$defs": {
+      "PolicyRule": {
+        "description": "The four rules. A rejection always cites one of these by name.",
+        "enum": [
+          "blocked_origin_country",
+          "missing_required_certification",
+          "audit_required_and_not_audited",
+          "lead_time_after_line_stop"
+        ],
+        "title": "PolicyRule",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "passed": {
+        "title": "Passed",
+        "type": "boolean"
+      },
+      "failed_rules": {
+        "items": {
+          "$ref": "#/$defs/PolicyRule"
+        },
+        "title": "Failed Rules",
+        "type": "array"
+      },
+      "explanations": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Rule -> one plain sentence. What the UI prints next to the rule name.",
+        "propertyNames": {
+          "$ref": "#/$defs/PolicyRule"
+        },
+        "title": "Explanations",
+        "type": "object"
+      }
+    },
+    "required": [
+      "passed"
+    ],
+    "title": "ComplianceResult",
+    "type": "object"
+  },
+  "Decision": {
+    "$defs": {
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      },
+      "LandedCost": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "goods_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Goods Cost"
+          },
+          "freight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Freight"
+          },
+          "duty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Duty"
+          },
+          "tooling": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Tooling"
+          },
+          "carrying_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Carrying Cost"
+          },
+          "expedite_surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Expedite Surcharge"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "breakdown_md": {
+            "default": "",
+            "title": "Breakdown Md",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "qty",
+          "mode",
+          "goods_cost",
+          "freight",
+          "duty",
+          "carrying_cost",
+          "expedite_surcharge",
+          "total",
+          "unit_effective"
+        ],
+        "title": "LandedCost",
+        "type": "object"
+      },
+      "OrderLine": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "supplier_name": {
+            "title": "Supplier Name",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "eta": {
+            "format": "date",
+            "title": "Eta",
+            "type": "string"
+          },
+          "landed": {
+            "$ref": "#/$defs/LandedCost"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "supplier_name",
+          "qty",
+          "mode",
+          "eta",
+          "landed"
+        ],
+        "title": "OrderLine",
+        "type": "object"
+      },
+      "Strategy": {
+        "additionalProperties": false,
+        "properties": {
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "label": {
+            "description": "Human name, e.g. \"Split: fast bridge + cheap bulk\"",
+            "title": "Label",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/$defs/OrderLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "coverage_date": {
+            "description": "When the full quantity is on site",
+            "format": "date",
+            "title": "Coverage Date",
+            "type": "string"
+          },
+          "meets_line_stop": {
+            "title": "Meets Line Stop",
+            "type": "boolean"
+          },
+          "risk_score": {
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Risk Score",
+            "type": "number"
+          },
+          "rationale": {
+            "default": "",
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy_id",
+          "label",
+          "lines",
+          "total_cost",
+          "unit_effective",
+          "coverage_date",
+          "meets_line_stop",
+          "risk_score"
+        ],
+        "title": "Strategy",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "strategies": {
+        "items": {
+          "$ref": "#/$defs/Strategy"
+        },
+        "title": "Strategies",
+        "type": "array"
+      },
+      "recommended_strategy_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recommended Strategy Id"
+      },
+      "runner_up_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Runner Up Ids",
+        "type": "array"
+      },
+      "rationale_md": {
+        "default": "",
+        "title": "Rationale Md",
+        "type": "string"
+      },
+      "policy_report_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Policy Report Url"
+      },
+      "cost_report_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Report Url"
+      },
+      "pr_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Pr Url"
+      },
+      "devin_session_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Devin Session Url"
+      },
+      "decided_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Decided At"
+      }
+    },
+    "required": [
+      "case_id"
+    ],
+    "title": "Decision",
+    "type": "object"
+  },
+  "Event": {
+    "$defs": {
+      "Actor": {
+        "enum": [
+          "devin",
+          "calle",
+          "system"
+        ],
+        "title": "Actor",
+        "type": "string"
+      },
+      "Level": {
+        "enum": [
+          "info",
+          "warn",
+          "error"
+        ],
+        "title": "Level",
+        "type": "string"
+      },
+      "Stage": {
+        "description": "The five stages of a case. One stage, one colour, everywhere in the UI.",
+        "enum": [
+          "detected",
+          "researching",
+          "calling",
+          "costing",
+          "decided"
+        ],
+        "title": "Stage",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "seq": {
+        "default": 0,
+        "description": "Monotonic within a case. The UI polls with ?since=",
+        "title": "Seq",
+        "type": "integer"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "ts": {
+        "format": "date-time",
+        "title": "Ts",
+        "type": "string"
+      },
+      "actor": {
+        "$ref": "#/$defs/Actor"
+      },
+      "stage": {
+        "$ref": "#/$defs/Stage"
+      },
+      "level": {
+        "$ref": "#/$defs/Level",
+        "default": "info"
+      },
+      "message": {
+        "title": "Message",
+        "type": "string"
+      },
+      "payload": {
+        "additionalProperties": true,
+        "title": "Payload",
+        "type": "object"
+      }
+    },
+    "required": [
+      "case_id",
+      "ts",
+      "actor",
+      "stage",
+      "message"
+    ],
+    "title": "Event",
+    "type": "object"
+  },
+  "ExpediteOption": {
+    "description": "Pay `surcharge` total to pull delivery in by `days`.",
+    "properties": {
+      "days": {
+        "title": "Days",
+        "type": "integer"
+      },
+      "surcharge": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Surcharge"
+      }
+    },
+    "required": [
+      "days",
+      "surcharge"
+    ],
+    "title": "ExpediteOption",
+    "type": "object"
+  },
+  "Incident": {
+    "$defs": {
+      "Currency": {
+        "enum": [
+          "EUR",
+          "USD",
+          "GBP",
+          "unknown"
+        ],
+        "title": "Currency",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "A shortage, as our own records see it. Claims are not involved yet.",
+    "properties": {
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "plant_id": {
+        "title": "Plant Id",
+        "type": "string"
+      },
+      "production_line": {
+        "title": "Production Line",
+        "type": "string"
+      },
+      "qty_required": {
+        "title": "Qty Required",
+        "type": "integer"
+      },
+      "qty_on_hand": {
+        "title": "Qty On Hand",
+        "type": "integer"
+      },
+      "needed_by": {
+        "format": "date",
+        "title": "Needed By",
+        "type": "string"
+      },
+      "line_stop_at": {
+        "format": "date-time",
+        "title": "Line Stop At",
+        "type": "string"
+      },
+      "line_stop_cost_per_hour": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Line Stop Cost Per Hour"
+      },
+      "currency": {
+        "$ref": "#/$defs/Currency",
+        "default": "EUR"
+      },
+      "incumbent_supplier_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Incumbent Supplier Id"
+      },
+      "reason": {
+        "default": "",
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "case_id",
+      "part_id",
+      "plant_id",
+      "production_line",
+      "qty_required",
+      "qty_on_hand",
+      "needed_by",
+      "line_stop_at",
+      "line_stop_cost_per_hour"
+    ],
+    "title": "Incident",
+    "type": "object"
+  },
+  "LandedCost": {
+    "$defs": {
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "qty": {
+        "title": "Qty",
+        "type": "integer"
+      },
+      "mode": {
+        "$ref": "#/$defs/FreightMode"
+      },
+      "goods_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Goods Cost"
+      },
+      "freight": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Freight"
+      },
+      "duty": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Duty"
+      },
+      "tooling": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "default": "0",
+        "title": "Tooling"
+      },
+      "carrying_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Carrying Cost"
+      },
+      "expedite_surcharge": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Expedite Surcharge"
+      },
+      "total": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Total"
+      },
+      "unit_effective": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Unit Effective"
+      },
+      "breakdown_md": {
+        "default": "",
+        "title": "Breakdown Md",
+        "type": "string"
+      }
+    },
+    "required": [
+      "supplier_ref",
+      "qty",
+      "mode",
+      "goods_cost",
+      "freight",
+      "duty",
+      "carrying_cost",
+      "expedite_surcharge",
+      "total",
+      "unit_effective"
+    ],
+    "title": "LandedCost",
+    "type": "object"
+  },
+  "OpenPurchaseOrder": {
+    "additionalProperties": false,
+    "properties": {
+      "po_id": {
+        "title": "Po Id",
+        "type": "string"
+      },
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "supplier_id": {
+        "title": "Supplier Id",
+        "type": "string"
+      },
+      "qty": {
+        "title": "Qty",
+        "type": "integer"
+      },
+      "promised_date": {
+        "format": "date",
+        "title": "Promised Date",
+        "type": "string"
+      },
+      "revised_date": {
+        "anyOf": [
+          {
+            "format": "date",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Set when the supplier slips. The delay that fires the detector.",
+        "title": "Revised Date"
+      },
+      "status": {
+        "default": "open",
+        "title": "Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "po_id",
+      "part_id",
+      "supplier_id",
+      "qty",
+      "promised_date"
+    ],
+    "title": "OpenPurchaseOrder",
+    "type": "object"
+  },
+  "OrderLine": {
+    "$defs": {
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      },
+      "LandedCost": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "goods_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Goods Cost"
+          },
+          "freight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Freight"
+          },
+          "duty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Duty"
+          },
+          "tooling": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Tooling"
+          },
+          "carrying_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Carrying Cost"
+          },
+          "expedite_surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Expedite Surcharge"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "breakdown_md": {
+            "default": "",
+            "title": "Breakdown Md",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "qty",
+          "mode",
+          "goods_cost",
+          "freight",
+          "duty",
+          "carrying_cost",
+          "expedite_surcharge",
+          "total",
+          "unit_effective"
+        ],
+        "title": "LandedCost",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "supplier_name": {
+        "title": "Supplier Name",
+        "type": "string"
+      },
+      "qty": {
+        "title": "Qty",
+        "type": "integer"
+      },
+      "mode": {
+        "$ref": "#/$defs/FreightMode"
+      },
+      "eta": {
+        "format": "date",
+        "title": "Eta",
+        "type": "string"
+      },
+      "landed": {
+        "$ref": "#/$defs/LandedCost"
+      }
+    },
+    "required": [
+      "supplier_ref",
+      "supplier_name",
+      "qty",
+      "mode",
+      "eta",
+      "landed"
+    ],
+    "title": "OrderLine",
+    "type": "object"
+  },
+  "OutreachBrief": {
+    "properties": {
+      "part_spec": {
+        "title": "Part Spec",
+        "type": "string"
+      },
+      "qty": {
+        "title": "Qty",
+        "type": "integer"
+      },
+      "needed_by": {
+        "format": "date",
+        "title": "Needed By",
+        "type": "string"
+      },
+      "target_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Target Price"
+      },
+      "floor_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Floor Price"
+      },
+      "must_ask": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Must Ask",
+        "type": "array"
+      }
+    },
+    "required": [
+      "part_spec",
+      "qty",
+      "needed_by"
+    ],
+    "title": "OutreachBrief",
+    "type": "object"
+  },
+  "OutreachTask": {
+    "$defs": {
+      "Channel": {
+        "enum": [
+          "voice",
+          "email",
+          "marketplace"
+        ],
+        "title": "Channel",
+        "type": "string"
+      },
+      "OutreachBrief": {
+        "properties": {
+          "part_spec": {
+            "title": "Part Spec",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "needed_by": {
+            "format": "date",
+            "title": "Needed By",
+            "type": "string"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Target Price"
+          },
+          "floor_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Floor Price"
+          },
+          "must_ask": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Must Ask",
+            "type": "array"
+          }
+        },
+        "required": [
+          "part_spec",
+          "qty",
+          "needed_by"
+        ],
+        "title": "OutreachBrief",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "task_id": {
+        "title": "Task Id",
+        "type": "string"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "channel": {
+        "$ref": "#/$defs/Channel"
+      },
+      "brief": {
+        "$ref": "#/$defs/OutreachBrief"
+      }
+    },
+    "required": [
+      "task_id",
+      "case_id",
+      "supplier_ref",
+      "channel",
+      "brief"
+    ],
+    "title": "OutreachTask",
+    "type": "object"
+  },
+  "Part": {
+    "$defs": {
+      "Criticality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Criticality",
+        "type": "string"
+      },
+      "PartClass": {
+        "description": "Selects which policy rules and cost parameters apply.\n\nThis is the seam that keeps the system from being bearing-specific: adding a\npart class means adding a row to the company profile, not changing code.",
+        "enum": [
+          "rolling_bearing",
+          "fastener",
+          "seal",
+          "electronic_component"
+        ],
+        "title": "PartClass",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "item_code": {
+        "description": "ERPNext `item_code`",
+        "title": "Item Code",
+        "type": "string"
+      },
+      "item_name": {
+        "title": "Item Name",
+        "type": "string"
+      },
+      "description": {
+        "title": "Description",
+        "type": "string"
+      },
+      "spec": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Free-form technical spec, e.g. bore/OD/width/seal",
+        "title": "Spec",
+        "type": "object"
+      },
+      "stock_uom": {
+        "default": "Nos",
+        "title": "Stock Uom",
+        "type": "string"
+      },
+      "criticality": {
+        "$ref": "#/$defs/Criticality",
+        "default": "medium"
+      },
+      "part_class": {
+        "$ref": "#/$defs/PartClass"
+      },
+      "weight_kg": {
+        "description": "Per piece. Drives freight cost.",
+        "exclusiveMinimum": 0,
+        "title": "Weight Kg",
+        "type": "number"
+      },
+      "hs_code": {
+        "description": "Customs tariff code. Drives duty by origin.",
+        "title": "Hs Code",
+        "type": "string"
+      },
+      "standard_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Standard Cost"
+      }
+    },
+    "required": [
+      "part_id",
+      "item_code",
+      "item_name",
+      "description",
+      "part_class",
+      "weight_kg",
+      "hs_code",
+      "standard_cost"
+    ],
+    "title": "Part",
+    "type": "object"
+  },
+  "PriceBreak": {
+    "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+    "properties": {
+      "min_qty": {
+        "title": "Min Qty",
+        "type": "integer"
+      },
+      "unit_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Unit Price"
+      }
+    },
+    "required": [
+      "min_qty",
+      "unit_price"
+    ],
+    "title": "PriceBreak",
+    "type": "object"
+  },
+  "Quote": {
+    "$defs": {
+      "Currency": {
+        "enum": [
+          "EUR",
+          "USD",
+          "GBP",
+          "unknown"
+        ],
+        "title": "Currency",
+        "type": "string"
+      },
+      "ExpediteOption": {
+        "description": "Pay `surcharge` total to pull delivery in by `days`.",
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Surcharge"
+          }
+        },
+        "required": [
+          "days",
+          "surcharge"
+        ],
+        "title": "ExpediteOption",
+        "type": "object"
+      },
+      "PriceBreak": {
+        "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+        "properties": {
+          "min_qty": {
+            "title": "Min Qty",
+            "type": "integer"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "required": [
+          "min_qty",
+          "unit_price"
+        ],
+        "title": "PriceBreak",
+        "type": "object"
+      }
+    },
+    "description": "What one supplier said. Every judgement field may be unknown.\n\nA garbled or missing call result becomes a Quote with these defaults\nand confidence 0.0 \u2014 never an exception.",
+    "properties": {
+      "task_id": {
+        "title": "Task Id",
+        "type": "string"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "supplier_ref": {
+        "title": "Supplier Ref",
+        "type": "string"
+      },
+      "available": {
+        "default": false,
+        "title": "Available",
+        "type": "boolean"
+      },
+      "qty_offered": {
+        "default": 0,
+        "title": "Qty Offered",
+        "type": "integer"
+      },
+      "unit_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit Price"
+      },
+      "price_breaks": {
+        "items": {
+          "$ref": "#/$defs/PriceBreak"
+        },
+        "title": "Price Breaks",
+        "type": "array"
+      },
+      "currency": {
+        "$ref": "#/$defs/Currency",
+        "default": "unknown"
+      },
+      "moq": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Moq"
+      },
+      "lead_time_days": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Lead Time Days"
+      },
+      "expedite_option": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ExpediteOption"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "incoterm": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Incoterm"
+      },
+      "certs_claimed": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Certs Claimed",
+        "type": "array"
+      },
+      "payment_terms": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Payment Terms"
+      },
+      "notes": {
+        "default": "",
+        "title": "Notes",
+        "type": "string"
+      },
+      "transcript_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Transcript Url"
+      },
+      "recording_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recording Url"
+      },
+      "confidence": {
+        "default": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "raw": {
+        "additionalProperties": true,
+        "title": "Raw",
+        "type": "object"
+      }
+    },
+    "required": [
+      "task_id",
+      "case_id",
+      "supplier_ref"
+    ],
+    "title": "Quote",
+    "type": "object"
+  },
+  "ShortageAlert": {
+    "$defs": {
+      "Criticality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Criticality",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One row on the shortage dashboard.",
+    "properties": {
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "item_code": {
+        "title": "Item Code",
+        "type": "string"
+      },
+      "item_name": {
+        "title": "Item Name",
+        "type": "string"
+      },
+      "plant_id": {
+        "title": "Plant Id",
+        "type": "string"
+      },
+      "qty_on_hand": {
+        "title": "Qty On Hand",
+        "type": "integer"
+      },
+      "reorder_level": {
+        "title": "Reorder Level",
+        "type": "integer"
+      },
+      "qty_required": {
+        "title": "Qty Required",
+        "type": "integer"
+      },
+      "days_to_line_stop": {
+        "title": "Days To Line Stop",
+        "type": "number"
+      },
+      "line_stop_at": {
+        "format": "date-time",
+        "title": "Line Stop At",
+        "type": "string"
+      },
+      "line_stop_cost_per_hour": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Line Stop Cost Per Hour"
+      },
+      "criticality": {
+        "$ref": "#/$defs/Criticality"
+      },
+      "case_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Set once a sourcing case exists for it",
+        "title": "Case Id"
+      },
+      "delayed_po_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Delayed Po Id"
+      }
+    },
+    "required": [
+      "part_id",
+      "item_code",
+      "item_name",
+      "plant_id",
+      "qty_on_hand",
+      "reorder_level",
+      "qty_required",
+      "days_to_line_stop",
+      "line_stop_at",
+      "line_stop_cost_per_hour",
+      "criticality"
+    ],
+    "title": "ShortageAlert",
+    "type": "object"
+  },
+  "StockLevel": {
+    "additionalProperties": false,
+    "description": "ERPNext `Bin`: what is physically in a warehouse right now.",
+    "properties": {
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "warehouse": {
+        "title": "Warehouse",
+        "type": "string"
+      },
+      "plant_id": {
+        "title": "Plant Id",
+        "type": "string"
+      },
+      "actual_qty": {
+        "title": "Actual Qty",
+        "type": "integer"
+      },
+      "reserved_qty": {
+        "default": 0,
+        "title": "Reserved Qty",
+        "type": "integer"
+      },
+      "reorder_level": {
+        "title": "Reorder Level",
+        "type": "integer"
+      },
+      "daily_consumption": {
+        "description": "Line take rate, used to date the line stop",
+        "minimum": 0,
+        "title": "Daily Consumption",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "part_id",
+      "warehouse",
+      "plant_id",
+      "actual_qty",
+      "reorder_level",
+      "daily_consumption"
+    ],
+    "title": "StockLevel",
+    "type": "object"
+  },
+  "Strategy": {
+    "$defs": {
+      "FreightMode": {
+        "enum": [
+          "air",
+          "sea",
+          "road"
+        ],
+        "title": "FreightMode",
+        "type": "string"
+      },
+      "LandedCost": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "goods_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Goods Cost"
+          },
+          "freight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Freight"
+          },
+          "duty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Duty"
+          },
+          "tooling": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Tooling"
+          },
+          "carrying_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Carrying Cost"
+          },
+          "expedite_surcharge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Expedite Surcharge"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Total"
+          },
+          "unit_effective": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Effective"
+          },
+          "breakdown_md": {
+            "default": "",
+            "title": "Breakdown Md",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "qty",
+          "mode",
+          "goods_cost",
+          "freight",
+          "duty",
+          "carrying_cost",
+          "expedite_surcharge",
+          "total",
+          "unit_effective"
+        ],
+        "title": "LandedCost",
+        "type": "object"
+      },
+      "OrderLine": {
+        "additionalProperties": false,
+        "properties": {
+          "supplier_ref": {
+            "title": "Supplier Ref",
+            "type": "string"
+          },
+          "supplier_name": {
+            "title": "Supplier Name",
+            "type": "string"
+          },
+          "qty": {
+            "title": "Qty",
+            "type": "integer"
+          },
+          "mode": {
+            "$ref": "#/$defs/FreightMode"
+          },
+          "eta": {
+            "format": "date",
+            "title": "Eta",
+            "type": "string"
+          },
+          "landed": {
+            "$ref": "#/$defs/LandedCost"
+          }
+        },
+        "required": [
+          "supplier_ref",
+          "supplier_name",
+          "qty",
+          "mode",
+          "eta",
+          "landed"
+        ],
+        "title": "OrderLine",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "strategy_id": {
+        "title": "Strategy Id",
+        "type": "string"
+      },
+      "label": {
+        "description": "Human name, e.g. \"Split: fast bridge + cheap bulk\"",
+        "title": "Label",
+        "type": "string"
+      },
+      "lines": {
+        "items": {
+          "$ref": "#/$defs/OrderLine"
+        },
+        "title": "Lines",
+        "type": "array"
+      },
+      "total_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Total Cost"
+      },
+      "unit_effective": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Unit Effective"
+      },
+      "coverage_date": {
+        "description": "When the full quantity is on site",
+        "format": "date",
+        "title": "Coverage Date",
+        "type": "string"
+      },
+      "meets_line_stop": {
+        "title": "Meets Line Stop",
+        "type": "boolean"
+      },
+      "risk_score": {
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Risk Score",
+        "type": "number"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      }
+    },
+    "required": [
+      "strategy_id",
+      "label",
+      "lines",
+      "total_cost",
+      "unit_effective",
+      "coverage_date",
+      "meets_line_stop",
+      "risk_score"
+    ],
+    "title": "Strategy",
+    "type": "object"
+  },
+  "SupplierPriceRecord": {
+    "$defs": {
+      "Currency": {
+        "enum": [
+          "EUR",
+          "USD",
+          "GBP",
+          "unknown"
+        ],
+        "title": "Currency",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Historical price paid, from our own purchase history.",
+    "properties": {
+      "supplier_id": {
+        "title": "Supplier Id",
+        "type": "string"
+      },
+      "part_id": {
+        "title": "Part Id",
+        "type": "string"
+      },
+      "as_of": {
+        "format": "date",
+        "title": "As Of",
+        "type": "string"
+      },
+      "unit_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "title": "Unit Price"
+      },
+      "qty": {
+        "title": "Qty",
+        "type": "integer"
+      },
+      "currency": {
+        "$ref": "#/$defs/Currency",
+        "default": "EUR"
+      }
+    },
+    "required": [
+      "supplier_id",
+      "part_id",
+      "as_of",
+      "unit_price",
+      "qty"
+    ],
+    "title": "SupplierPriceRecord",
+    "type": "object"
+  },
+  "SupplierRecord": {
+    "$defs": {
+      "AuditStatus": {
+        "enum": [
+          "audited",
+          "audit_expired",
+          "never_audited"
+        ],
+        "title": "AuditStatus",
+        "type": "string"
+      },
+      "Channel": {
+        "enum": [
+          "voice",
+          "email",
+          "marketplace"
+        ],
+        "title": "Channel",
+        "type": "string"
+      },
+      "PriceBreak": {
+        "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+        "properties": {
+          "min_qty": {
+            "title": "Min Qty",
+            "type": "integer"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "required": [
+          "min_qty",
+          "unit_price"
+        ],
+        "title": "PriceBreak",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "What our files say about a supplier. The baseline a claim is checked against.\n\n`phone_masked` is the only phone field that exists. There is deliberately no\nplace to put a raw number.",
+    "properties": {
+      "supplier_id": {
+        "title": "Supplier Id",
+        "type": "string"
+      },
+      "supplier_name": {
+        "description": "ERPNext `supplier_name`",
+        "title": "Supplier Name",
+        "type": "string"
+      },
+      "country": {
+        "description": "ISO 3166-1 alpha-2",
+        "maxLength": 2,
+        "minLength": 2,
+        "title": "Country",
+        "type": "string"
+      },
+      "locale": {
+        "default": "en-GB",
+        "title": "Locale",
+        "type": "string"
+      },
+      "phone_masked": {
+        "description": "Never the raw number. See contracts.phone.",
+        "title": "Phone Masked",
+        "type": "string"
+      },
+      "email": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Email"
+      },
+      "marketplace_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Marketplace Url"
+      },
+      "channels": {
+        "items": {
+          "$ref": "#/$defs/Channel"
+        },
+        "title": "Channels",
+        "type": "array"
+      },
+      "part_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Part Ids",
+        "type": "array"
+      },
+      "approved": {
+        "default": false,
+        "title": "Approved",
+        "type": "boolean"
+      },
+      "preferred": {
+        "default": false,
+        "title": "Preferred",
+        "type": "boolean"
+      },
+      "incumbent": {
+        "default": false,
+        "title": "Incumbent",
+        "type": "boolean"
+      },
+      "contract_unit_price": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Contract Unit Price"
+      },
+      "standard_lead_days": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Door-to-door days on the contracted mode, not ex-works",
+        "title": "Standard Lead Days"
+      },
+      "certifications": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Certifications",
+        "type": "array"
+      },
+      "certification_expires_at": {
+        "anyOf": [
+          {
+            "format": "date",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Certification Expires At"
+      },
+      "audit_status": {
+        "$ref": "#/$defs/AuditStatus",
+        "default": "never_audited"
+      },
+      "known_allocations": {
+        "default": 0,
+        "description": "Units our records show already promised elsewhere",
+        "title": "Known Allocations",
+        "type": "integer"
+      },
+      "max_historical_fill": {
+        "default": 0,
+        "description": "Largest order they have actually delivered for us",
+        "title": "Max Historical Fill",
+        "type": "integer"
+      },
+      "price_breaks": {
+        "items": {
+          "$ref": "#/$defs/PriceBreak"
+        },
+        "title": "Price Breaks",
+        "type": "array"
+      }
+    },
+    "required": [
+      "supplier_id",
+      "supplier_name",
+      "country",
+      "phone_masked"
+    ],
+    "title": "SupplierRecord",
+    "type": "object"
+  }
+}

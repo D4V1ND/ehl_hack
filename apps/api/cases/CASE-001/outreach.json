@@ -1,0 +1,62 @@
+[
+  {
+    "task_id": "OUT-CASE-001-SUP-KBY-735a1e",
+    "case_id": "CASE-001",
+    "supplier_ref": "SUP-KBY",
+    "channel": "voice",
+    "brief": {
+      "part_spec": "6204-2RS \u2014 Single-row deep-groove ball bearing, 20x47x14 mm, rubber-sealed both sides, DIN 625-1.",
+      "qty": 36000,
+      "needed_by": "2026-09-03",
+      "target_price": "1.42",
+      "floor_price": null,
+      "must_ask": [
+        "price_breaks",
+        "moq",
+        "lead_time",
+        "incoterm",
+        "cert"
+      ]
+    }
+  },
+  {
+    "task_id": "OUT-CASE-001-SUP-SKF-3ad5f4",
+    "case_id": "CASE-001",
+    "supplier_ref": "SUP-SKF",
+    "channel": "voice",
+    "brief": {
+      "part_spec": "6204-2RS \u2014 Single-row deep-groove ball bearing, 20x47x14 mm, rubber-sealed both sides, DIN 625-1.",
+      "qty": 36000,
+      "needed_by": "2026-09-03",
+      "target_price": "1.95",
+      "floor_price": null,
+      "must_ask": [
+        "price_breaks",
+        "moq",
+        "lead_time",
+        "incoterm",
+        "cert"
+      ]
+    }
+  },
+  {
+    "task_id": "OUT-CASE-001-SUP-RUL-45c019",
+    "case_id": "CASE-001",
+    "supplier_ref": "SUP-RUL",
+    "channel": "voice",
+    "brief": {
+      "part_spec": "6204-2RS \u2014 Single-row deep-groove ball bearing, 20x47x14 mm, rubber-sealed both sides, DIN 625-1.",
+      "qty": 36000,
+      "needed_by": "2026-09-03",
+      "target_price": "1.30",
+      "floor_price": null,
+      "must_ask": [
+        "price_breaks",
+        "moq",
+        "lead_time",
+        "incoterm",
+        "cert"
+      ]
+    }
+  }
+]

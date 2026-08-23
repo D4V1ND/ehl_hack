@@ -14,13 +14,13 @@ How the approved Cockpit looks and behaves. Product name on every surface is **S
 6. The agent recommends. A human marks the Decision approved in SupplyOS. **Approved** is the final state. There is no PR card or merge approval.
 7. Rehearsal is the default. Phone numbers are masked. Claims remain distinct from trusted Supplier Records.
 8. SQLite is the intended operational datastore. This implementation remains fixture-driven. Supabase is explicitly ignored.
-9. Colours come only from `app/globals.css`. Dark mode is the app default. Build in Next.js; do not use Paper and do not add a route.
-10. Use Tabler icons through `components/icons.tsx`. Product and primitive components do not import an icon library directly.
-11. `components/logo.tsx` owns the SupplyOS wordmark and current-colour icon. The Cockpit sidebar shows the icon at 20 × 20 pixels.
+9. Colours come only from `apps/web/app/globals.css`. Dark mode is the app default. Build in Next.js; do not use Paper and do not add a route.
+10. Use Tabler icons through `apps/web/components/icons.tsx`. Product and primitive components do not import an icon library directly.
+11. `apps/web/components/logo.tsx` owns the SupplyOS wordmark and current-colour icon. The Cockpit sidebar shows the icon at 20 × 20 pixels.
 
 ## Approved screen structure
 
-Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. SupplyOS opens from an external ERP link into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session renders the same CASE-001 rehearsal.
+Chrome: `CockpitShell` — a full-height shadcn sidebar beside the Cockpit. `apps/erp` opens SupplyOS in a new tab with `/chat?case=<case_id>` into an existing Session. `/chat` has no empty start screen or Incident picker. The navigation sidebar lists fixture Sessions; every Session currently renders the same CASE-001 rehearsal.
 
 Both sidebars use the muted surface; the conversation and its fixed top header use the background surface. The left Session sidebar resizes between 10% and 20% of the viewport. Its logo header and separator align with the conversation top header. The Candidate sidebar resizes between 20% and 50% of the viewport. Its header has an X Button instead of a count. Closing it reveals a Tabler sidebar-open Button at the right end of the conversation header. Toggling the Candidate panel keeps the conversation mounted and preserves its scroll position. The single conversation header expands Incident properties in place, reveals its chevron on hover or keyboard focus, and places run status and Replay together at the top-right. The status is a ghost Button with one small state-coloured pebble; its background-colour tooltip shows all five stages as size-2 pebbles joined by hairline connectors. The linked Incident is a compact primary-colour mention inside the first user message. Only the top header spans the conversation width. Thread text, Task cards, Tool calls, the borderless Decision card, and the composer share one consistent horizontal gutter inside a centred `w-full` column capped at 50% of the viewport. Only the conversation content scrolls, using a right-edge muted thumb on a transparent track. The fixed bottom dock has no separating rules. Its Decision card expands upward above its compact row, and the darker composer keeps an outline matching the quiet structural separators elsewhere.
 
@@ -28,8 +28,8 @@ Responsive adaptation is not an MVP priority. Keep the Candidate sidebar visible
 
 | Route | File | What you see |
 |---|---|---|
-| `/` | `app/page.tsx` | Marketing landing for the German automotive bearing scenario. A white SupplyOS logo and `Open chat` CTA link to `/chat`; no email field is shown |
-| `/chat` | `components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one closable Candidate panel |
+| `/` | `apps/web/app/page.tsx` | Marketing landing for the German automotive bearing scenario. A white SupplyOS logo and `Open chat` CTA link to `/chat`; no email field is shown |
+| `/chat` | `apps/web/components/cockpit/cockpit-chat.tsx` | Mock Session list, one CASE-001 rehearsal thread, and one closable Candidate panel |
 
 The target `/chat` composition is:
 
@@ -71,5 +71,5 @@ None. Visual tuning must preserve the approved hierarchy and domain boundaries a
 
 - `docs/PLAN.md` Slice A — approved Cockpit behavior.
 - `docs/specs/supplyguard-plan-1-foundation-spec.md` — Claim versus record, `stock_status`, and safety.
-- `app/globals.css` — colour tokens.
+- `apps/web/app/globals.css` — colour tokens.
 - `docs/agents/domain.md` — glossary guidance.

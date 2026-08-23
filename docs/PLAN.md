@@ -136,6 +136,8 @@ Deleted outright: Postgres, Supabase, auth, Docker Compose orchestration, the em
 
 ### Step 3 — Simplify and optimise (only now)
 
+- **One Turborepo** with three workspaces: `apps/web` owns SupplyOS, `apps/erp` owns the mock system of record UI, and `apps/api` owns FastAPI plus SQLite. Calls and Decisions stay in SupplyOS.
+- **One external entry contract:** the ERP opens `${NEXT_PUBLIC_SUPPLYOS_URL}?case=<case_id>` in a new tab. The URL carries only the Case ID; SupplyOS reads trusted records through FastAPI.
 - **One** FastAPI process serves the Devin tool endpoints *and* the UI read API. No service mesh.
 - **One** contracts module (Pydantic) → JSON Schema exported for the UI **and** for CALL-E's `recipient_result_schema`. One source of truth, three consumers, contract drift impossible.
 - **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 Candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 4 Claims — and **the cheapest unit price is not the right answer** (§5).
@@ -241,6 +243,8 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 ### SLICE A — Cockpit UI
 
+Slice A lives in `apps/web`. It does not import product components from the mock ERP.
+
 One Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
 
 The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
@@ -262,6 +266,9 @@ The prototype enters an existing Session, matching an external ERP link. The sid
 **Data:** SQLite is the intended operational datastore. This implementation remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 
 ### SLICE B — Core API, system of record & seed data
+
+Slice B lives in `apps/api`. Its generated SQLite database remains local and gitignored.
+
 | # | Deliverable |
 |---|---|
 | B1 | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
@@ -317,7 +324,7 @@ The panel reviews our work through **Entire**, which is already wired into this 
 
 Until that's answered, assume nothing. Everything below holds regardless:
 
-1. **One monorepo — this one.** Four top-level areas matching the slices. One repo = one review surface = one integration to configure.
+1. **One monorepo — this one.** `apps/web`, `apps/erp`, and `apps/api` provide one review surface and one integration to configure.
 2. **Everything lands through a PR. Nothing is pushed to `main` directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
 3. **Never force-push, never squash-merge, never rewrite history.** History *is* the evidence. Merge commits keep the trail intact. Entire's checkpoints are git refs — rewriting refs is exactly what breaks them.
 4. **Development PRs stay separate from product Decisions.** `feat/*` PRs audit engineering work. Product cases live in SQLite and end as approved Decisions in SupplyOS.

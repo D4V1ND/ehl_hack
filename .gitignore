@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,12 +11,12 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
 # next.js
-/.next/
-/.vinext/
-/out/
+.next/
+.vinext/
+out/
 
 # misc
 .DS_Store
@@ -30,18 +30,35 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
-/dist/
+dist/
 /.wrangler/
 /outputs/
 /work/
 /.herenow/
 # production
-/build
+build/
 pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# turborepo
+.turbo/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# generated SQLite system of record
+apps/api/backend/record/*.db
+
+# local live-call destinations
+apps/api/backend/fixtures/supplier_phones.local.json
