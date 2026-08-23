@@ -1,0 +1,36 @@
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/qBcw2F/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/qBcw2F/PR instructions.md
+
+---
+
+Rebase your branch onto the remote branch (main) and resolve conflicts. Stage the resolved files and run `git rebase --continue`, then push --force-with-lease.
+
+---
+
+What is taking so long?
+
+---
+
+Yeah, but I realized that you did tons of different Git commands. Did you have conflicting updates or what? Because I had a different agent running. So, is it now all resolved?
+
+---
+
+why did we do a rebase on main?
+
+---
+
+Okay, are we up to date with lorenzkrinner/mvp-ui ?
+
+---
+
+Okay, rebase onto that branch then instead, main is not important rn
+
+---
+
+I also just changed the target branch to the mvp ui branch

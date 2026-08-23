@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0P1240B3S16KE3WDC6K1PDK",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "docs/PLAN.md",
+    "docs/design.md",
+    "ui/components/cockpit/assistant-turn.tsx",
+    "ui/components/cockpit/candidate-panel.tsx",
+    "ui/components/cockpit/incident-header.tsx",
+    "ui/components/cockpit/incident-request-message.tsx",
+    "ui/components/cockpit/run-status-button.tsx",
+    "ui/components/cockpit/session-sidebar.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 501252,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22840832,
+    "output_tokens": 82209,
+    "api_call_count": 166
+  }
+}

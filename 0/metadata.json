@@ -1,0 +1,76 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0P1240B3S16KE3WDC6K1PDK",
+  "session_id": "01a02bd8-51b8-7122-aa37-22699959adff",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T00:41:52.67027Z",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 5,
+  "save_step_count": 2,
+  "files_touched": [
+    "docs/PLAN.md",
+    "docs/design.md",
+    "ui/components/cockpit/assistant-turn.tsx",
+    "ui/components/cockpit/candidate-panel.tsx",
+    "ui/components/cockpit/incident-header.tsx",
+    "ui/components/cockpit/incident-request-message.tsx",
+    "ui/components/cockpit/run-status-button.tsx",
+    "ui/components/cockpit/session-sidebar.tsx"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "d15cb8f7fa89",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 501252,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22840832,
+    "output_tokens": 82209,
+    "api_call_count": 166
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T00:41:52.584414Z",
+    "agent_lines": 0,
+    "agent_removed": 2,
+    "human_added": 110,
+    "human_modified": 43,
+    "human_removed": 0,
+    "total_committed": 112,
+    "total_lines_changed": 155,
+    "agent_percentage": 1.2903225806451613,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 168,
+      "user_lines_removed": 43,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/attachments/qBcw2F/PR instructions.md": 15,
+        "docs/PLAN.md": 3,
+        "docs/design.md": 3,
+        "ui/components/cockpit/assistant-turn.tsx": 1,
+        "ui/components/cockpit/candidate-panel.tsx": 2,
+        "ui/components/cockpit/incident-header.tsx": 1,
+        "ui/components/cockpit/incident-request-message.tsx": 7,
+        "ui/components/cockpit/run-status-button.tsx": 14,
+        "ui/components/cockpit/session-sidebar.tsx": 32,
+        "ui/components/ui/popover.tsx": 90
+      },
+      "user_removed_per_file": {
+        "docs/PLAN.md": 3,
+        "docs/design.md": 3,
+        "ui/components/cockpit/assistant-turn.tsx": 1,
+        "ui/components/cockpit/candidate-panel.tsx": 2,
+        "ui/components/cockpit/incident-request-message.tsx": 4,
+        "ui/components/cockpit/run-status-button.tsx": 12,
+        "ui/components/cockpit/session-sidebar.tsx": 18
+      }
+    }
+  ]
+}
