@@ -5,7 +5,7 @@ import { CockpitChat } from "@/components/cockpit/cockpit-chat"
 export const metadata: Metadata = {
   title: "Cockpit",
   description:
-    "Review an Incident sourcing run from Claims to an approved Decision.",
+    "Review an Incident sourcing run from Claims to a human-recorded Decision.",
 }
 
 export default function ChatPage() {

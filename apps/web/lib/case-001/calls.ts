@@ -3,6 +3,75 @@ import type { CallStatus, RehearsalCall } from "@/lib/case-001/types"
 
 const AI_DISCLOSURE = `I am an AI assistant calling on behalf of a German automotive manufacturer. This call is recorded. I cannot agree to a price, quantity, or delivery commitment. A human makes the Decision. Ask for a human or ask me to stop at any time.`
 
+const SKF_TRANSCRIPT = [
+  { speaker: "Agent", text: AI_DISCLOSURE },
+  {
+    speaker: "SKF Nordic",
+    text: "Understood. I can help with current availability for that bearing.",
+  },
+  {
+    speaker: "Agent",
+    text: "Please confirm part 6204-2RS, quantity available, whether the stock is free, earliest readiness, unit price, and current IATF certification.",
+  },
+  {
+    speaker: "SKF Nordic",
+    text: "We can release 32,000 units from free stock in 3 days at EUR 4.80 each. The IATF 16949 certificate is current.",
+  },
+  {
+    speaker: "Agent",
+    text: "To confirm: 32,000 free units, ready in 3 days, EUR 4.80 each, exact part confirmed, and certification current?",
+  },
+  { speaker: "SKF Nordic", text: "That is correct." },
+] as const
+
+const FAG_TRANSCRIPT = [
+  { speaker: "Agent", text: AI_DISCLOSURE },
+  {
+    speaker: "Schaeffler FAG",
+    text: "I understand. What quantity and delivery window do you need?",
+  },
+  {
+    speaker: "Agent",
+    text: "We need 32,000 units of 6204-2RS. Please state current stock, earliest readiness, unit price, and certification status.",
+  },
+  {
+    speaker: "Schaeffler FAG",
+    text: "The units are not in stock today. We can make the full 32,000-unit batch in 21 days at EUR 2.10 each.",
+  },
+  {
+    speaker: "Agent",
+    text: "Please confirm the exact part number and that the IATF 16949 certificate remains current.",
+  },
+  {
+    speaker: "Schaeffler FAG",
+    text: "Both are confirmed. The stock status is to be made, not in stock.",
+  },
+] as const
+
+const MUNICH_MOTION_TRANSCRIPT = [
+  { speaker: "Agent", text: AI_DISCLOSURE },
+  {
+    speaker: "Munich Motion",
+    text: "Understood. We show 32,000 units at the Munich warehouse.",
+  },
+  {
+    speaker: "Agent",
+    text: "Confirm stock status: free for this order, or already allocated to another customer?",
+  },
+  {
+    speaker: "Munich Motion",
+    text: "They are allocated to another customer. I cannot promise those units.",
+  },
+  {
+    speaker: "Agent",
+    text: "Please confirm the record: EUR 3.80 each, 2-day handling, exact 6204-2RS part, but no free quantity.",
+  },
+  {
+    speaker: "Munich Motion",
+    text: "Correct. The price and certification are current, but the stock is not available to you.",
+  },
+] as const
+
 export const CALLS: readonly RehearsalCall[] = [
   {
     id: "skf",
@@ -18,20 +87,8 @@ export const CALLS: readonly RehearsalCall[] = [
     claim: CLAIMS[0],
     confidence: CLAIMS[0].confidence,
     evidence: CLAIMS[0].evidence,
-    transcript: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "SKF Nordic",
-        text: "For 6204-2RS, we can release 32,000 units from free stock in 3 days at EUR 4.80 each. The IATF 16949 certificate is current.",
-      },
-    ],
-    turns: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "SKF Nordic",
-        text: "For 6204-2RS, we can release 32,000 units from free stock in 3 days at EUR 4.80 each. The IATF 16949 certificate is current.",
-      },
-    ],
+    transcript: SKF_TRANSCRIPT,
+    turns: SKF_TRANSCRIPT,
   },
   {
     id: "fag",
@@ -47,49 +104,8 @@ export const CALLS: readonly RehearsalCall[] = [
     claim: CLAIMS[1],
     confidence: CLAIMS[1].confidence,
     evidence: CLAIMS[1].evidence,
-    transcript: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "Schaeffler FAG",
-        text: "We can make all 32,000 units in 21 days at EUR 2.10 each. They are not in stock today. The part and certification are confirmed.",
-      },
-    ],
-    turns: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "Schaeffler FAG",
-        text: "We can make all 32,000 units in 21 days at EUR 2.10 each. They are not in stock today. The part and certification are confirmed.",
-      },
-    ],
-  },
-  {
-    id: "nsk",
-    supplier: "NSK Europe",
-    candidateId: "supplier-nsk-europe",
-    phone: "+49*******0200",
-    maskedPhone: "+49*******0200",
-    status: "completed" as CallStatus,
-    duration: "01:31",
-    afterId: "outreach" as const,
-    connectedLabel: "Call completed 1:31",
-    claimStrip: { price: "EUR 3.05", stock: "free_in_stock", cert: "yes" },
-    claim: CLAIMS[2],
-    confidence: CLAIMS[2].confidence,
-    evidence: CLAIMS[2].evidence,
-    transcript: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "NSK Europe",
-        text: "We have 32,000 certified 6204-2RS units free at EUR 3.05 each. Road delivery takes 14 days.",
-      },
-    ],
-    turns: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "NSK Europe",
-        text: "We have 32,000 certified 6204-2RS units free at EUR 3.05 each. Road delivery takes 14 days.",
-      },
-    ],
+    transcript: FAG_TRANSCRIPT,
+    turns: FAG_TRANSCRIPT,
   },
   {
     id: "munich-motion",
@@ -105,27 +121,7 @@ export const CALLS: readonly RehearsalCall[] = [
     claim: CLAIMS[3],
     confidence: CLAIMS[3].confidence,
     evidence: CLAIMS[3].evidence,
-    transcript: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "Agent",
-        text: "Confirm stock_status: free for us, or already allocated to another customer?",
-      },
-      {
-        speaker: "Munich Motion",
-        text: "We have 32,000 units at EUR 3.80 each, but they are allocated to another customer. I cannot promise them.",
-      },
-    ],
-    turns: [
-      { speaker: "Agent", text: AI_DISCLOSURE },
-      {
-        speaker: "Agent",
-        text: "Confirm stock_status: free for us, or already allocated to another customer?",
-      },
-      {
-        speaker: "Munich Motion",
-        text: "We have 32,000 units at EUR 3.80 each, but they are allocated to another customer. I cannot promise them.",
-      },
-    ],
+    transcript: MUNICH_MOTION_TRANSCRIPT,
+    turns: MUNICH_MOTION_TRANSCRIPT,
   },
 ] as const

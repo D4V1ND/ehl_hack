@@ -64,37 +64,33 @@ export const STRATEGIES = [
     name: "100% FAG sea",
     total: "EUR 71200.00",
     note: "Cheapest unit price. Misses the line-stop date.",
-    recommended: false,
   },
   {
     name: "100% SKF air",
     total: "EUR 168400.00",
     note: "Covers the line-stop. Highest Landed Cost.",
-    recommended: false,
   },
   {
     name: "SPLIT 20% SKF air + 80% FAG sea",
     total: "EUR 94880.00",
     note: "Air covers the line-stop. Sea takes the rest.",
-    recommended: true,
   },
 ] as const
 
 export const DECISION_STATES = [
-  "evaluating",
-  "on_hold",
-  "needs_human_review",
-  "approved",
+  "researching",
+  "ready",
+  "recorded",
 ] as const satisfies readonly DecisionState[]
 
 export const DECISION = {
   caseId: "CASE-001",
-  state: "needs_human_review" as DecisionState,
-  recommendedStrategy: "SPLIT 20% SKF air + 80% FAG sea",
-  total: "EUR 94880.00",
+  state: "ready" as DecisionState,
+  selectedCandidateId: null,
   policyCheck: "passed",
   costModelCheck: "passed",
-  approval: "A human marks the Decision approved in SupplyOS.",
+  recordedAt: null,
+  recordedBy: null,
 } as const
 
 export const PR_PATH = "github.com/D4V1ND/ehl_hack/compare/case/CASE-001"

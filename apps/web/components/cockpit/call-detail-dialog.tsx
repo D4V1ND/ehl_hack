@@ -16,18 +16,45 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CALLS } from "@/lib/case-001"
+import { CALLS, type CallingAgentRun, type RehearsalCall } from "@/lib/case-001"
 
 const WIDE_CALL_LAYOUT = "(min-width: 64rem)"
 
-export function CallDetailDialog() {
+export function CallDetailDialog({
+  agentRuns,
+}: {
+  agentRuns: readonly CallingAgentRun[]
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
   const mockRequested = searchParams.get("mock") === "true"
-  const call =
-    CALLS.find((candidate) => candidate.id === searchParams.get("call")) ??
+  const selectedCallId = searchParams.get("call")
+  const baseCall =
+    CALLS.find((candidate) => candidate.id === selectedCallId) ??
     (mockRequested ? CALLS[0] : undefined)
+  const agentRun = selectedCallId
+    ? agentRuns.find((agent) => agent.callId === selectedCallId)
+    : undefined
+  const call: RehearsalCall | undefined =
+    baseCall && agentRun
+      ? {
+          ...baseCall,
+          status:
+            agentRun.phase === "complete"
+              ? baseCall.status
+              : agentRun.phase === "calling"
+                ? "calling"
+                : "dialing",
+          duration: agentRun.durationLabel,
+          runtimeAgentName: agentRun.name,
+          runtimeStartedAt:
+            agentRun.startedAt === null
+              ? undefined
+              : new Date(agentRun.startedAt).toISOString(),
+          visibleTranscriptTurnCount: agentRun.visibleTranscriptTurnCount,
+        }
+      : baseCall
   const [historyOpen, setHistoryOpen] = useState(true)
   const [transcriptOpen, setTranscriptOpen] = useState(true)
   const [mobilePane, setMobilePane] = useState<MobilePane>("call")

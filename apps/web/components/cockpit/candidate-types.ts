@@ -10,4 +10,5 @@ export type CandidateState = {
   outreachStarted: boolean
   claimsComplete: boolean
   costsComplete: boolean
+  decisionRecorded: boolean
 }

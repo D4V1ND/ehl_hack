@@ -26,18 +26,6 @@ export const OUTREACH_TASKS = [
     callId: "fag",
   },
   {
-    id: "outreach-case-001-nsk",
-    caseId: "CASE-001",
-    candidateId: "supplier-nsk-europe",
-    channel: "phone",
-    maskedPhone: "+49*******0200",
-    status: "completed" as OutreachTaskStatus,
-    batchId: "case-001-round-1",
-    round: 1,
-    startedAt: "2025-02-14T09:15:00Z",
-    callId: "nsk",
-  },
-  {
     id: "outreach-case-001-munich-motion",
     caseId: "CASE-001",
     candidateId: "supplier-munich-motion",

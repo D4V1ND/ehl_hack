@@ -1,6 +1,6 @@
 # SupplyOS
 
-A bearing shortage at a German automotive manufacturer launches an agent that gathers supplier Claims, checks them against trusted records, and prepares a Decision for human approval in SupplyOS.
+A bearing shortage at a German automotive manufacturer launches an agent that gathers supplier Claims, checks them against trusted records, and prepares Candidates for a human Decision in SupplyOS.
 
 ## Language
 
@@ -33,11 +33,11 @@ One way to cover the shortfall: one or more order lines, possibly a split across
 _Avoid_: plan, scenario, option pack
 
 **Decision**:
-The ranked Strategies plus the recommended purchase and its policy and cost checks. A human marks the Decision approved in SupplyOS; approved is the final state.
+The Candidate chosen by a human after policy and Landed Cost checks. A recorded Decision is final and does not place an order.
 _Avoid_: recommendation blob, verdict, pull request, merge approval
 
 **Cockpit**:
-One `/chat` screen for a bearing shortage across the Munich and Stuttgart plants. The main conversation contains the status rail, parallel Outreach Tasks, concise Claim progress, and the Decision. A fixed Candidate panel shows stable, independently expandable Candidate rows. `?call=<id>` opens the large call modal. A compact expandable Decision bar ends the thread.
+One `/chat` screen for a bearing shortage across the Munich and Stuttgart plants. The main conversation contains concise Claim progress and the Decision handoff. A fixed Candidate panel shows independently expandable Candidate rows, staggered calling-agent cards, and terminal sourcing states. `?call=<id>` opens the large call modal. A compact Decision bar prompts and records the human choice.
 _Avoid_: console (as the product surface), control room, multi-page dashboard, file tree, Files/Results tabs
 
 **Event**:

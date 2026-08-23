@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
 
 import {
+  createCallingAgentPlan,
   getStepResponse,
+  INITIAL_CALLING_AGENT_PLAN,
+  latestCallingAgentEnd,
+  resolveCallingAgentRuns,
   SCRIPT,
   STEP_SETTLE_DELAY_MS,
   STREAM_CHARS_PER_TICK,
@@ -30,6 +34,66 @@ const INITIAL_STATE: PlaybackState = {
 // Keep its contract small so the Cockpit can later consume server events instead.
 export function useDeterministicRehearsal() {
   const [playback, setPlayback] = useState<PlaybackState>(INITIAL_STATE)
+  const [agentPlan, setAgentPlan] = useState(INITIAL_CALLING_AGENT_PLAN)
+  const [agentStartedAt, setAgentStartedAt] = useState<Record<string, number>>(
+    {}
+  )
+  const [clock, setClock] = useState(0)
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setAgentPlan(createCallingAgentPlan())
+    }, 0)
+
+    return () => window.clearTimeout(timeout)
+  }, [])
+
+  useEffect(() => {
+    const step = SCRIPT[playback.stepIndex]
+    if (
+      playback.status !== "streaming" ||
+      step?.kind !== "outreach" ||
+      !step.callId ||
+      agentStartedAt[step.callId] !== undefined
+    ) {
+      return
+    }
+
+    const callId = step.callId
+    const timeout = window.setTimeout(() => {
+      const startedAt = Date.now()
+      setAgentStartedAt((current) => ({
+        ...current,
+        [callId]: startedAt,
+      }))
+      setClock(startedAt)
+    }, 0)
+
+    return () => window.clearTimeout(timeout)
+  }, [agentStartedAt, playback.status, playback.stepIndex])
+
+  useEffect(() => {
+    if (
+      playback.status !== "streaming" ||
+      Object.keys(agentStartedAt).length === 0
+    ) {
+      return
+    }
+
+    const endAt = latestCallingAgentEnd(agentPlan, agentStartedAt)
+    const updateClock = () => {
+      const now = Date.now()
+      setClock(now)
+      return now >= endAt
+    }
+
+    if (updateClock()) return
+    const interval = window.setInterval(() => {
+      if (updateClock()) window.clearInterval(interval)
+    }, 250)
+
+    return () => window.clearInterval(interval)
+  }, [agentPlan, agentStartedAt, playback.status])
 
   useEffect(() => {
     if (playback.status !== "streaming") return
@@ -38,6 +102,14 @@ export function useDeterministicRehearsal() {
     if (!step) return
 
     if (playback.phase === "waiting") {
+      const waitMs =
+        step.id === "claims" &&
+        agentPlan.every((agent) => agentStartedAt[agent.callId] !== undefined)
+          ? Math.max(
+              0,
+              latestCallingAgentEnd(agentPlan, agentStartedAt) - Date.now()
+            )
+          : step.waitMs
       const timeout = window.setTimeout(() => {
         setPlayback((current) => {
           if (
@@ -50,7 +122,7 @@ export function useDeterministicRehearsal() {
 
           return { ...current, phase: "text", text: "" }
         })
-      }, step.waitMs)
+      }, waitMs)
 
       return () => window.clearTimeout(timeout)
     }
@@ -108,7 +180,7 @@ export function useDeterministicRehearsal() {
     }, STEP_SETTLE_DELAY_MS)
 
     return () => window.clearTimeout(timeout)
-  }, [playback])
+  }, [agentPlan, agentStartedAt, playback])
 
   const stop = useCallback(() => {
     setPlayback((current) => {
@@ -118,16 +190,9 @@ export function useDeterministicRehearsal() {
   }, [])
 
   const replay = useCallback(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPlayback({
-        status: "complete",
-        phase: "waiting",
-        stepIndex: SCRIPT.length,
-        text: "",
-      })
-      return
-    }
-
+    setAgentPlan(createCallingAgentPlan())
+    setAgentStartedAt({})
+    setClock(0)
     setPlayback(INITIAL_STATE)
   }, [])
 
@@ -150,12 +215,18 @@ export function useDeterministicRehearsal() {
     playback.status === "complete"
       ? SCRIPT.length
       : playback.stepIndex + (playback.phase === "text" ? 1 : 0)
+  const agentRuns = resolveCallingAgentRuns(
+    agentPlan,
+    agentStartedAt,
+    clock || Math.max(0, ...Object.values(agentStartedAt))
+  )
 
   return {
     completedSteps: playback.stepIndex,
     currentPhase,
     currentStepIndex,
     currentText: playback.text,
+    agentRuns,
     revealedSteps,
     running: playback.status === "streaming",
     replay,

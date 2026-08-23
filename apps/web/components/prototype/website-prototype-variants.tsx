@@ -83,7 +83,7 @@ function VariantC() {
             When stock runs out, SupplyOS starts.
           </h1>
           <p className="mt-6 max-w-md text-base leading-relaxed text-foreground/70 sm:text-lg">
-            From Incident to approved Decision, every sourcing step stays
+            From Incident to recorded Decision, every sourcing step stays
             visible.
           </p>
           <div className="mt-9">

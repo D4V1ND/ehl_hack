@@ -6,12 +6,6 @@ import {
   MessageResponse,
 } from "@/components/ai-elements/message"
 import {
-  Task,
-  TaskContent,
-  TaskItem,
-  TaskTrigger,
-} from "@/components/ai-elements/task"
-import {
   Tool,
   ToolContent,
   ToolHeader,
@@ -36,7 +30,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { CANDIDATES, getStepResponse, type ScriptStep } from "@/lib/case-001"
+import { getStepResponse, type ScriptStep } from "@/lib/case-001"
 import { useStickToBottomContext } from "use-stick-to-bottom"
 
 type AssistantTurnPhase = "pending" | "streaming" | "stopped" | "complete"
@@ -99,6 +93,8 @@ const TOOL_ICONS: Record<string, IconComponent> = {
 }
 
 function toolIconFor(step: ScriptStep): IconComponent {
+  if (step.kind === "outreach") return Phone
+  if (step.id.startsWith("web-")) return SearchIcon
   return TOOL_ICONS[step.id] ?? WrenchIcon
 }
 
@@ -148,8 +144,6 @@ export function AssistantTurn({
 }
 
 function StepExtras({ step }: { step: ScriptStep }) {
-  if (step.kind === "outreach") return <OutreachTasks />
-
   if (step.kind === "policy") {
     return (
       <Alert variant="destructive">
@@ -172,42 +166,5 @@ function StepExtras({ step }: { step: ScriptStep }) {
     )
   }
 
-  if (step.kind === "decision") {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Winning Strategy: split 20% SKF air + 80% FAG sea. Required checks
-        passed.
-      </p>
-    )
-  }
-
   return null
-}
-
-function OutreachTasks() {
-  const candidates = CANDIDATES.filter(
-    (candidate) => candidate.compliance === "passed"
-  )
-
-  return (
-    <Task defaultOpen>
-      <TaskTrigger title="Outreach Tasks · 4 parallel" />
-      <TaskContent className="[&>div]:mt-2 [&>div]:grid [&>div]:gap-2 [&>div]:border-l-0 [&>div]:pl-0 sm:[&>div]:grid-cols-2">
-        {candidates.map((candidate) => (
-          <TaskItem
-            key={candidate.name}
-            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border px-2.5 py-1.5"
-          >
-            <span className="min-w-0">
-              <span className="block truncate text-foreground">
-                {candidate.name}
-              </span>
-              <span className="font-mono text-xs">{candidate.phone}</span>
-            </span>
-            <Badge variant="secondary">calling</Badge>
-          </TaskItem>
-        ))}
-      </TaskContent>
-    </Task>
-  )
 }
