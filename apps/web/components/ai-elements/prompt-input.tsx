@@ -164,6 +164,7 @@ export function PromptInputSubmit({
       size="icon-sm"
       type={canStop ? "button" : "submit"}
       variant="default"
+      className="bg-foreground text-background hover:bg-foreground/80"
       onClick={(event) => {
         if (canStop && onStop) {
           event.preventDefault()

@@ -100,8 +100,6 @@ export function CockpitChat() {
     >
       <div className="grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
         <IncidentHeader
-          visible={visible}
-          approved={approved}
           running={running}
           onReplay={replay}
           showOpenCandidates={!candidatesOpen}

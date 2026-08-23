@@ -11,7 +11,6 @@ import {
   WarehouseIcon,
 } from "@/components/icons"
 import { DotLoader } from "@/components/cockpit/dot-loader"
-import { RunStatusButton } from "@/components/cockpit/run-status-button"
 import { Button } from "@/components/ui/button"
 import {
   Collapsible,
@@ -30,8 +29,6 @@ const hoursToLineStop = Number(INCIDENT.lineStopDays) * 24
 const standingStill = `${INCIDENT.lineStopCostPerHour.replace(/\.00$/, "")} / h`
 
 type IncidentHeaderProps = {
-  visible: number
-  approved: boolean
   running: boolean
   onReplay: () => void
   showOpenCandidates: boolean
@@ -99,7 +96,6 @@ export function IncidentHeader(props: IncidentHeaderProps) {
 function HeaderActions(props: IncidentHeaderProps) {
   return (
     <div className="ml-auto flex shrink-0 items-center gap-1">
-      <RunStatusButton visible={props.visible} approved={props.approved} />
       <Button
         type="button"
         size="sm"
