@@ -6,7 +6,6 @@ import time
 from datetime import date
 
 from backend import plan
-from backend import settings as runtime_settings
 from backend.casestore.case_store import CaseStore
 from backend.decide.run import DecisionOutcome, run as decide
 from backend.flow.claims import claim_from_quote

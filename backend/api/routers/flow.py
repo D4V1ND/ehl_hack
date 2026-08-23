@@ -29,7 +29,6 @@ from backend import settings as runtime_settings
 from backend.api.deps import erp, settings, store
 from backend.api.settings import LIVE_CALLS_CONFIRMATION, Settings
 from backend.casestore.case_store import CaseStore
-from backend.decide.run import run as decide
 from backend.flow.collect import collect_quotes, wait_for_pending_calls
 from backend.flow.conductor import run_case
 from backend.flow.provider import RehearsalOutreachProvider
