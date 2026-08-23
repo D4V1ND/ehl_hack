@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0P2KEP528X4CX75AZ5JY9KF",
+  "session_id": "01a02c15-bada-7f61-a69b-562783e7ad4d",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T01:08:50.077998Z",
+  "branch": "lorenzkrinner/consolidate-cockpit-calls",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/components/cockpit/session-sidebar.tsx"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "6caf1fb97d20",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 232323,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 8095488,
+    "output_tokens": 43605,
+    "api_call_count": 78
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T01:08:50.030633Z",
+    "agent_lines": 0,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 1,
+    "total_lines_changed": 2,
+    "agent_percentage": 50,
+    "metric_version": 2
+  }
+}
