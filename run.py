@@ -29,7 +29,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-UI = ROOT / "ui"
+UI = ROOT / "apps" / "erp"
 VENV = ROOT / ".venv"
 WINDOWS = os.name == "nt"
 
@@ -164,12 +164,12 @@ def ensure_node() -> None:
         return
     if major < MIN_NODE_MAJOR:
         hint = _nvm_hint() or f"  Install Node >= {MIN_NODE_MAJOR}.9 from https://nodejs.org"
-        die(f"node {version} is too old for Next 16 (ui/.nvmrc pins 22).\n{hint}")
+        die(f"node {version} is too old for Next 16 (apps/erp/.nvmrc pins 22).\n{hint}")
 
 
 def ensure_node_modules() -> None:
     if not (UI / "node_modules").exists():
-        warn("ui/node_modules missing — installing (this takes a minute)")
+        warn("apps/erp/node_modules missing — installing (this takes a minute)")
         subprocess.run([node_cmd("npm"), "install"], cwd=UI, check=True)
 
 
@@ -306,7 +306,7 @@ def cmd_all() -> None:
             die("the API never became ready — see .logs/api.log")
 
         print()
-        bold("Stockout — Slice B")
+        bold("ERP — Slice B")
         ok(f"cockpit   http://localhost:{ui_port}/cockpit")
         ok(f"API       http://localhost:{api_port}/docs")
         dim(f"  logs      {logs / 'api.log'}  {logs / 'ui.log'}")

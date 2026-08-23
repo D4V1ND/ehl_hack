@@ -4,8 +4,8 @@
 
 Writes:
   packages/contracts/schema.json      every model as JSON Schema
-  ui/lib/contracts.ts                 TypeScript types, from the same models
-  ui/lib/fixtures/*.json              a recorded case, so the cockpit runs with no backend
+  apps/erp/lib/contracts.ts                 TypeScript types, from the same models
+  apps/erp/lib/fixtures/*.json              a recorded case, so the cockpit runs with no backend
 
 The point of doing all three from one place: `Claim` is simultaneously our Python
 type, CALL-E's `recipient_result_schema` and the cockpit's TypeScript interface.
@@ -31,7 +31,7 @@ from packages.contracts.models import Contract
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = Path(__file__).resolve().parent
-UI_LIB = REPO_ROOT / "ui" / "lib"
+UI_LIB = REPO_ROOT / "apps" / "erp" / "lib"
 
 MODELS: dict[str, type[BaseModel]] = {
     name: obj

@@ -135,7 +135,7 @@ export default function CockpitPage() {
         <div className="mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-4 px-6 lg:px-10">
           <div className="flex items-center gap-3">
             <Link href="/" className="text-[17px] font-semibold text-ink">
-              stockout
+              ERP
             </Link>
             <span className="hidden h-4 w-px bg-hairline-strong sm:block" />
             <Mono className="hidden sm:inline-block">{snapshot.case_id}</Mono>

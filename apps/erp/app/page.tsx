@@ -85,7 +85,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-hairline bg-canvas">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6 lg:px-20">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-ink">stockout</span>
+            <span className="text-lg font-semibold text-ink">ERP</span>
             <Badge className="bg-primary text-on-primary uppercase text-[11px] font-semibold tracking-[0.88px]">
               Demo
             </Badge>
@@ -114,7 +114,7 @@ export default function Home() {
               <span className="text-primary">Give it an engineer.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-body">
-              A production line is 12 days from standing still. Stockout reads the ERP,
+              A production line is 12 days from standing still. The agent reads this ERP,
               finds suppliers, dispatches voice agents, runs a landed-cost model, checks
               compliance, and ships the decision as a pull request.
             </p>
@@ -252,7 +252,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1200px]">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
-              <span className="text-lg font-semibold text-ink">stockout</span>
+              <span className="text-lg font-semibold text-ink">ERP</span>
               <p className="mt-2 max-w-xs text-sm text-body">
                 Autonomous sourcing for engineering teams. Built for the EHL Game Jam
                 Munich · Cognition track.
@@ -283,7 +283,7 @@ export default function Home() {
             </div>
           </div>
           <p className="mt-12 text-xs text-muted-soft">
-            © 2026 stockout. All rights reserved.
+            © 2026 ERP. All rights reserved.
           </p>
         </div>
       </footer>

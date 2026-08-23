@@ -24,14 +24,43 @@ backend/              Slice B — the service.
   api/                one FastAPI process: Devin tool endpoints + cockpit read API
   detect/             shortage detector (the no-human-in-the-loop trigger)
   tests/              Slice B's tests
-ui/                   Slice A — the cockpit (Next.js). Runs with no backend.
+apps/erp/             the ERP — item master, stock, cases, cockpit (Next.js).
+                      Runs with no backend.
   app/api/cases/      Slice 1 launch API as Route Handlers, so a case can be
                       started from a Vercel deployment with no Python process
+apps/web/             the agent-facing cockpit + chat (Next.js), proxying to the
+                      API on :8010 through app/backend/[...path]
 orchestrator/         the CLI that launches a case
 cases/                Runtime output. One directory per case; the artifact IS the datastore.
 test/                 Slice C's CALL-E smoke test
 docs/                 plans and specs
 ```
+
+## Setup, from a clean clone
+
+You need **Python >= 3.11** (any 3.11+ interpreter — the executable is called
+`python3` on macOS/Linux, `python` on Windows) and **Node >= 20.9**. Nothing
+else; `run.py` builds the rest.
+
+```bash
+git clone https://github.com/D4V1ND/ehl_hack.git && cd ehl_hack
+python3 run.py setup   # venv + pip install -e '.[dev]' + npm install + build the database
+python3 run.py test    # backend tests + UI typecheck. Never touches the network.
+python3 run.py         # the whole stack — API + ERP. Ctrl-C stops both.
+```
+
+That leaves you with:
+
+| | |
+|---|---|
+| ERP | <http://localhost:3000> — inventory, cases, cockpit |
+| API | <http://localhost:8010/docs> |
+| logs | `.logs/api.log`, `.logs/ui.log` |
+
+No `.env` is needed for the default run: without `CALLE_API_KEY` calls are
+rehearsed, without `DEVIN_API_KEY` sessions are stubbed, and without
+`GITHUB_TOKEN` publishing is a dry run. Copy `.env.example` to `.env` only when
+you want the real thing.
 
 ## Commands
 
@@ -39,9 +68,10 @@ Works the same on Windows, macOS and Linux:
 
 ```bash
 python run.py setup   # once per machine: venv, npm install, build the database
-python run.py         # the whole stack — API + cockpit. Ctrl-C stops both.
-python run.py ui      # cockpit only. Runs offline; this is the demo path.
-python run.py test    # 116 tests + UI typecheck. Never touches the network.
+python run.py         # the whole stack — API + ERP. Ctrl-C stops both.
+python run.py ui      # ERP only. Runs offline; this is the demo path.
+python run.py api     # API only, on :8010
+python run.py test    # backend tests + UI typecheck. Never touches the network.
 ```
 
 | | |
@@ -61,8 +91,12 @@ macOS ships bash 3.2.
 Other commands: `db`, `db-export`, `fixtures`, `build`. The `Makefile` mirrors
 them on Unix.
 
-The cockpit defaults to `NEXT_PUBLIC_DATA_SOURCE=fixtures` and runs entirely
-offline. `./run.sh` points it at the live API instead.
+The ERP defaults to `NEXT_PUBLIC_DATA_SOURCE=fixtures` and runs entirely
+offline. `./run.sh` points it at the live API instead; by hand that is
+
+```bash
+cd apps/erp && NEXT_PUBLIC_DATA_SOURCE=live NEXT_PUBLIC_API_BASE=http://localhost:8010 npm run dev
+```
 
 **Opening the database in a GUI on Windows:** run `python run.py db-export`. DB
 Browser for SQLite cannot open the file in place — the repo is on ext4 inside
@@ -105,7 +139,7 @@ placed deliberately — that is the demo's live moment.
 
 ```bash
 python run.py api                                                        # :8010
-python -m orchestrator.sourcing run     --case CASE-001 --hold-for SUP-KBY
+python -m orchestrator.sourcing run     --case CASE-001 --hold-for SUP-KBY  # add --live to dial
 python -m orchestrator.sourcing call    --case CASE-001 --supplier SUP-KBY   # add --live to dial
 python -m orchestrator.sourcing collect --case CASE-001                      # files the answer, re-prices
 python -m orchestrator.sourcing state   --case CASE-001
@@ -113,7 +147,7 @@ python -m orchestrator.sourcing publish --case CASE-001
 ```
 
 The same steps are `POST /flow/run`, `POST /flow/call`, `POST /flow/collect`,
-`GET /flow/state`. Every stage appends an event, so the cockpit shows where the
+`GET /flow/state` and `POST /tools/publish_pr` (all take `?case_id=`). Every stage appends an event, so the cockpit shows where the
 run has got to rather than a spinner.
 
 Calling is rehearsed unless live calling is switched on server-side
@@ -134,7 +168,7 @@ to merge (rehearsed unless `GITHUB_TOKEN`/`GITHUB_REPO` are set).
 The launch path that needs nothing but the Next app:
 
 ```bash
-cd ui && npm install && npm run dev
+cd apps/erp && npm install && npm run dev
 python -m orchestrator.run --case CASE-001 --api http://localhost:3000
 ```
 
@@ -144,14 +178,14 @@ python -m orchestrator.run --case CASE-001 --api http://localhost:3000
 - `GET /api/cases/CASE-001/events` — the append-only log.
 - `/cases/CASE-001` — polls it every 2s.
 
-Events live in a module-level map (`ui/lib/cases/store.ts`) because serverless has
+Events live in a module-level map (`apps/erp/lib/cases/store.ts`) because serverless has
 no durable disk; the durable case store is `backend/casestore/`. Money is only
 ever a decimal string. Without `DEVIN_API_KEY` the session is stubbed, so this
 never fails on a missing key and never places a phone call. Cross-origin browser
 access is opt-in via `CASES_ALLOWED_ORIGINS`.
 
 ```bash
-cd ui && npm test   # route handlers, in-memory, no live Devin
+cd apps/erp && npm test   # route handlers, in-memory, no live Devin
 ```
 
 ## The system of record

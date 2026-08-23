@@ -12,9 +12,9 @@ const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const fontMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata = {
-  title: "Stockout — autonomous sourcing",
+  title: "ERP — system of record",
   description:
-    "A production line is twelve days from standing still. Stockout reads the ERP, calls suppliers, costs the options and ships the decision as a pull request.",
+    "The ERP the sourcing agent reads: the item master, stock cover, approved suppliers, open orders, and the cases opened against them.",
 }
 
 export default function RootLayout({
