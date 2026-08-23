@@ -37,13 +37,13 @@ ARTIFACT_FILES = (
 def _atomic_write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
-    fd = os.open(tmp, os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
-    tmp.replace(path)
+    # fsync the handle the bytes were written through: on Windows a read-only
+    # descriptor cannot be flushed and raises EBADF.
+    with tmp.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
 
 
 class CaseStore:
