@@ -1,0 +1,71 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/DrBvJI/pasted_text_2026-08-23_02-49-04.txt (16.8 KB)
+</system_instruction>
+
+
+
+Summarize using [i-have-adhd](/Users/lorenzkrinner/.agents/skills/i-have-adhd/SKILL.md) what your plan here is: .context/attachments/DrBvJI/pasted_text_2026-08-23_02-49-04.txt
+
+---
+
+The goal is to move the deterministic stuff from our react file to our fast api api, correct? how could we achieve that?
+
+---
+
+Okay so dumb react UI. Smart backend. Perfekt add that. as good as you can mirror the data schemas we'll expect from PR22. First spawn a few targeted research subagents to figure out the exact schemas. Then give those findings to implementaiton agents that create/update the fastapi routes to use this new schema.
+
+---
+
+Makes sense or would you approach it differently. Very improtant you're just the orchestrator. You use subagents. You don't build anything yourself. You just verify they do what they are supposed to do.
+
+---
+
+Run miltiple agents in parallel, this is taking WAAYYYY too long
+
+---
+
+Are you already implementing? If no, please first create a worktree and continue working there. If yes, is it possible ot stash your changes and pop them there?
+
+---
+
+No, one a separate worktree from the already existing worktree? Or is the agent doing all the UI work atm at the brass-faraday branch?
+
+---
+
+Anyways, continue
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/KI5nDR/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/KI5nDR/PR instructions.md
+
+---
+
+The 3 background agents can then push into anew PR once they're done.
+
+---
+
+dude how fucking long do you need, create the pr please
