@@ -176,6 +176,31 @@ def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask)
         ) from exc
 
 
+MAX_LIVE_CALLS = int(os.environ.get("MAX_LIVE_CALLS", "0") or 0)
+_placed = 0
+
+
+def live_calls_placed() -> int:
+    return _placed
+
+
+class LiveCallBudgetSpent(RuntimeError):
+    pass
+
+
+def _check_call_budget(task: OutreachTask) -> None:
+    if MAX_LIVE_CALLS and _placed >= MAX_LIVE_CALLS:
+        raise LiveCallBudgetSpent(
+            f"refusing to dial {task.supplier_ref}: MAX_LIVE_CALLS={MAX_LIVE_CALLS} "
+            f"already spent on {_placed} call(s) this run"
+        )
+
+
+def _record_call_placed() -> None:
+    global _placed
+    _placed += 1
+
+
 class CalleOutreachProvider:
     name = "calle"
 
@@ -224,6 +249,7 @@ class CalleOutreachProvider:
                 )
                 raise
 
+            STORE.mark_call_pending(case_id, task.task_id, task.supplier_ref)
             _record_call_placed()
 
             call_id = accepted.get("id")
@@ -245,7 +271,13 @@ class CalleOutreachProvider:
                     args=(call_id, task),
                     daemon=True,
                 )
-                watcher.start()
+                try:
+                    watcher.start()
+                except Exception:
+                    STORE.resolve_call(case_id, task.task_id, "watcher_failed")
+                    raise
+            else:
+                STORE.resolve_call(case_id, task.task_id, "missing_call_id")
 
         return DispatchReceipt(
             case_id=case_id,
@@ -283,6 +315,10 @@ def _watch_call(call_id: str, task: OutreachTask) -> None:
             except CalleError:
                 record = {}
 
+        if not record:
+            STORE.resolve_call(task.case_id, task.task_id, "call_timeout")
+            return
+
         quote = normalize_result(
             task.task_id, task.case_id, task.supplier_ref, _flatten(record)
         )
@@ -316,6 +352,7 @@ def _watch_call(call_id: str, task: OutreachTask) -> None:
             },
         )
     except Exception as exc:  # noqa: BLE001 - a dead thread must still say why
+        STORE.resolve_call(task.case_id, task.task_id, "watch_failed")
         STORE.append_event(
             task.case_id,
             actor="calle",

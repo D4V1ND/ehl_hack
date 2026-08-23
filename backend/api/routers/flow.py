@@ -4,6 +4,7 @@ A Devin session (or the demo) calls these in order:
 
     POST /flow/run      detect -> part -> screen -> ask -> price -> write artifacts
     POST /flow/call     place the one call we held back, live if explicitly allowed
+    POST /flow/await_calls wait for dialled calls, then collect and decide
     POST /flow/collect  turn call results into claims and decide again
     GET  /flow/state    where the run has got to, for the cockpit
 
@@ -17,17 +18,19 @@ Live calling is refused unless it was turned on deliberately. `live=true` with
 
 from __future__ import annotations
 
+import time
 import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend import plan
+from backend import settings as runtime_settings
 from backend.api.deps import erp, settings, store
 from backend.api.settings import LIVE_CALLS_CONFIRMATION, Settings
 from backend.casestore.case_store import CaseStore
 from backend.decide.run import run as decide
-from backend.flow.claims import claim_from_quote
+from backend.flow.collect import collect_quotes, wait_for_pending_calls
 from backend.flow.conductor import run_case
 from backend.flow.provider import RehearsalOutreachProvider
 from backend.outreach.protocol import OutreachProvider
@@ -247,74 +250,57 @@ def post_collect(
     the decision only reads claims from the case directory. This moves them
     across, adding the judgement fields, and re-prices the case.
     """
-    incident = resolve_incident(case_id, records, cases)
-    if incident is None:
-        raise HTTPException(status_code=404, detail=f"no incident {case_id}")
-    part = records.get_part(incident.part_id)
-
-    known = {(c.supplier_ref, c.task_id) for c in cases.read_claims(case_id)}
-    filed: list[str] = []
-    for quote in STORE.quotes_for(case_id):
-        if (quote.supplier_ref, quote.task_id) in known:
-            continue
-        claim = claim_from_quote(
-            quote,
-            qty_requested=incident.qty_required,
-            part=part,
-            supplier=records.get_supplier(quote.supplier_ref),
-            today=today,
-        )
-        cases.write_claim(claim)
-        filed.append(claim.supplier_ref)
-        plan.upsert(
-            case_id,
-            cases,
-            step_id=plan.supplier_step_id(PlanGroup.OUTREACH, claim.supplier_ref),
-            group=PlanGroup.OUTREACH,
-            label=f"Calling {claim.supplier_ref}",
-            supplier_ref=claim.supplier_ref,
-            status=StepStatus.DONE,
-            detail=(
-                f"{claim.stock_status.value}, {claim.qty_offered:,} pcs"
-                + (f" at EUR {claim.unit_price}" if claim.unit_price is not None else "")
-            ),
-        )
-        cases.append_event(
-            case_id,
-            actor=Actor.CALLE,
-            stage=Stage.CALLING,
-            level=Level.WARN if claim.confidence < 0.4 else Level.INFO,
-            message=(
-                f"{claim.supplier_ref} answered: {claim.stock_status.value}, "
-                f"{claim.qty_offered:,} pcs"
-                + (f" at EUR {claim.unit_price}" if claim.unit_price is not None else "")
-            ),
-            payload={
-                "supplier_ref": claim.supplier_ref,
-                "stock_status": claim.stock_status.value,
-                "confidence": claim.confidence,
-            },
-        )
-
-    if filed:
-        plan.upsert(
-            case_id,
-            cases,
-            step_id="claims:normalise",
-            status=StepStatus.DONE,
-            detail=f"{len(cases.read_claims(case_id))} claims on file",
-        )
-        outcome = decide(case_id=case_id, records=records, cases=cases, today=today)
-        plan.upsert(
-            case_id,
-            cases,
-            step_id="costing:landed",
-            status=StepStatus.DONE,
-            detail=f"re-priced: {len(outcome.strategies)} plans",
-        )
+    try:
+        filed, _ = collect_quotes(case_id=case_id, records=records, cases=cases, today=today)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     return {
         "case_id": case_id,
+        "filed": filed,
+        "claims": len(cases.read_claims(case_id)),
+        "decision": _strategy_view(case_id, cases),
+    }
+
+
+@router.post("/await_calls", summary="Wait for dialled calls before collecting and deciding")
+def post_await_calls(
+    case_id: str,
+    supplier_ref: str | None = Query(default=None),
+    timeout_s: float = Query(default=runtime_settings.CALL_WAIT_TIMEOUT, ge=0, le=600),
+    today: date = Query(default=TODAY),
+    records: SystemOfRecord = Depends(erp),
+    cases: CaseStore = Depends(store),
+) -> dict[str, object]:
+    started = time.monotonic()
+    elapsed, timed_out, resolved, still_pending = wait_for_pending_calls(
+        case_id,
+        timeout_s=min(timeout_s, 600),
+        supplier_ref=supplier_ref,
+    )
+    if timed_out:
+        unanswered = [entry["supplier_ref"] for entry in still_pending]
+        cases.append_event(
+            case_id,
+            actor=Actor.DEVIN,
+            stage=Stage.CALLING,
+            level=Level.WARN,
+            message=(
+                "call wait timed out"
+                + (f" for {', '.join(unanswered)}" if unanswered else "")
+            ),
+            payload={"supplier_ref": supplier_ref, "still_pending": unanswered},
+        )
+    try:
+        filed, _ = collect_quotes(case_id=case_id, records=records, cases=cases, today=today)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {
+        "case_id": case_id,
+        "waited_s": round(max(elapsed, time.monotonic() - started), 3),
+        "timed_out": timed_out,
+        "resolved": [entry["supplier_ref"] for entry in resolved],
+        "still_pending": still_pending,
         "filed": filed,
         "claims": len(cases.read_claims(case_id)),
         "decision": _strategy_view(case_id, cases),
