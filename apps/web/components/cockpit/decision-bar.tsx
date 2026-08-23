@@ -11,7 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { CANDIDATES, LANDED_LINES } from "@/lib/case-001"
+import { CANDIDATES, LANDED_LINES, STRATEGIES } from "@/lib/case-001"
 import { cn } from "@/lib/utils"
 
 type DecisionBarProps = {
@@ -96,6 +96,35 @@ function DecisionDetails({
       <p className="mt-1 text-xs text-muted-foreground">
         Compare Claims and Supplier Records before you record the Decision.
       </p>
+      <div className="mt-3 grid gap-1.5">
+        {STRATEGIES.map((strategy) => {
+          const recommended = strategy.note.includes("Recommended")
+          return (
+            <div
+              key={strategy.name}
+              className={cn(
+                "rounded-lg border px-2.5 py-2",
+                recommended
+                  ? "border-foreground/40 bg-secondary"
+                  : "border-border/70"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-xs font-medium">
+                  {strategy.name}
+                </span>
+                {recommended ? <Badge>recommended</Badge> : null}
+                <span className="shrink-0 font-mono text-xs">
+                  {strategy.total}
+                </span>
+              </div>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {strategy.note}
+              </p>
+            </div>
+          )
+        })}
+      </div>
       <div className="mt-3 grid gap-1.5" role="radiogroup">
         {SELECTABLE_CANDIDATES.map((candidate) => {
           const selected = selectedCandidateId === candidate.id
