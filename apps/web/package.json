@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "test:cockpit": "tsc -p tsconfig.cockpit-tests.json && node --test ../../.context/cockpit-tests/lib/live/cockpit-view.test.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,71 +1,76 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   alreadyLiveDialed,
   fetchCase,
+  fetchCases,
   fetchEvents,
   openCase,
   placeLiveCall,
   sessionFromEvents,
-} from "@/lib/live/api"
+} from "@/lib/live/api";
 import {
   outreachIsLive,
   pickLiveCallSupplier,
   resolveChecklist,
-} from "@/lib/live/checklist"
-import { EVENT_POLL_MS, HOLD_FOR, PART_ID } from "@/lib/live/config"
-import { fetchPlan, type LivePlan } from "@/lib/live/plan"
+} from "@/lib/live/checklist";
+import { EVENT_POLL_MS, HOLD_FOR, PART_ID } from "@/lib/live/config";
+import { fetchPlan, type LivePlan } from "@/lib/live/plan";
 import type {
   CaseEvent,
   CaseSnapshot,
+  CaseSummary,
   LiveCandidate,
   OpenedCase,
   SessionInfo,
-} from "@/lib/live/types"
+} from "@/lib/live/types";
 
 export type DevinCaseStatus =
-  | "idle"
-  | "launching"
-  | "live"
-  | "stubbed"
-  | "error"
+  "idle" | "launching" | "live" | "stubbed" | "error";
 
 type DevinCaseState = {
-  status: DevinCaseStatus
-  error: string | null
-  caseId: string | null
-  snapshot: CaseSnapshot | null
-  events: CaseEvent[]
-  plan: LivePlan | null
-  session: SessionInfo | null
-}
+  status: DevinCaseStatus;
+  error: string | null;
+  caseId: string | null;
+  snapshot: CaseSnapshot | null;
+  cases: CaseSummary[];
+  events: CaseEvent[];
+  plan: LivePlan | null;
+  session: SessionInfo | null;
+};
 
 const EMPTY: DevinCaseState = {
   status: "idle",
   error: null,
   caseId: null,
   snapshot: null,
+  cases: [],
   events: [],
   plan: null,
   session: null,
-}
+};
+
+const EMPTY_CANDIDATES: readonly LiveCandidate[] = [];
 
 function statusFromSession(session: SessionInfo | null): DevinCaseStatus {
-  if (!session) return "live"
-  return session.stubbed ? "stubbed" : "live"
+  if (!session) return "live";
+  return session.stubbed ? "stubbed" : "live";
 }
 
 export function useDevinCase(caseIdFromUrl: string | null) {
-  const [state, setState] = useState<DevinCaseState>(EMPTY)
+  const [state, setState] = useState<DevinCaseState>(EMPTY);
 
   const attach = useCallback(async (caseId: string, opened?: OpenedCase) => {
     const [snapshot, events, plan] = await Promise.all([
       fetchCase(caseId),
       fetchEvents(caseId),
       fetchPlan(caseId),
-    ])
+    ]);
+    // Both reads touch the shared SQLite ERP adapter. Keep them serialized;
+    // concurrent use of that connection raises sqlite3.InterfaceError.
+    const cases = await fetchCases();
     const session =
       opened !== undefined
         ? {
@@ -74,121 +79,125 @@ export function useDevinCase(caseIdFromUrl: string | null) {
             stubbed: opened.stubbed,
             error: opened.session_error,
           }
-        : sessionFromEvents(events)
+        : sessionFromEvents(events);
     setState({
       status: statusFromSession(session),
       error: session?.error ?? null,
       caseId,
       snapshot,
+      cases,
       events,
       plan,
       session,
-    })
-  }, [])
+    });
+  }, []);
 
   const launch = useCallback(async () => {
-    setState({ ...EMPTY, status: "launching" })
+    setState({ ...EMPTY, status: "launching" });
     try {
-      const opened = await openCase(PART_ID)
-      await attach(opened.case_id, opened)
-      return opened.case_id
+      const opened = await openCase(PART_ID);
+      await attach(opened.case_id, opened);
+      return opened.case_id;
     } catch (cause) {
       const message =
-        cause instanceof Error ? cause.message : "Could not open a case"
-      setState({ ...EMPTY, status: "error", error: message })
-      return null
+        cause instanceof Error ? cause.message : "Could not open a case";
+      setState({ ...EMPTY, status: "error", error: message });
+      return null;
     }
-  }, [attach])
+  }, [attach]);
 
   useEffect(() => {
-    if (!caseIdFromUrl) return
-    let cancelled = false
+    if (!caseIdFromUrl) return;
+    let cancelled = false;
 
     const load = async () => {
       try {
-        await attach(caseIdFromUrl)
+        await attach(caseIdFromUrl);
       } catch (cause) {
-        if (cancelled) return
+        if (cancelled) return;
         const message =
-          cause instanceof Error ? cause.message : "Could not load the case"
-        setState({ ...EMPTY, status: "error", error: message })
+          cause instanceof Error ? cause.message : "Could not load the case";
+        setState({ ...EMPTY, status: "error", error: message });
       }
-    }
+    };
 
-    void load()
+    void load();
     return () => {
-      cancelled = true
-    }
-  }, [attach, caseIdFromUrl])
+      cancelled = true;
+    };
+  }, [attach, caseIdFromUrl]);
 
-  const eventsRef = useRef<CaseEvent[]>([])
-  eventsRef.current = state.events
+  const eventsRef = useRef<CaseEvent[]>([]);
+  useEffect(() => {
+    eventsRef.current = state.events;
+  }, [state.events]);
 
   useEffect(() => {
-    const caseId = state.caseId
+    const caseId = state.caseId;
     if (!caseId || state.status === "error" || state.status === "launching") {
-      return
+      return;
     }
-    let cancelled = false
+    let cancelled = false;
 
     const tick = async () => {
       try {
-        const since = eventsRef.current.at(-1)?.seq ?? 0
+        const since = eventsRef.current.at(-1)?.seq ?? 0;
         const [snapshot, fresh, plan] = await Promise.all([
           fetchCase(caseId),
           fetchEvents(caseId, since),
           fetchPlan(caseId),
-        ])
-        if (cancelled) return
+        ]);
+        const cases = await fetchCases();
+        if (cancelled) return;
         setState((current) => {
-          if (current.caseId !== caseId) return current
+          if (current.caseId !== caseId) return current;
           const events =
-            fresh.length > 0 ? [...current.events, ...fresh] : current.events
-          const session = sessionFromEvents(events) ?? current.session
+            fresh.length > 0 ? [...current.events, ...fresh] : current.events;
+          const session = sessionFromEvents(events) ?? current.session;
           return {
             ...current,
             snapshot,
+            cases,
             events,
             plan,
             session,
             status: statusFromSession(session),
             error: session?.error ?? current.error,
-          }
-        })
+          };
+        });
       } catch {
         // Keep the last good feed. The next tick retries.
       }
-    }
+    };
 
-    const interval = window.setInterval(() => void tick(), EVENT_POLL_MS)
+    const interval = window.setInterval(() => void tick(), EVENT_POLL_MS);
     return () => {
-      cancelled = true
-      window.clearInterval(interval)
-    }
-  }, [state.caseId, state.status])
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [state.caseId, state.status]);
 
-  const candidates: readonly LiveCandidate[] = state.snapshot?.candidates ?? []
+  const candidates: readonly LiveCandidate[] =
+    state.snapshot?.candidates ?? EMPTY_CANDIDATES;
   const checklist = state.plan
     ? resolveChecklist(state.plan, candidates)
-    : null
+    : null;
 
   useEffect(() => {
-    const caseId = state.caseId
-    if (!caseId || !checklist) return
-    if (!outreachIsLive(checklist)) return
-    if (alreadyLiveDialed(state.events)) return
-    const supplierRef = pickLiveCallSupplier(checklist, candidates, HOLD_FOR)
-    if (!supplierRef) return
+    const caseId = state.caseId;
+    if (!caseId || !checklist) return;
+    if (!outreachIsLive(checklist)) return;
+    if (alreadyLiveDialed(state.events)) return;
+    const supplierRef = pickLiveCallSupplier(checklist, candidates, HOLD_FOR);
+    if (!supplierRef) return;
     void placeLiveCall(caseId, supplierRef).catch((cause) => {
       const message =
-        cause instanceof Error ? cause.message : "Live call failed"
+        cause instanceof Error ? cause.message : "Live call failed";
       setState((current) =>
-        current.caseId === caseId
-          ? { ...current, error: message }
-          : current
-      )
-    })
-  }, [candidates, checklist, state.caseId, state.events])
+        current.caseId === caseId ? { ...current, error: message } : current,
+      );
+    });
+  }, [candidates, checklist, state.caseId, state.events]);
 
   return {
     ...state,
@@ -196,5 +205,5 @@ export function useDevinCase(caseIdFromUrl: string | null) {
     checklist,
     launch,
     running: state.status === "launching" || state.status === "live",
-  }
+  };
 }

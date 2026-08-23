@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "rootDir": ".",
+    "outDir": "../../.context/cockpit-tests",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "types": ["node"],
+    "noEmit": false,
+    "incremental": false
+  },
+  "include": [
+    "lib/live/cockpit-view.ts",
+    "lib/live/cockpit-view.test.ts",
+    "lib/live/plan.ts",
+    "lib/live/types.ts"
+  ]
+}
