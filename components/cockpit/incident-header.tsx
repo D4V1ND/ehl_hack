@@ -106,6 +106,7 @@ function HeaderActions(props: IncidentHeaderProps) {
       <Button
         type="button"
         size="sm"
+        variant="secondary"
         disabled={props.running}
         onClick={props.onReplay}
       >

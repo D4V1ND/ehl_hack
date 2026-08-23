@@ -6,6 +6,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "part",
     stepName: "Read part",
     kind: "tool",
+    waitMs: 550,
     method: "GET",
     path: "/tools/part/6204-2RS",
     summary: "Part 6204-2RS. part_class rotating. Weight 0.106 kg.",
@@ -15,6 +16,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "stock",
     stepName: "Read stock",
     kind: "tool",
+    waitMs: 850,
     method: "GET",
     path: "/tools/stock",
     summary: "Munich assembly plant: 8000 on hand. Reorder point breached.",
@@ -24,6 +26,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "suppliers",
     stepName: "List Candidates",
     kind: "tool",
+    waitMs: 1200,
     method: "GET",
     path: "/tools/suppliers",
     summary: "5 stable Candidates matched to 6204-2RS. Preferred first.",
@@ -34,6 +37,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "prices",
     stepName: "Price history",
     kind: "tool",
+    waitMs: 650,
     method: "GET",
     path: "/tools/price_history",
     summary: "Contract unit prices loaded. Shenzhen is cheapest on paper.",
@@ -43,6 +47,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "policy",
     stepName: "Policy check",
     kind: "policy",
+    waitMs: 1050,
     method: "GET",
     path: "/tools/policy",
     summary: "Shenzhen Bearing Co rejected: blocked_origin_country.",
@@ -52,6 +57,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "outreach",
     stepName: "Outreach Tasks",
     kind: "outreach",
+    waitMs: 4200,
     method: "POST",
     path: "/tools/outreach",
     summary:
@@ -62,6 +68,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "claims",
     stepName: "Claims in",
     kind: "claims",
+    waitMs: 5200,
     summary:
       "4 Claims filed. Munich Motion stock is allocated. SKF is free_in_stock.",
     detail: "A Claim is what the supplier said. It is not a fact.",
@@ -70,6 +77,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "deltas",
     stepName: "Claim vs record",
     kind: "deltas",
+    waitMs: 1100,
     summary: "Claim fields appear next to the separate Supplier Record fields.",
     detail: "Low-confidence or allocated stock is not used in the Strategy.",
   },
@@ -77,6 +85,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "strategy",
     stepName: "Strategy search",
     kind: "strategy",
+    waitMs: 2600,
     summary: "Winning Strategy is a split order. Cheapest unit price loses.",
     detail: "Air 20% SKF to cover the line-stop. Sea 80% FAG for unit economy.",
   },
@@ -84,6 +93,7 @@ export const SCRIPT: ScriptStep[] = [
     id: "tests",
     stepName: "pytest green",
     kind: "tests",
+    waitMs: 2300,
     summary: "policy suite green. cost_model suite green.",
     detail: "Both suites must pass before the Decision can be approved.",
   },
@@ -91,10 +101,21 @@ export const SCRIPT: ScriptStep[] = [
     id: "decision",
     stepName: "Decision ready",
     kind: "decision",
+    waitMs: 650,
     summary: "Decision needs human review in SupplyOS.",
     detail: "The agent recommends. A human marks the Decision approved.",
   },
 ]
 
-export const TICK_MS = 760
+export const SEND_DELAY_MS = 1500
+export const STREAM_TICK_MS = 32
+export const STREAM_CHARS_PER_TICK = 3
+export const STEP_SETTLE_DELAY_MS = 260
+
+export function getStepResponse(step: ScriptStep): string {
+  return step.kind === "decision"
+    ? "Decision ready for human review."
+    : step.summary
+}
+
 export const USER_PROMPT = `${BUYER_NAME}, ${INCIDENT.plantLabel}: Incident ${INCIDENT.caseId}, part ${INCIDENT.partId} ${INCIDENT.description}. qty_required ${INCIDENT.qtyRequired}, qty_on_hand ${INCIDENT.qtyOnHand}, shortfall ${INCIDENT.shortfall}, line_stop in ${INCIDENT.lineStopDays} days. Find Candidates, gather Claims, recommend a Decision.`

@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+  Popover,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { SCRIPT } from "@/lib/case-001"
 import { cn } from "@/lib/utils"
 
@@ -18,8 +19,8 @@ const RUN_STAGES = [
 ] as const
 
 const PEBBLE_CLASS: Record<RunStageState, string> = {
-  complete: "bg-primary",
-  active: "bg-foreground ring-1 ring-background/40",
+  complete: "bg-foreground",
+  active: "bg-muted-foreground ring-1 ring-background/40",
   pending: "bg-muted-foreground/40",
 }
 
@@ -36,14 +37,14 @@ export function RunStatusButton({
   const currentStage = RUN_STAGES[currentIndex]
 
   return (
-    <Tooltip>
-      <TooltipTrigger
+    <Popover>
+      <PopoverTrigger
         render={
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="bg-transparent px-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted dark:hover:bg-muted"
+            className="bg-transparent px-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted"
             aria-label={`Sourcing run status: ${currentStage.label}`}
           >
             <span
@@ -57,19 +58,20 @@ export function RunStatusButton({
           </Button>
         }
       />
-      <TooltipContent
+      <PopoverContent
         side="bottom"
         align="end"
         sideOffset={6}
-        className="min-w-44 flex-col items-stretch gap-0 px-3 py-3"
+        className="w-auto min-w-44 gap-0 p-3"
       >
+        <PopoverTitle className="sr-only">Sourcing run stages</PopoverTitle>
         <ol aria-label="Sourcing run stages">
           {RUN_STAGES.map((stage, index) => (
             <RunStage key={stage.label} index={index} state={states[index]} />
           ))}
         </ol>
-      </TooltipContent>
-    </Tooltip>
+      </PopoverContent>
+    </Popover>
   )
 }
 
