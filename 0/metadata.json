@@ -1,0 +1,212 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PY73AK1ZR0XTGQ257RT6D5",
+  "session_id": "84a47eb1-3198-48a5-8708-01f4c042dc32",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T09:11:26.9172688Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    "apps/web/components/cockpit/cockpit-chat.tsx",
+    "apps/web/components/cockpit/decision-panel.tsx",
+    "apps/web/hooks/use-devin-case.ts",
+    "cases/CASE-6204-2RS-24/events.jsonl",
+    "cases/CASE-6204-2RS-24/plan.json",
+    "cases/CASE-6205-2RS-2/events.jsonl",
+    "cases/CASE-6205-2RS-2/plan.json",
+    "cases/CASE-6205-2RS/events.jsonl",
+    "cases/CASE-6205-2RS/plan.json",
+    "cases/CASE-6305-2RS/events.jsonl",
+    "cases/CASE-6305-2RS/plan.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "c8a29da9d10f",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 850,
+    "cache_creation_tokens": 1631852,
+    "cache_read_tokens": 117101957,
+    "output_tokens": 245863,
+    "api_call_count": 426
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-goal-2026-08-23T08:10:35.5194503Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "goal"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "62850e801321",
+      "timestamp": "2026-08-23T08:10:35.5194503Z",
+      "native": {
+        "command": "/goal"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/goal",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_017c9gnrPQK3Ts4nQujQwZWp",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "c8a29da9d10f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 454,
+        "end": 455,
+        "entry_ids": [
+          "e7158ce0-1005-4234-97fe-ee79b1db5d18"
+        ],
+        "tool_use_id": "toolu_017c9gnrPQK3Ts4nQujQwZWp"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_017c9gnrPQK3Ts4nQujQwZWp"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01NHGUFQ3KA1k92SQLCtBnGi",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "artifact-design"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "c8a29da9d10f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 570,
+        "end": 571,
+        "entry_ids": [
+          "c0ca32b1-8326-4ad4-9c5a-4bed9e248bd0"
+        ],
+        "tool_use_id": "toolu_01NHGUFQ3KA1k92SQLCtBnGi"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01NHGUFQ3KA1k92SQLCtBnGi"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: artifact-design",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01Sxt7b2rpwVi3C4FMpnFvjo",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "claude-in-chrome"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "c8a29da9d10f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 2457,
+        "end": 2458,
+        "entry_ids": [
+          "75caeb13-14b3-40a3-ba81-6c14787d7d3e"
+        ],
+        "tool_use_id": "toolu_01Sxt7b2rpwVi3C4FMpnFvjo"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01Sxt7b2rpwVi3C4FMpnFvjo"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: claude-in-chrome",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 43
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T09:11:26.3809316Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 1030,
+    "human_modified": 2808,
+    "human_removed": 0,
+    "total_committed": 3368,
+    "total_lines_changed": 3838,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 771,
+      "user_lines_removed": 110,
+      "agent_lines_added": 2367,
+      "agent_lines_removed": 2363,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "apps/web/components/cockpit/cockpit-chat.tsx": 1,
+        "apps/web/components/cockpit/decision-panel.tsx": 27,
+        "apps/web/hooks/use-devin-case.ts": 5,
+        "cases/CASE-6204-2RS-24/events.jsonl": 59,
+        "cases/CASE-6204-2RS-24/plan.json": 3,
+        "cases/CASE-6204-2RS-25/events.jsonl": 43,
+        "cases/CASE-6204-2RS-25/plan.json": 262,
+        "cases/CASE-6205-2RS-2/events.jsonl": 52,
+        "cases/CASE-6205-2RS-2/plan.json": 16,
+        "cases/CASE-6205-2RS/events.jsonl": 159,
+        "cases/CASE-6205-2RS/plan.json": 21,
+        "cases/CASE-6305-2RS/events.jsonl": 40,
+        "cases/CASE-6305-2RS/plan.json": 13
+      },
+      "user_removed_per_file": {
+        "apps/web/components/cockpit/decision-panel.tsx": 1,
+        "cases/CASE-6204-2RS-24/events.jsonl": 56,
+        "cases/CASE-6204-2RS-24/plan.json": 3,
+        "cases/CASE-6205-2RS-2/plan.json": 16,
+        "cases/CASE-6205-2RS/plan.json": 21,
+        "cases/CASE-6305-2RS/plan.json": 13
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 375,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2763,
+      "agent_lines_removed": 2473,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 70,
+        "cases/CASE-6204-2RS-25/events.jsonl": 43,
+        "cases/CASE-6204-2RS-25/plan.json": 262
+      }
+    }
+  ]
+}
