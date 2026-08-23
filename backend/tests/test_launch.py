@@ -248,3 +248,23 @@ def test_a_derived_case_runs_the_whole_procedure(client):
     assert [e["stage"] for e in test_client.get(f"/cases/{case_id}/events").json()][-1] == (
         "decided"
     )
+
+
+def test_the_tools_the_session_calls_by_hand_work_too(client):
+    """The session drives /tools/* one endpoint at a time, not only /flow/run:
+    a NameError in one of them cost a whole live run."""
+    test_client, _ = client
+    case_id = test_client.post("/cases", json={"part_id": "PRT-62052RS"}).json()["case_id"]
+
+    screened = test_client.post("/tools/screen", params={"case_id": case_id})
+    assert screened.status_code == 200, screened.text
+    compliant = [c["supplier_ref"] for c in screened.json() if c["compliance"]["passed"]]
+    assert compliant
+
+    tasks = test_client.post(
+        "/tools/outreach",
+        params={"case_id": case_id, "qty": 24000},
+        json=compliant,
+    )
+    assert tasks.status_code == 200, tasks.text
+    assert len(tasks.json()) == len(compliant)

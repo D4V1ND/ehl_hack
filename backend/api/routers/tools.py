@@ -16,6 +16,7 @@ from backend.api.deps import erp, settings, store
 from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
     Candidate,
+    Channel,
     Claim,
     Event,
     Incident,
