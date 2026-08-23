@@ -83,6 +83,9 @@ def session_prompt(incident: Incident, part: Part, base_url: str) -> str:
             " (case_id, stage, message). One line, no internal detail.",
             "",
             "Bounds, all of them hard:",
+            f"- Never call POST {base}/cases. That human-only endpoint launches another Devin"
+            " session recursively. This case already exists; use only its id and the tool"
+            " endpoints listed above.",
             "- This is a procurement case. It is not a coding task: do not read, write or refactor"
             " repository source code, do not run test suites, do not open a GitHub pull request"
             f" yourself \u2014 the review package is filed only by POST {base}/tools/publish_pr, and by"

@@ -39,8 +39,9 @@ Works the same on Windows, macOS and Linux:
 
 ```bash
 python run.py setup   # once per machine: venv, npm install, build the database
-python run.py         # the whole stack — API + cockpit. Ctrl-C stops both.
-python run.py ui      # cockpit only. Runs offline; this is the demo path.
+python run.py         # the whole stack — API + web app + ERP. Ctrl-C stops all.
+python run.py web     # web app only, at /chat.
+python run.py ui      # ERP inventory and legacy cockpit only.
 python run.py test    # backend tests + UI typecheck. Never touches the network.
 ```
 
@@ -51,8 +52,8 @@ python run.py test    # backend tests + UI typecheck. Never touches the network.
 
 `run.py` bootstraps from a clean clone: it creates the virtualenv, installs
 dependencies, builds the database if missing, and picks free ports (API from
-8010, cockpit from 3000). Node >= 20.9 is the one thing it cannot install for
-you; if you use nvm it will tell you which version you already have.
+8010, web app from 3000, ERP from 3001). Node >= 20.9 is the one thing it cannot
+install for you; if you use nvm it will tell you which version you already have.
 
 It is Python rather than a shell script because Python 3.11+ is already required
 by the backend, so every machine has it — whereas Windows has no `bash` and
@@ -106,13 +107,22 @@ Start the API from the repository root:
 .venv/bin/python -m uvicorn backend.api.main:app --port 8010
 ```
 
-In a second terminal, start the cockpit against that API:
+In a second terminal, start the web app against that API:
+
+```bash
+cd apps/web
+NEXT_PUBLIC_API_BASE=http://localhost:8010 \
+npm run dev -- --port 3000
+```
+
+In a third terminal, start the ERP inventory against the same API:
 
 ```bash
 cd ui
 NEXT_PUBLIC_DATA_SOURCE=live \
 NEXT_PUBLIC_API_BASE=http://localhost:8010 \
-npm run dev
+UI_PORT=3000 \
+npm run dev -- --port 3001
 ```
 
 Check the safety mode before continuing:
@@ -126,7 +136,7 @@ default and does not dial anyone.
 
 ### 4. Walk the case
 
-Open <http://localhost:3000/inventory> and choose **Source this part**, or drive
+Open <http://localhost:3001/inventory> and choose **Source this part**, or drive
 the same flow directly through the API:
 
 ```bash
@@ -207,11 +217,14 @@ curl -s -X POST localhost:8010/cases -H 'content-type: application/json' \
      -d '{"part_id": "PRT-6204"}'
 ```
 
-In the UI that is `/inventory`: one button per row, which opens the case and
+In the ERP UI that is `/inventory`: one button per row opens the case and
 follows it to `/cases/<id>`. Set `NEXT_PUBLIC_DATA_SOURCE=live` and
 `NEXT_PUBLIC_API_BASE` first — fixtures mode has nothing to trigger. The session
 is told to read the part, its stock, its open orders and its price history from
 the ERP *before* it looks at suppliers, and it is told not to order anything.
+
+On `/cockpit`, **Launch sourcing agent** opens the current case in the web UI at
+`/chat?case=<id>`. `UI_PORT` selects that web UI port.
 
 `PUBLIC_BASE_URL` is what the session is given to call back on; at demo time
 that is the `cloudflared` URL, because the request origin is localhost.

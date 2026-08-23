@@ -10,7 +10,8 @@ recorded part of the video, never in the live slot.
 .venv/bin/python -m backend.record.seed_db        # 40 parts, 15 suppliers
 .venv/bin/python run.py api                       # :8010
 cloudflared tunnel --url http://localhost:8010    # only needed for a live call
-cd ui && NEXT_PUBLIC_DATA_SOURCE=live NEXT_PUBLIC_API_BASE=http://localhost:8010 npm run dev
+cd apps/web && NEXT_PUBLIC_API_BASE=http://localhost:8010 npm run dev -- --port 3000
+cd ui && NEXT_PUBLIC_DATA_SOURCE=live NEXT_PUBLIC_API_BASE=http://localhost:8010 UI_PORT=3000 npm run dev -- --port 3001
 ```
 
 Check `GET /healthz`: `call_mode` must read `live` only when you intend to dial.
@@ -20,7 +21,7 @@ sends every supplier call to that one number, so no real supplier can be reached
 
 ## On stage
 
-1. `http://localhost:3000/inventory` — the item master. Any part, not just bearings.
+1. `http://localhost:3001/inventory` — the item master. Any part, not just bearings.
    Press **Source this part** on 6204-2RS. The shortage is derived from the ERP:
    bin, take rate, the BOM line that stops, the incumbent, the slipped PO.
 2. `POST /flow/run?case_id=<id>&hold_for=SUP-KBY` — screens 6 suppliers, asks the

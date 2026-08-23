@@ -5,7 +5,7 @@
 #   make install    once, per machine
 #   make test       everything that does not touch the network
 #   make api        the FastAPI process on :8010  (override with API_PORT=)
-#   make ui         the cockpit on :3000
+#   make ui         the ERP inventory on :3001
 #   make fixtures   re-export schema, TypeScript types and the UI fixture bundle
 #
 # The ROS install on some machines registers pytest plugins that fail to import;
@@ -14,6 +14,8 @@
 PY := .venv/bin/python
 # Override if the port is taken:  make api API_PORT=9000
 API_PORT ?= 8010
+ERP_PORT ?= 3001
+UI_PORT ?= 3000
 PYTEST := PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH= $(PY) -m pytest
 
 # Next 16 needs Node >= 20.9 and several machines here default to 18. Run every
@@ -36,7 +38,7 @@ api: db
 	PYTHONPATH= $(PY) -m uvicorn backend.api.main:app --reload --port $(API_PORT)
 
 ui:
-	$(NODE) npm run dev'
+	$(NODE) UI_PORT=$(UI_PORT) npm run dev -- --port $(ERP_PORT)'
 
 # Regenerate the three consumers of the frozen contract. Run after any change to
 # packages/contracts/models.py, and commit the output.

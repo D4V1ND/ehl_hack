@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """One command to run Slice B, on Windows, macOS and Linux.
 
-    python run.py            build the database, start the API and the cockpit
-    python run.py ui         cockpit only (it runs offline; this is the demo path)
-    python run.py web        the apps/web chat cockpit only
+    python run.py            build the database, start the API, web app and ERP
+    python run.py ui         the ERP inventory and legacy cockpit only
+    python run.py web        the apps/web chat app only
     python run.py api        API only
     python run.py test       every test, plus the UI typecheck. Touches no network.
     python run.py db         rebuild the SQL system of record from the seed YAML
@@ -38,9 +38,31 @@ WEB = ROOT / "apps" / "web"
 VENV = ROOT / ".venv"
 WINDOWS = os.name == "nt"
 
+
+def _load_dotenv(path: Path) -> None:
+    """Load the repo's simple KEY=value settings before choosing ports.
+
+    The API already reads this file. Loading it in the parent process as well
+    makes the same settings available to the two frontend processes started by
+    ``run.py``.
+    """
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv(ROOT / ".env")
+
 API_PORT_DEFAULT = int(os.environ.get("API_PORT", 8010))
+ERP_PORT_DEFAULT = int(os.environ.get("ERP_PORT", 3001))
 UI_PORT_DEFAULT = int(os.environ.get("UI_PORT", 3000))
-WEB_PORT_DEFAULT = int(os.environ.get("WEB_PORT", 3001))
 
 MIN_NODE_MAJOR = 20  # Next 16 requires >= 20.9
 
@@ -201,9 +223,10 @@ def port_free(port: int) -> bool:
         return s.connect_ex(("127.0.0.1", port)) != 0
 
 
-def pick_port(start: int) -> int:
+def pick_port(start: int, reserved: set[int] | None = None) -> int:
+    reserved = reserved or set()
     for port in range(start, start + 21):
-        if port_free(port):
+        if port not in reserved and port_free(port):
             return port
     die(f"no free port near {start}")
     return start
@@ -259,7 +282,16 @@ def cmd_setup() -> None:
 def cmd_test() -> None:
     py = ensure_python()
     bold("Backend tests")
-    env = {**os.environ, "PYTHONPATH": "", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"}
+    env = {
+        **os.environ,
+        "PYTHONPATH": "",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        # Tests are always rehearsal, even when the local demo .env enables
+        # paid integrations. `python run.py test` must never touch the network.
+        "FAKE_CALLS": "1",
+        "LIVE_CALLS": "",
+        "CALLE_API_KEY": "",
+    }
     result = subprocess.run(
         [str(py), "-m", "pytest", "-q", "-m", "not live"], cwd=ROOT, env=env
     )
@@ -290,8 +322,8 @@ def cmd_api() -> None:
 def cmd_ui() -> None:
     ensure_node()
     ensure_node_modules()
-    port = pick_port(UI_PORT_DEFAULT)
-    bold(f"Cockpit on http://localhost:{port}/cockpit")
+    port = pick_port(ERP_PORT_DEFAULT)
+    bold(f"ERP on http://localhost:{port}/inventory")
     subprocess.run(next_dev_argv(UI, port), cwd=UI)
 
 
@@ -300,8 +332,8 @@ def cmd_web() -> None:
         die("apps/web is not in this checkout")
     ensure_node()
     ensure_node_modules(WEB)
-    port = pick_port(WEB_PORT_DEFAULT)
-    bold(f"Chat cockpit on http://localhost:{port}/chat")
+    port = pick_port(UI_PORT_DEFAULT)
+    bold(f"Web app on http://localhost:{port}/chat")
     subprocess.run(next_dev_argv(WEB, port), cwd=WEB)
 
 
@@ -323,8 +355,11 @@ def cmd_all() -> None:
         ensure_node_modules(WEB)
 
     api_port = pick_port(API_PORT_DEFAULT)
-    ui_port = pick_port(UI_PORT_DEFAULT)
-    web_port = pick_port(max(WEB_PORT_DEFAULT, ui_port + 1)) if with_web else None
+    web_port = (
+        pick_port(UI_PORT_DEFAULT, reserved={api_port}) if with_web else None
+    )
+    reserved = {api_port, *([web_port] if web_port is not None else [])}
+    erp_port = pick_port(ERP_PORT_DEFAULT, reserved=reserved)
 
     logs = ROOT / ".logs"
     logs.mkdir(exist_ok=True)
@@ -335,21 +370,38 @@ def cmd_all() -> None:
     # A new process group on Windows so Ctrl-C reaches the children the same way
     # a POSIX signal would.
     flags = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if WINDOWS else {}
-    api_base = {"NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}"}
+    frontend_env = {
+        "NEXT_PUBLIC_DATA_SOURCE": "live",
+        "NEXT_PUBLIC_API_BASE": f"http://localhost:{api_port}",
+        # ui/next.config.ts exposes this harmless value to the cockpit page.
+        "UI_PORT": str(web_port or UI_PORT_DEFAULT),
+    }
+    configured_origins = os.environ.get("CASES_ALLOWED_ORIGINS", "").strip()
+    erp_origins = [
+        f"http://localhost:{erp_port}",
+        f"http://127.0.0.1:{erp_port}",
+    ]
+    api_env = {
+        **os.environ,
+        "PYTHONPATH": "",
+        "CASES_ALLOWED_ORIGINS": ",".join(
+            [origin for origin in (configured_origins, *erp_origins) if origin]
+        ),
+    }
 
     api = subprocess.Popen(
         [str(py), "-m", "uvicorn", "backend.api.main:app", "--port", str(api_port)],
-        cwd=ROOT, env={**os.environ, "PYTHONPATH": ""},
+        cwd=ROOT, env=api_env,
         stdout=api_log, stderr=subprocess.STDOUT, **flags,
     )
     ui = subprocess.Popen(
-        next_dev_argv(UI, ui_port),
-        cwd=UI, env={**os.environ, **api_base},
+        next_dev_argv(UI, erp_port),
+        cwd=UI, env={**os.environ, **frontend_env},
         stdout=ui_log, stderr=subprocess.STDOUT, **flags,
     )
     web = subprocess.Popen(
         next_dev_argv(WEB, web_port),
-        cwd=WEB, env={**os.environ, **api_base},
+        cwd=WEB, env={**os.environ, **frontend_env},
         stdout=web_log, stderr=subprocess.STDOUT, **flags,
     ) if with_web else None
 
@@ -371,9 +423,9 @@ def cmd_all() -> None:
 
         print()
         bold("Stockout — Slice B")
-        ok(f"cockpit   http://localhost:{ui_port}/cockpit")
         if with_web:
-            ok(f"chat      http://localhost:{web_port}/chat")
+            ok(f"web app   http://localhost:{web_port}/chat")
+        ok(f"ERP       http://localhost:{erp_port}/inventory")
         ok(f"API       http://localhost:{api_port}/docs")
         dim(f"  logs      {logs}")
         dim("  Ctrl-C to stop everything")
@@ -384,8 +436,8 @@ def cmd_all() -> None:
             time.sleep(0.5)
 
         for name, proc, log in (
-            ("cockpit", ui, "ui.log"),
-            ("chat cockpit", web, "web.log"),
+            ("ERP", ui, "ui.log"),
+            ("web app", web, "web.log"),
             ("API", api, "api.log"),
         ):
             if proc is None or proc.poll() is None:

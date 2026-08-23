@@ -18,7 +18,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from backend import plan
-from backend.api.deps import erp, store
+from backend.api.deps import erp, settings, store
+from backend.api.settings import Settings
 from backend.casestore.case_store import CaseStore
 from backend.launch.devin import start_session
 from backend.launch.incident import incident_for_part
@@ -131,14 +132,27 @@ def get_inventory(
     return rows
 
 
-@router.post("/cases", response_model=OpenCaseResponse, status_code=201, summary="Open a case for a part and launch Devin")
+@router.post(
+    "/cases",
+    response_model=OpenCaseResponse,
+    status_code=201,
+    summary="Open a case for a part and launch Devin",
+    include_in_schema=False,
+)
 def open_case(
     body: OpenCaseRequest,
     request: Request,
     today: date = Query(default=TODAY, description="Demo clock. Defaults to the seeded date."),
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
+    config: Settings = Depends(settings),
 ) -> OpenCaseResponse:
+    if request.headers.get("origin") not in config.cors_origins:
+        raise HTTPException(
+            status_code=403,
+            detail="Case launch requires an allowed browser origin",
+        )
+
     try:
         incident = incident_for_part(
             records=records,
