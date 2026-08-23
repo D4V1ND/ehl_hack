@@ -23,12 +23,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { INCIDENT } from "@/lib/case-001"
-
-const hoursToLineStop = Number(INCIDENT.lineStopDays) * 24
-const standingStill = `${INCIDENT.lineStopCostPerHour.replace(/\.00$/, "")} / h`
+import type { Incident, Part } from "@/lib/live/types"
 
 type IncidentHeaderProps = {
+  caseId: string | null
+  incident: Incident | null
+  part: Part | null
+  sessionUrl: string | null
+  stubbed: boolean
   running: boolean
   onReplay: () => void
   showOpenCandidates: boolean
@@ -44,9 +46,11 @@ export function IncidentHeader(props: IncidentHeaderProps) {
           className="group/incident-trigger flex min-w-0 flex-1 items-center gap-4 rounded-md px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           aria-label="Toggle Incident details"
         >
-          <span className="font-mono text-sm">{INCIDENT.caseId}</span>
+          <span className="font-mono text-sm">
+            {props.caseId ?? "No case"}
+          </span>
           <span className="hidden text-sm md:inline">
-            {INCIDENT.lineStopDays} days to line stop
+            {lineStopLabel(props.incident)}
           </span>
           <ChevronDownIcon
             aria-hidden="true"
@@ -56,38 +60,53 @@ export function IncidentHeader(props: IncidentHeaderProps) {
         <HeaderActions {...props} />
       </header>
       <CollapsibleContent className="border-b border-border/70 bg-muted/20">
-        <dl className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
-          <IncidentProperty
-            icon={FactoryIcon}
-            label="Plants"
-            value={INCIDENT.plant}
-          />
-          <IncidentProperty
-            icon={PartIcon}
-            label="Part"
-            value={`${INCIDENT.partId} · ${INCIDENT.description}`}
-          />
-          <IncidentProperty
-            icon={QuantityIcon}
-            label="Quantity short"
-            value={formatQuantity(INCIDENT.shortfall)}
-          />
-          <IncidentProperty
-            icon={LineStopIcon}
-            label="To line-stop"
-            value={`${INCIDENT.lineStopDays} d · ${hoursToLineStop} h`}
-          />
-          <IncidentProperty
-            icon={CostIcon}
-            label="Standing still"
-            value={standingStill}
-          />
-          <IncidentProperty
-            icon={WarehouseIcon}
-            label="Inventory"
-            value={`${formatQuantity(INCIDENT.qtyOnHand)} on hand · ${formatQuantity(INCIDENT.qtyRequired)} required`}
-          />
-        </dl>
+        {props.incident && props.part ? (
+          <dl className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
+            <IncidentProperty
+              icon={FactoryIcon}
+              label="Plant"
+              value={`${props.incident.plant_id} / ${props.incident.production_line}`}
+            />
+            <IncidentProperty
+              icon={PartIcon}
+              label="Part"
+              value={`${props.part.item_code} · ${props.part.item_name}`}
+            />
+            <IncidentProperty
+              icon={QuantityIcon}
+              label="Quantity short"
+              value={formatQuantity(
+                String(
+                  Math.max(
+                    props.incident.qty_required - props.incident.qty_on_hand,
+                    0
+                  )
+                )
+              )}
+            />
+            <IncidentProperty
+              icon={LineStopIcon}
+              label="To line-stop"
+              value={lineStopLabel(props.incident)}
+            />
+            <IncidentProperty
+              icon={CostIcon}
+              label="Standing still"
+              value={`${props.incident.line_stop_cost_per_hour} / h`}
+            />
+            <IncidentProperty
+              icon={WarehouseIcon}
+              label="Inventory"
+              value={`${formatQuantity(String(props.incident.qty_on_hand))} on hand · ${formatQuantity(String(props.incident.qty_required))} required`}
+            />
+          </dl>
+        ) : (
+          <p className="px-4 py-4 text-sm text-muted-foreground">
+            {props.running
+              ? "Opening a Devin session…"
+              : "No Devin session yet."}
+          </p>
+        )}
       </CollapsibleContent>
     </Collapsible>
   )
@@ -108,8 +127,18 @@ function HeaderActions(props: IncidentHeaderProps) {
         ) : (
           <RotateCcwIcon data-icon="inline-start" />
         )}
-        {props.running ? "Running" : "Replay"}
+        {props.running ? "Running" : "New session"}
       </Button>
+      {props.sessionUrl ? (
+        <a
+          href={props.sessionUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="px-2 text-xs text-muted-foreground underline-offset-4 hover:underline"
+        >
+          {props.stubbed ? "Stub session" : "Devin session"}
+        </a>
+      ) : null}
       {props.showOpenCandidates ? (
         <Tooltip>
           <TooltipTrigger
@@ -160,4 +189,13 @@ function IncidentProperty({
 
 function formatQuantity(quantity: string): string {
   return Number(quantity).toLocaleString("en-US").replaceAll(",", "\u00a0")
+}
+
+function lineStopLabel(incident: Incident | null): string {
+  if (!incident) return "Waiting for Devin"
+  const days = Math.max(
+    0,
+    Math.round((Date.parse(incident.line_stop_at) - Date.now()) / 86_400_000)
+  )
+  return `${days} days to line stop`
 }

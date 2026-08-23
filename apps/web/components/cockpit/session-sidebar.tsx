@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type KeyboardEvent, type PointerEvent } from "react"
+import { useEffect, useState, type KeyboardEvent, type PointerEvent } from "react"
 import { LogoIcon } from "@/components/logo"
 import {
   Sidebar,
@@ -14,10 +14,15 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { INCIDENTS } from "@/lib/case-001"
 import { cn } from "@/lib/utils"
 
+export type SidebarSession = {
+  caseId: string
+  partLabel: string
+}
+
 type SessionSidebarProps = {
+  sessions: readonly SidebarSession[]
   width: number
   onResizeStart: (event: PointerEvent<HTMLButtonElement>) => void
   onResize: (event: PointerEvent<HTMLButtonElement>) => void
@@ -26,15 +31,21 @@ type SessionSidebarProps = {
 }
 
 export function SessionSidebar({
+  sessions = [],
   width,
   onResizeStart,
   onResize,
   onResizeEnd,
   onResizeKeyDown,
 }: SessionSidebarProps) {
-  const [activeSession, setActiveSession] = useState<
-    (typeof INCIDENTS)[number]["caseId"]
-  >(INCIDENTS[0].caseId)
+  const [activeSession, setActiveSession] = useState<string | null>(
+    sessions[0]?.caseId ?? null
+  )
+
+  useEffect(() => {
+    if (sessions.some((session) => session.caseId === activeSession)) return
+    setActiveSession(sessions[0]?.caseId ?? null)
+  }, [activeSession, sessions])
 
   return (
     <Sidebar collapsible="offcanvas" className="h-dvh">
@@ -49,28 +60,28 @@ export function SessionSidebar({
           <SidebarGroupLabel>Sessions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {INCIDENTS.map((incident) => {
-                const hasUpdate = incident.stage === "decided"
-
-                return (
-                  <SidebarMenuItem key={incident.caseId}>
+              {sessions.length === 0 ? (
+                <p className="px-2 text-xs text-muted-foreground">
+                  No Devin session yet.
+                </p>
+              ) : (
+                sessions.map((session) => (
+                  <SidebarMenuItem key={session.caseId}>
                     <SidebarMenuButton
                       size="lg"
-                      isActive={incident.caseId === activeSession}
-                      onClick={() => setActiveSession(incident.caseId)}
+                      isActive={session.caseId === activeSession}
+                      onClick={() => setActiveSession(session.caseId)}
                       className={cn(
-                        "mb-px text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted data-active:bg-muted data-active:font-normal data-active:text-foreground py-0.5! h-10",
-                        hasUpdate &&
-                          "font-semibold text-foreground data-active:font-semibold"
+                        "mb-px h-10 py-0.5! text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted data-active:bg-muted data-active:font-normal data-active:text-foreground"
                       )}
                     >
                       <span className="min-w-0 truncate text-xs">
-                        {incident.partLabel}
+                        {session.partLabel}
                       </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
-              })}
+                ))
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

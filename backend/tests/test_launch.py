@@ -328,10 +328,10 @@ def test_the_ui_on_the_fallback_dev_port_is_allowed_by_default():
 def test_allowed_origins_stay_an_allowlist():
     from backend.api.settings import cors_origins_from_env
 
-    assert cors_origins_from_env("https://demo.example , http://localhost:3001") == [
-        "https://demo.example",
-        "http://localhost:3001",
-    ]
+    origins = cors_origins_from_env("https://demo.example , http://localhost:3001")
+    assert "https://demo.example" in origins
+    assert "http://localhost:3000" in origins
+    assert "*" not in origins
 
 
 def test_a_filed_claim_keeps_the_supplier_in_the_plans():

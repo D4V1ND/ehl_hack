@@ -9,7 +9,10 @@ import {
   type ReactNode,
 } from "react"
 
-import { SessionSidebar } from "@/components/cockpit/session-sidebar"
+import {
+  SessionSidebar,
+  type SidebarSession,
+} from "@/components/cockpit/session-sidebar"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -23,9 +26,11 @@ const LEFT_SIDEBAR_MAX = 20
 export function CockpitShell({
   children,
   rightSidebar,
+  sessions = [],
 }: {
   children: ReactNode
   rightSidebar?: ReactNode
+  sessions?: readonly SidebarSession[]
 }) {
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(LEFT_SIDEBAR_MAX)
 
@@ -71,6 +76,7 @@ export function CockpitShell({
       style={{ "--sidebar-width": `${leftSidebarWidth}vw` } as CSSProperties}
     >
       <SessionSidebar
+        sessions={sessions}
         width={leftSidebarWidth}
         onResizeStart={startLeftResize}
         onResize={continueLeftResize}

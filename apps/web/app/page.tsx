@@ -1,8 +1,5 @@
-import Link from "next/link"
-
-import { ArrowRightIcon } from "@/components/icons"
+import { OpenChatButton } from "@/components/home/open-chat-button"
 import { Logo } from "@/components/logo"
-import { buttonVariants } from "@/components/ui/button"
 
 export default function Home() {
   return (
@@ -28,20 +25,7 @@ export default function Home() {
               Strategy.
             </p>
           </div>
-          <Link
-            href="/chat"
-            className={buttonVariants({
-              size: "lg",
-              className:
-                "group h-14 w-full justify-between rounded-xl bg-foreground px-5 text-background hover:bg-foreground/85",
-            })}
-          >
-            Open chat
-            <ArrowRightIcon
-              aria-hidden="true"
-              className="transition-transform duration-200 group-hover:translate-x-0.5"
-            />
-          </Link>
+          <OpenChatButton />
         </div>
       </section>
     </main>

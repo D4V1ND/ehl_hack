@@ -29,8 +29,8 @@ DEFAULT_CORS_ORIGINS = [
 
 
 def cors_origins_from_env(raw: str | None) -> list[str]:
-    origins = [origin.strip() for origin in (raw or "").split(",") if origin.strip()]
-    return origins or DEFAULT_CORS_ORIGINS.copy()
+    extra = [origin.strip() for origin in (raw or "").split(",") if origin.strip()]
+    return list(dict.fromkeys([*DEFAULT_CORS_ORIGINS, *extra]))
 
 
 def _load_dotenv(path: Path) -> None:
