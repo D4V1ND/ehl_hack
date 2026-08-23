@@ -10,6 +10,7 @@ passed a query parameter.
 from __future__ import annotations
 
 import time
+import threading
 from dataclasses import replace
 from datetime import date
 from decimal import Decimal
@@ -24,6 +25,7 @@ from backend.casestore.case_store import CaseStore
 from backend.flow.claims import claim_from_quote
 from backend.flow.conductor import run_case
 from backend.flow.rehearsal import rehearsed_quote
+from backend.flow.provider import RehearsalOutreachProvider
 from backend.record.mock_erp import get_mock_erp
 from backend.store import STORE
 from packages.contracts.enums import Answer, StockStatus
@@ -265,6 +267,88 @@ def test_a_call_answered_later_is_collected_into_the_case(client):
     assert "SUP-KBY" in [c.supplier_ref for c in cases_.read_claims("CASE-001")]
     # And a second collect is a no-op: one answer, one claim.
     assert test_client.post("/flow/collect", params={"case_id": "CASE-001"}).json()["filed"] == []
+
+
+def test_await_calls_blocks_until_the_quote_is_filed(client):
+    test_client, cases_ = client
+    test_client.post("/flow/run", params={"case_id": "CASE-001", "hold_for": "SUP-KBY"})
+    test_client.post("/flow/call", params={"case_id": "CASE-001", "supplier_ref": "SUP-KBY"})
+
+    body = test_client.post(
+        "/flow/await_calls",
+        params={"case_id": "CASE-001", "timeout_s": 5},
+    ).json()
+
+    assert body["timed_out"] is False
+    assert body["resolved"] == ["SUP-KBY"]
+    assert body["filed"] == ["SUP-KBY"]
+    assert "SUP-KBY" in [claim.supplier_ref for claim in cases_.read_claims("CASE-001")]
+
+
+def test_await_calls_times_out_and_records_the_unanswered_supplier(client):
+    test_client, cases_ = client
+    test_client.post("/flow/run", params={"case_id": "CASE-001"})
+    STORE.mark_call_pending("CASE-001", "OUT-timeout", "SUP-KBY")
+
+    body = test_client.post(
+        "/flow/await_calls",
+        params={"case_id": "CASE-001", "timeout_s": 0.02},
+    ).json()
+
+    assert body["timed_out"] is True
+    assert body["filed"] == []
+    assert body["still_pending"][0]["supplier_ref"] == "SUP-KBY"
+    assert any(
+        event.level.value == "warn" and "timed out" in event.message
+        for event in cases_.read_events("CASE-001")
+    )
+
+
+def test_decide_waits_for_a_pending_call_before_pricing(client):
+    test_client, cases_ = client
+    test_client.post("/flow/run", params={"case_id": "CASE-001"})
+    task_id = "OUT-decide-wait"
+    STORE.mark_call_pending("CASE-001", task_id, "SUP-KBY")
+    timer = threading.Timer(
+        0.05,
+        STORE.add_quote,
+        args=(
+            Quote(
+                task_id=task_id,
+                case_id="CASE-001",
+                supplier_ref="SUP-KBY",
+                available=True,
+                qty_offered=12_000,
+                unit_price=Decimal("1.25"),
+                lead_time_days=5,
+            ),
+        ),
+    )
+    timer.start()
+
+    response = test_client.post("/tools/decide", params={"case_id": "CASE-001"})
+
+    assert response.status_code == 200
+    assert "SUP-KBY" in [claim.supplier_ref for claim in cases_.read_claims("CASE-001")]
+
+
+def test_dispatch_failure_clears_the_pending_call(monkeypatch, records):
+    class BrokenTimer:
+        daemon = False
+
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def start(self):
+            raise RuntimeError("timer failed")
+
+    monkeypatch.setattr("backend.flow.provider.threading.Timer", BrokenTimer)
+    provider = RehearsalOutreachProvider(records)
+
+    with pytest.raises(RuntimeError, match="timer failed"):
+        provider.dispatch([_task("SUP-KBY")])
+
+    assert STORE.pending_calls("CASE-001", float("inf")) == []
 
 
 def test_state_reports_where_the_run_has_got_to(client):

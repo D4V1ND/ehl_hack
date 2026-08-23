@@ -30,9 +30,14 @@ class FakeOutreachProvider:
         for task in tasks:
             rng = random.Random(task.task_id)
             delay = rng.uniform(settings.FAKE_MIN_DELAY, settings.FAKE_MAX_DELAY)
+            STORE.mark_call_pending(task.case_id, task.task_id, task.supplier_ref)
             timer = threading.Timer(delay, self._deliver, args=(task,))
             timer.daemon = True
-            timer.start()
+            try:
+                timer.start()
+            except Exception:
+                STORE.resolve_call(task.case_id, task.task_id, "dispatch_failed")
+                raise
 
         return DispatchReceipt(
             case_id=case_id,
@@ -42,18 +47,22 @@ class FakeOutreachProvider:
 
     @staticmethod
     def _deliver(task: OutreachTask) -> None:
-        quote = make_fake_quote(task)
-        STORE.add_quote(quote)
-        STORE.append_event(
-            task.case_id,
-            actor="calle",
-            stage="quote_received",
-            message=(
-                f"{task.supplier_ref}: "
-                + ("quoted" if quote.available else "cannot supply")
-            ),
-            payload={"task_id": task.task_id, "available": quote.available},
-        )
+        try:
+            quote = make_fake_quote(task)
+            STORE.add_quote(quote)
+            STORE.append_event(
+                task.case_id,
+                actor="calle",
+                stage="quote_received",
+                message=(
+                    f"{task.supplier_ref}: "
+                    + ("quoted" if quote.available else "cannot supply")
+                ),
+                payload={"task_id": task.task_id, "available": quote.available},
+            )
+        except Exception:
+            STORE.resolve_call(task.case_id, task.task_id, "delivery_failed")
+            raise
 
 
 def get_provider() -> OutreachProvider:

@@ -38,18 +38,23 @@ def test_payload_carries_the_answer_sheet_and_the_case_id():
         phones_by_supplier={"SUP-ATLAS": "+447700900123"},
         buyer_name="Meridian Motors",
     )
-    assert payload["recipient_result_schema"]["additionalProperties"] is False
+    assert payload["result_schema"]["additionalProperties"] is False
+    assert "part_available" in payload["result_schema"]["required"]
+    assert "recipient_result_schema" not in payload
     assert payload["metadata"]["case_id"] == "CASE-001"
-    assert payload["task"].split("\n")[0].startswith("You are an AI")
+    first = payload["task"].split("\n")[0]
+    assert "AI" in first
+    assert "Meridian Motors" in first
+    assert '"' in first
 
 
-def test_the_raw_number_appears_only_in_the_recipients_array():
+def test_the_raw_number_appears_only_in_the_recipient():
     payload = build_calle_payload(
         [_task()],
         phones_by_supplier={"SUP-ATLAS": "+447700900123"},
         buyer_name="Meridian Motors",
     )
-    assert payload["recipients"][0]["phones"] == ["+447700900123"]
+    assert payload["recipient"]["phones"] == ["+447700900123"]
     assert "+447700900123" not in payload["task"]
 
 
@@ -70,14 +75,16 @@ def test_the_payload_matches_the_sdk_create_signature():
 
 
 def test_the_call_is_placed_in_english():
-    """The locale drives the spoken language: a de-DE call came back fully
-    in German despite an English task text."""
+    """Region/locale on the recipient made CALL-E 503 the plan compiler.
+    English is in the task text instead."""
     payload = build_calle_payload(
         [_task()],
         phones_by_supplier={"SUP-ATLAS": "+447700900123"},
         buyer_name="Meridian Motors",
     )
-    assert payload["recipients"][0]["locale"].startswith("en")
+    assert "locale" not in payload["recipient"]
+    assert "region" not in payload["recipient"]
+    assert "English" in payload["task"]
 
 
 def test_a_malformed_number_is_refused_not_dialled():
@@ -93,13 +100,22 @@ def test_mask_hides_the_middle():
     assert mask("+447700900123") == "+4*******0123"
 
 
-def test_batching_puts_every_supplier_in_one_request():
+def test_one_call_carries_one_recipient():
+    """CALL-E takes a singular `recipient`.
+
+    A `recipients` array is refused with provider_unavailable/503, which reads
+    like an outage rather than the schema mismatch it is. Correlation rides in
+    the top-level metadata anyway, which names a single task, so dispatch sends
+    one request per supplier and the extra tasks here are not batched in.
+    """
     payload = build_calle_payload(
         [_task("T-001", "SUP-A"), _task("T-002", "SUP-B")],
         phones_by_supplier={"SUP-A": "+447700900123", "SUP-B": "+447700900124"},
         buyer_name="Meridian Motors",
     )
-    assert len(payload["recipients"]) == 2
+    assert "recipients" not in payload
+    assert payload["recipient"]["phones"] == ["+447700900123"]
+    assert payload["metadata"]["task_id"] == "T-001"
 
 
 def test_webhook_turns_a_result_into_a_stored_quote():

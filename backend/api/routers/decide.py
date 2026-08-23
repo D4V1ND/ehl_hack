@@ -12,6 +12,7 @@ merging.
 
 from __future__ import annotations
 
+import time
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,11 +20,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from backend.api.deps import erp, settings, store
 from backend.api.settings import Settings
 from backend.casestore.case_store import CaseStore
+from backend import settings as runtime_settings
 from backend.decide.run import run, single_source_blockers
+from backend.flow.collect import collect_quotes, wait_for_pending_calls
 from backend.policy.screen import screen
 from backend.publish.github_pr import publish
 from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
+from backend.store import STORE
+from packages.contracts.enums import Level, Stage, Actor
 from packages.contracts.models import Candidate, Decision
 
 router = APIRouter(prefix="/tools", tags=["devin-tools"])
@@ -86,8 +91,10 @@ def post_decide(
     case_id: str,
     today: date = Query(default=TODAY),
     devin_session_url: str | None = Query(default=None),
+    wait_for_calls: bool = Query(default=True),
     records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
+    config: Settings = Depends(settings),
 ) -> Decision:
     """Writes `policy_report.md`, `cost_report.md`, `decision.md`, `po_draft.md`
     and `decision.json` under the case directory, and logs one event.
@@ -95,6 +102,33 @@ def post_decide(
     Safe before any call has come back: with no claims it decides on our own
     files alone and says so in the artifacts.
     """
+    if wait_for_calls:
+        pending = STORE.pending_calls(case_id, float("inf"))
+        if config.live_calls_enabled and not pending:
+            deadline = time.monotonic() + runtime_settings.LIVE_CALL_GRACE
+            while time.monotonic() < deadline and not STORE.pending_calls(case_id, float("inf")):
+                time.sleep(min(1.0, deadline - time.monotonic()))
+        elapsed, timed_out, _, still_pending = wait_for_pending_calls(
+            case_id, timeout_s=runtime_settings.CALL_WAIT_TIMEOUT
+        )
+        if timed_out:
+            suppliers = ", ".join(entry["supplier_ref"] for entry in still_pending)
+            cases.append_event(
+                case_id,
+                actor=Actor.DEVIN,
+                stage=Stage.COSTING,
+                level=Level.WARN,
+                message=(
+                    "decision priced without supplier answer"
+                    + (f": {suppliers}" if suppliers else "")
+                ),
+                payload={"still_pending": still_pending, "waited_s": elapsed},
+            )
+        try:
+            collect_quotes(case_id=case_id, records=records, cases=cases, today=today)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
     try:
         outcome = run(
             case_id=case_id,
@@ -112,6 +146,8 @@ def post_decide(
 def post_publish_pr(
     case_id: str,
     today: date = Query(default=TODAY),
+    wait_for_calls: bool = Query(default=True),
+    records: SystemOfRecord = Depends(erp),
     cases: CaseStore = Depends(store),
     config: Settings = Depends(settings),
 ) -> dict[str, object]:
@@ -120,6 +156,33 @@ def post_publish_pr(
     With `GITHUB_TOKEN`/`GITHUB_REPO` unset this is a rehearsal and returns the
     branch, file list and body it would have pushed, with `pr_url: null`.
     """
+    if wait_for_calls:
+        pending = STORE.pending_calls(case_id, float("inf"))
+        if config.live_calls_enabled and not pending:
+            deadline = time.monotonic() + runtime_settings.LIVE_CALL_GRACE
+            while time.monotonic() < deadline and not STORE.pending_calls(case_id, float("inf")):
+                time.sleep(min(1.0, deadline - time.monotonic()))
+        elapsed, timed_out, _, still_pending = wait_for_pending_calls(
+            case_id, timeout_s=runtime_settings.CALL_WAIT_TIMEOUT
+        )
+        if timed_out:
+            suppliers = ", ".join(entry["supplier_ref"] for entry in still_pending)
+            cases.append_event(
+                case_id,
+                actor=Actor.DEVIN,
+                stage=Stage.COSTING,
+                level=Level.WARN,
+                message=(
+                    "decision priced without supplier answer before publishing"
+                    + (f": {suppliers}" if suppliers else "")
+                ),
+                payload={"still_pending": still_pending, "waited_s": elapsed},
+            )
+        try:
+            collect_quotes(case_id=case_id, records=records, cases=cases, today=today)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
     try:
         result = publish(
             case_id=case_id,

@@ -44,6 +44,10 @@ FAKE_MAX_DELAY: float = float(os.environ.get("FAKE_MAX_DELAY", "2.5"))
 CALLE_POLL_INTERVAL: float = float(os.environ.get("CALLE_POLL_INTERVAL", "10"))
 CALLE_POLL_TIMEOUT: float = float(os.environ.get("CALLE_POLL_TIMEOUT", "900"))
 
+# A sourcing decision cannot outrun an unanswered call.
+CALL_WAIT_TIMEOUT: float = float(os.environ.get("CALL_WAIT_TIMEOUT", "300"))
+LIVE_CALL_GRACE: float = float(os.environ.get("LIVE_CALL_GRACE", "20"))
+
 # Where finished quotes are written. STORE only lives as long as the
 # process, so without this a completed call leaves nothing behind.
 QUOTES_DIR: Path = Path(os.environ.get("QUOTES_DIR", str(REPO_ROOT / "data" / "quotes")))

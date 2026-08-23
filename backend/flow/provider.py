@@ -34,9 +34,14 @@ class RehearsalOutreachProvider:
         for task in tasks:
             rng = random.Random(task.task_id)
             delay = rng.uniform(settings.FAKE_MIN_DELAY, settings.FAKE_MAX_DELAY)
+            STORE.mark_call_pending(task.case_id, task.task_id, task.supplier_ref)
             timer = threading.Timer(delay, self._deliver, args=(task,))
             timer.daemon = True
-            timer.start()
+            try:
+                timer.start()
+            except Exception:
+                STORE.resolve_call(task.case_id, task.task_id, "dispatch_failed")
+                raise
         return DispatchReceipt(
             case_id=case_id,
             task_ids=[t.task_id for t in tasks],
@@ -44,21 +49,26 @@ class RehearsalOutreachProvider:
         )
 
     def _deliver(self, task: OutreachTask) -> None:
-        supplier = self._records.get_supplier(task.supplier_ref)
-        incident = resolve_incident(task.case_id, self._records)
-        if supplier is None or incident is None:
-            return  # nothing to rehearse from; the case log already says who was called
-        quote = rehearsed_quote(
-            task,
-            supplier=supplier,
-            incident=incident,
-            part=self._records.get_part(incident.part_id),
-        )
-        STORE.add_quote(quote)
-        STORE.append_event(
-            task.case_id,
-            actor="calle",
-            stage="quote_received",
-            message=f"{task.supplier_ref}: {'quoted' if quote.available else 'cannot supply'} (rehearsal)",
-            payload={"task_id": task.task_id, "available": quote.available},
-        )
+        try:
+            supplier = self._records.get_supplier(task.supplier_ref)
+            incident = resolve_incident(task.case_id, self._records)
+            if supplier is None or incident is None:
+                STORE.resolve_call(task.case_id, task.task_id, "missing_rehearsal_data")
+                return  # nothing to rehearse from; the case log already says who was called
+            quote = rehearsed_quote(
+                task,
+                supplier=supplier,
+                incident=incident,
+                part=self._records.get_part(incident.part_id),
+            )
+            STORE.add_quote(quote)
+            STORE.append_event(
+                task.case_id,
+                actor="calle",
+                stage="quote_received",
+                message=f"{task.supplier_ref}: {'quoted' if quote.available else 'cannot supply'} (rehearsal)",
+                payload={"task_id": task.task_id, "available": quote.available},
+            )
+        except Exception:
+            STORE.resolve_call(task.case_id, task.task_id, "delivery_failed")
+            raise

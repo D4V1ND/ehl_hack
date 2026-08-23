@@ -6,6 +6,7 @@ import {
   alreadyLiveDialed,
   fetchCase,
   fetchEvents,
+  fetchFlowState,
   openCase,
   placeLiveCall,
   sessionFromEvents,
@@ -21,6 +22,8 @@ import type {
   CaseEvent,
   CaseSnapshot,
   LiveCandidate,
+  LiveDecision,
+  LiveFlowState,
   OpenedCase,
   SessionInfo,
 } from "@/lib/live/types"
@@ -40,6 +43,8 @@ type DevinCaseState = {
   events: CaseEvent[]
   plan: LivePlan | null
   session: SessionInfo | null
+  decision: LiveDecision | null
+  flow: LiveFlowState | null
 }
 
 const EMPTY: DevinCaseState = {
@@ -50,6 +55,8 @@ const EMPTY: DevinCaseState = {
   events: [],
   plan: null,
   session: null,
+  decision: null,
+  flow: null,
 }
 
 function statusFromSession(session: SessionInfo | null): DevinCaseStatus {
@@ -83,6 +90,9 @@ export function useDevinCase(caseIdFromUrl: string | null) {
       events,
       plan,
       session,
+      // Filled by the first poll; attaching should not block on pricing.
+      decision: null,
+      flow: null,
     })
   }, [])
 
@@ -134,10 +144,11 @@ export function useDevinCase(caseIdFromUrl: string | null) {
     const tick = async () => {
       try {
         const since = eventsRef.current.at(-1)?.seq ?? 0
-        const [snapshot, fresh, plan] = await Promise.all([
+        const [snapshot, fresh, plan, flow] = await Promise.all([
           fetchCase(caseId),
           fetchEvents(caseId, since),
           fetchPlan(caseId),
+          fetchFlowState(caseId).catch(() => null),
         ])
         if (cancelled) return
         setState((current) => {
@@ -151,6 +162,9 @@ export function useDevinCase(caseIdFromUrl: string | null) {
             events,
             plan,
             session,
+            // Keep the last priced package if a tick comes back without one.
+            decision: flow?.decision ?? current.decision,
+            flow: flow ?? current.flow,
             status: statusFromSession(session),
             error: session?.error ?? current.error,
           }

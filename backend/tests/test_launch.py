@@ -173,6 +173,8 @@ def test_the_prompt_keeps_the_session_inside_the_case(records):
     assert "not a coding task" in prompt
     assert "pull request" in prompt  # named, so it can be forbidden
     assert "do not dial anyone yourself" in prompt
+    assert f"/flow/await_calls?case_id={incident.case_id}".lower() in prompt
+    assert "never price or publish while a call is in flight" in prompt
     assert "unknown" in prompt
     # It has to keep the checklist current, per supplier -- that is the cockpit.
     assert "/tools/events" in prompt

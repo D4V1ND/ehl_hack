@@ -58,8 +58,10 @@ def session_prompt(incident: Incident, part: Part, base_url: str) -> str:
             " policy. Rejections cite the rule; do not argue with them.",
             f"4. POST {base}/tools/outreach?case_id={incident.case_id} — ask the compliant ones."
             f" Then POST {base}/tools/claims to file what each one said. Unknown stays unknown.",
-            f"5. POST {base}/tools/decide?case_id={incident.case_id} — price every single-source and"
-            " split plan, then POST /tools/publish_pr to file the review package.",
+            f"5. POST {base}/flow/await_calls?case_id={incident.case_id} — a real call takes minutes;"
+            " this blocks until every dialled supplier has answered or the wait times out.",
+            f"6. POST {base}/tools/decide?case_id={incident.case_id} — price every single-source and"
+            f" split plan, then POST {base}/tools/publish_pr to file the review package.",
             "",
             "",
             "The cockpit shows a checklist, and a step nobody ticks reads as you being stuck"
@@ -93,6 +95,8 @@ def session_prompt(incident: Incident, part: Part, base_url: str) -> str:
             "- You do not place the order and you do not pick the winner — present the ranked options"
             " with landed cost and arrival date so a buyer decides.",
             "- Never invent a supplier answer. A field a call did not establish stays unknown.",
+            "- Never price or publish while a call is in flight, and never treat a missing answer as"
+            ' "no stock".',
             "- If an endpoint fails twice, post the failure as an event and carry on with the rest of"
             " the case. Do not debug the backend.",
             f"- Stop when {base}/cases/{incident.case_id} shows the ranked options and the review"
