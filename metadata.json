@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PEMTYMGCWGMF2K63M9RV7Q",
+  "strategy": "manual-commit",
+  "branch": "UI_graph",
+  "checkpoints_count": 11,
+  "files_touched": [
+    "apps/api/backend/casestore/case_store.py",
+    "apps/api/cases/CASE-001/events.jsonl",
+    "apps/api/cases/CASE-001/outreach.json",
+    "apps/api/package.json",
+    "apps/erp/package.json",
+    "apps/web/package.json",
+    "backend/fixtures/supplier_phones.local.json",
+    "backend/record/supplyguard.db",
+    "data/quotes/CASE-TRY/TRY-001-002.json",
+    "data/quotes/CASE-TRY/TRY-001.json",
+    "data/quotes/case-diag-1787433402/case-diag-1787433402-task-1.json",
+    "data/quotes/case-real-28fea263/case-real-28fea263-task-1.json",
+    "data/quotes/case-real-ee8157c7/case-real-ee8157c7-task-1.json",
+    "scripts/next-dev.mjs",
+    "scripts/py.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 198,
+    "cache_creation_tokens": 342026,
+    "cache_read_tokens": 8411310,
+    "output_tokens": 75519,
+    "api_call_count": 99
+  }
+}
