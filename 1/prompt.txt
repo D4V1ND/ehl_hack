@@ -1,1 +1,5 @@
-dude i sadi use subagents to preserver your context window
+Okay, let's store this in a document in Plan/Notes. Another question I have is: how can we already simulate the Devin working and the calling working without all of the deterministic stuff that we have in the deterministic doc, if you look at it? I want to actually start calling the API and add an API layer into our UI instead of just having this React state code. How can I already take it one step further so that the integration will be a lot easier?
+
+Right now, my friend or collaborator is still figuring out the correct schema to use. We have to work with the current schema of, if you look at PR 22, that's currently his most up-to-date version of the branch. Look at that instead.
+
+Tell me how we could already build an API layer that we can call. Of course, the API will, for now, return the deterministic stuff, but that's easy to adjust in the future and merge the main branch into that right now.
