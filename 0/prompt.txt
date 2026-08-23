@@ -1,0 +1,57 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/montreal directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/lorenzkrinner/mvp-ui. Use this for actions like diffing (`git diff origin/lorenzkrinner/mvp-ui...`) or creating PRs (`gh pr create --base lorenzkrinner/mvp-ui`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+I want to merge the slice-b/calls-from-cockpit into this branch. The branch I'm merging this into basically, create the European system, the mock European system that we call our agent, and then act as a trigger to open our web app. I don't know what exactly she built it with, so first, can you explain to me exactly how she built it? Maybe the file structure, tech stack, et cetera.
+
+Then, how you would consolidate that, because for example, the call feature in that branch should be in my app's UI, but in her UI, and not in the UI of the ERP system. When you click on "Request fix via agent," it should open our tool with the correct incident linked to it, and then the agent actually starts and does its work.
+
+So how do we do that? don't implement anything yet
+
+---
+
+[i-have-adhd](/Users/lorenzkrinner/.agents/skills/i-have-adhd/SKILL.md)
+
+---
+
+redo your answer using it
+
+---
+
+What I would say is we consolidate this on a mono-repo. We first set up a turbo repo, one for the web app, one for the actual supplier app, one for the ERP system. When we click on the ERP system, we direct to our system with some kind of search URL/search program appended. Then we use that to query our database. The database is SQLite local on that branch.
+
+We could, of course, add some kind of seeding script for them. For now, the AI chat will still be deterministic, but at least that already works. Does that make sense?
+
+---
+
+current cockpit is apps/web , then we have apps/erp (hers) and apps/api
+
+confirm that “supplier app” means the SupplyOS Cockpit. - confirmed
+
+You can already start setting up turborepo.
+
+Before that pull the latest changes from the mvp ui branch on this branch, then continue
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/Z1AXUm/pasted_text_2026-08-23_01-45-53.txt (6.6 KB)
+</system_instruction>
+
+
+
+Getting this: .context/attachments/Z1AXUm/pasted_text_2026-08-23_01-45-53.txt 
+
+Apart from that, once this works, what is the QA list I can go through to test this works?
