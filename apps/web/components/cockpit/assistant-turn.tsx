@@ -158,6 +158,10 @@ function StepExtras({ step }: { step: ScriptStep }) {
     )
   }
 
+  if (step.kind === "strategy") {
+    return <p className="text-sm text-muted-foreground">{step.detail}</p>
+  }
+
   if (step.kind === "deltas") {
     return (
       <p className="text-sm text-muted-foreground">
