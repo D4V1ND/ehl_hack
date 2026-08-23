@@ -3,13 +3,14 @@
   "checkpoint_id": "01M0P6XRTWHX9HSF6Q2B3YDVCA",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/consolidate-cockpit-calls",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "AGENTS.md",
     "CONTEXT.md",
     "apps/web/app/chat/page.tsx",
     "apps/web/app/globals.css",
     "apps/web/app/layout.tsx",
+    "apps/web/components/cockpit/agent-call-activity.tsx",
     "apps/web/components/cockpit/assistant-turn.tsx",
     "apps/web/components/cockpit/call-detail-dialog.tsx",
     "apps/web/components/cockpit/call-history.tsx",
@@ -49,13 +50,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 358207,
+    "input_tokens": 812526,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 23307264,
-    "output_tokens": 64364,
-    "api_call_count": 228
+    "cache_read_tokens": 38529408,
+    "output_tokens": 158683,
+    "api_call_count": 350
   }
 }
