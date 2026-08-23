@@ -27,3 +27,21 @@ Don't commit the carousle fwork yet:
 - Candidates should only be displayed at the end of the chat, above my final message
 
 Apart from that, what other suggestions do you have on how we could display this? is the inline carousel even the right mental model?
+
+---
+
+Go back to the previous commit, I don't like the new version.
+
+---
+
+Wait 
+
+You shoudl've kep evrything until this message of mine:
+
+"Make the sidebar item slightly smaller, still make the condidates expand, also add a small description of each candidate under the title (but no more info in the trigger!)
+
+Then commit."
+
+that's it.
+
+not more. not less.
