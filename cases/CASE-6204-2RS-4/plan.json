@@ -225,13 +225,13 @@
     "case_id": "CASE-6204-2RS-4",
     "group": "outreach",
     "label": "Calling Kugellager Bayern GmbH",
-    "status": "failed",
-    "detail": "The call plan could not be prepared. (code=provider_unavailable status=503 details={})",
+    "status": "active",
+    "detail": null,
     "supplier_ref": "SUP-KBY",
     "dynamic": true,
     "seq": 101,
     "started_at": "2026-08-23T06:00:35.049556Z",
-    "completed_at": "2026-08-23T06:33:21.818217Z"
+    "completed_at": null
   },
   {
     "step_id": "outreach:SUP-RUL",

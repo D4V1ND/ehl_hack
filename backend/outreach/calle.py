@@ -97,74 +97,31 @@ def build_calle_payload(
         raw = phones_by_supplier.get(task.supplier_ref)
         if raw is None:
             raise InvalidPhoneNumber(f"no phone number for {task.supplier_ref}")
-        recipients.append({"phones": [validate_e164(raw)]})
+        recipients.append(
+            {
+                "phones": [validate_e164(raw)],
+                "region": settings.CALLE_REGION,
+                "locale": settings.CALLE_LOCALE,
+            }
+        )
 
     first = tasks[0]
     return {
         "task": build_task_text(first, buyer_name=buyer_name),
         "recipients": recipients,
-        # One recipient, so the task-level schema is the answer sheet.
-        # Sending both result_schema and recipient_result_schema made CALL-E
-        # 503 the plan compiler (provider_unavailable).
-        "result_schema": quote_result_schema(),
+        "recipient_result_schema": quote_result_schema(),
+        # No webhook_url on purpose. Results are pulled via GET /v1/calls/{id}
+        # (see _watch_call), which is an outbound request and so needs no
+        # public URL and no tunnel. CALL-E does deliver terminal webhooks, but
+        # wrapped in an {id, type, created_at, data} envelope that the
+        # /calle/webhook route does not unwrap -- and requiring a tunnel to
+        # collect a result the API will hand us on request is not worth it.
         "metadata": {
             "case_id": first.case_id,
             "task_id": first.task_id,
             "supplier_ref": first.supplier_ref,
         },
     }
-
-
-def _record_calle_failure(case_id: str, task: OutreachTask, exc: CalleAPIError) -> None:
-    STORE.append_event(
-        case_id,
-        actor="calle",
-        stage="outreach_failed",
-        level="error",
-        message=f"CALL-E rejected the call: {exc}",
-        payload={
-            "task_id": task.task_id,
-            "calle_code": exc.code,
-            "calle_status": exc.status_code,
-            "calle_details": exc.details,
-        },
-    )
-
-
-def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask) -> dict:
-    """Second try: the shape CALL-E's own docs use for a one-recipient call."""
-    phone = payload["recipients"][0]["phones"][0]
-    minimal = {
-        "task": payload["task"],
-        "recipients": [
-            {
-                "phones": [phone],
-                "region": settings.CALLE_REGION,
-                "locale": settings.CALLE_LOCALE,
-            }
-        ],
-        "result_schema": {
-            "type": "object",
-            "required": ["part_available"],
-            "properties": {
-                "part_available": {
-                    "type": "string",
-                    "enum": ["yes", "no", "unknown"],
-                },
-            },
-            "additionalProperties": False,
-        },
-    }
-    try:
-        return _client().calls.create(
-            **minimal,
-            idempotency_key=f"{case_id}:{task.task_id}:min",
-        )
-    except CalleAPIError as exc:
-        _record_calle_failure(case_id, task, exc)
-        raise RuntimeError(
-            f"{exc} (code={exc.code} status={exc.status_code} details={exc.details})"
-        ) from exc
 
 
 class CalleOutreachProvider:
@@ -201,15 +158,18 @@ class CalleOutreachProvider:
                     idempotency_key=f"{case_id}:{task.task_id}",
                 )
             except CalleAPIError as exc:
-                if exc.code == "provider_unavailable":
-                    # Planner 503s on the full answer sheet. Retry the same
-                    # number and script with CALL-E's documented one-field schema.
-                    accepted = _create_with_minimal_schema(payload, case_id, task)
-                else:
-                    _record_calle_failure(case_id, task, exc)
-                    raise RuntimeError(
-                        f"{exc} (code={exc.code} status={exc.status_code} details={exc.details})"
-                    ) from exc
+                # The SDK has already parsed CALL-E's error body, which is
+                # where the reason for a rejected payload lives — the status
+                # code alone is not enough to fix one.
+                STORE.append_event(
+                    case_id,
+                    actor="calle",
+                    stage="outreach_failed",
+                    level="error",
+                    message=f"CALL-E rejected the call: {exc}",
+                    payload={"task_id": task.task_id},
+                )
+                raise
 
             call_id = accepted.get("id")
             STORE.append_event(
