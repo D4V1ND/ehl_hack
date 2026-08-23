@@ -51,6 +51,7 @@ function DevinCockpit() {
         candidatesOpen ? (
           <LiveCandidatePanel
             candidates={devin.candidates}
+            supplierRecords={devin.snapshot?.supplier_records ?? []}
             onClose={() => setCandidatesOpen(false)}
           />
         ) : undefined
