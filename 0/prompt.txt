@@ -91,3 +91,15 @@ Also mention that we have tested that this doesn't break the old flow and everyt
 ---
 
 Do it faster.
+
+---
+
+Wait what have you done? Have you moved /inventory into our web chat and removed the erp?
+
+---
+
+how do I set it up?
+
+---
+
+Commit and push all changes
