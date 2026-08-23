@@ -1,0 +1,29 @@
+Make the sidebar item slightly smaller, still make the condidates expand, also add a small description of each candidate under the title (but no more info in the trigger!)
+
+Then commit.
+
+I want to spawn one sub-agent for the commit and another sub-agent to build a second version of the UI that removes the right candidate sidebar. Instead, it should place the candidates as cards that you can also click on, which then opens a sidebar for more information about the candidate. But they should be displayed in some kind of carousel inline of the chat using cards. 
+
+And when I click again, it will open the current candidate sidebar, but right now only with information about that candidate. It actually added using the sidebar, but using the sidebar from shadcn, which just is a layer above our UI currently. So it doesn't actually move the chat.
+
+---
+
+Don't commit the carousle fwork yet:
+
+- Chat shoudls tay max 50% width and centered
+- Carouself cards should span 1/3 of the chat width, when smaller size, 1/2 of chat
+- Clicking outside sidebar should close it. 
+- Candidates should only be displayed at the end of the chat, above my final message
+
+Apart from that, what other suggestions do you have on how we could display this? is the inline carousel even the right mental model?
+
+---
+
+Don't commit the carousle fwork yet:
+
+- Chat shoudls tay max 50% width and centered
+- Carouself cards should span 1/3 of the chat width, when smaller size, 1/2 of chat
+- Clicking outside sidebar should close it. 
+- Candidates should only be displayed at the end of the chat, above my final message
+
+Apart from that, what other suggestions do you have on how we could display this? is the inline carousel even the right mental model?
