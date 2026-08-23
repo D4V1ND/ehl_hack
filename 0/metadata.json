@@ -1,0 +1,114 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PZD06G6QCJ0ZXMQD6T8K46",
+  "session_id": "01a02dd1-b77d-7822-a6ce-967f72a3e875",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T09:32:06.496263Z",
+  "branch": "lorenzkrinner/supplyos-cockpit-ui-handoff",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/components/cockpit/cockpit-chat.tsx",
+    "apps/web/components/cockpit/cockpit-shell.tsx",
+    "apps/web/components/cockpit/incident-header.tsx",
+    "apps/web/components/cockpit/message-composer.tsx",
+    "apps/web/components/cockpit/plan-checklist.tsx",
+    "apps/web/components/cockpit/session-sidebar.tsx",
+    "apps/web/hooks/use-devin-case.ts",
+    "apps/web/lib/live/api.ts",
+    "apps/web/lib/live/cockpit-view.test.ts",
+    "apps/web/lib/live/cockpit-view.ts",
+    "apps/web/lib/live/types.ts",
+    "apps/web/package.json",
+    "apps/web/tsconfig.cockpit-tests.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "0753bf2feeac",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 354660,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 16913536,
+    "output_tokens": 66404,
+    "api_call_count": 119
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T09:32:06.429369Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 423,
+    "total_committed": 0,
+    "total_lines_changed": 423,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2190,
+      "user_lines_removed": 423,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/cockpit-tests/lib/live/cockpit-view.js": 108,
+        ".context/cockpit-tests/lib/live/cockpit-view.test.js": 341,
+        ".context/cockpit-tests/lib/live/config.js": 16,
+        ".context/cockpit-tests/lib/live/plan.js": 44,
+        ".context/cockpit-tests/lib/live/types.js": 2,
+        "apps/web/components/cockpit/cockpit-chat.tsx": 74,
+        "apps/web/components/cockpit/cockpit-shell.tsx": 36,
+        "apps/web/components/cockpit/incident-header.tsx": 31,
+        "apps/web/components/cockpit/message-composer.tsx": 96,
+        "apps/web/components/cockpit/plan-checklist.tsx": 388,
+        "apps/web/components/cockpit/session-sidebar.tsx": 117,
+        "apps/web/hooks/use-devin-case.ts": 91,
+        "apps/web/lib/live/api.ts": 64,
+        "apps/web/lib/live/cockpit-view.test.ts": 350,
+        "apps/web/lib/live/cockpit-view.ts": 189,
+        "apps/web/lib/live/types.ts": 217,
+        "apps/web/package.json": 1,
+        "apps/web/tsconfig.cockpit-tests.json": 25
+      },
+      "user_removed_per_file": {
+        "apps/web/components/cockpit/cockpit-chat.tsx": 37,
+        "apps/web/components/cockpit/cockpit-shell.tsx": 20,
+        "apps/web/components/cockpit/incident-header.tsx": 31,
+        "apps/web/components/cockpit/plan-checklist.tsx": 131,
+        "apps/web/hooks/use-devin-case.ts": 82,
+        "apps/web/lib/live/api.ts": 41,
+        "apps/web/lib/live/types.ts": 81
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1211,
+      "user_lines_removed": 27,
+      "agent_lines_added": 1679,
+      "agent_lines_removed": 423,
+      "user_added_per_file": {
+        ".context/cockpit-tests/lib/live/cockpit-view.js": 108,
+        ".context/cockpit-tests/lib/live/cockpit-view.test.js": 341,
+        ".context/cockpit-tests/lib/live/config.js": 16,
+        ".context/cockpit-tests/lib/live/plan.js": 44,
+        ".context/cockpit-tests/lib/live/types.js": 2,
+        "apps/web/package-lock.json": 49,
+        "cases/CASE-6204-2RS-2/events.jsonl": 13,
+        "cases/CASE-6204-2RS-2/plan.json": 145,
+        "cases/CASE-6204-2RS/events.jsonl": 1,
+        "cases/CASE-6205-2RS-2/events.jsonl": 2,
+        "cases/CASE-6205-2RS-2/plan.json": 145,
+        "cases/CASE-6205-2RS/events.jsonl": 70,
+        "cases/CASE-6205-2RS/plan.json": 275
+      },
+      "user_removed_per_file": {
+        "apps/web/package-lock.json": 27
+      }
+    }
+  ]
+}

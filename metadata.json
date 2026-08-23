@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0PZD06G6QCJ0ZXMQD6T8K46",
+  "strategy": "manual-commit",
+  "branch": "lorenzkrinner/supplyos-cockpit-ui-handoff",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/components/cockpit/cockpit-chat.tsx",
+    "apps/web/components/cockpit/cockpit-shell.tsx",
+    "apps/web/components/cockpit/incident-header.tsx",
+    "apps/web/components/cockpit/message-composer.tsx",
+    "apps/web/components/cockpit/plan-checklist.tsx",
+    "apps/web/components/cockpit/session-sidebar.tsx",
+    "apps/web/hooks/use-devin-case.ts",
+    "apps/web/lib/live/api.ts",
+    "apps/web/lib/live/cockpit-view.test.ts",
+    "apps/web/lib/live/cockpit-view.ts",
+    "apps/web/lib/live/types.ts",
+    "apps/web/package.json",
+    "apps/web/tsconfig.cockpit-tests.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 354660,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 16913536,
+    "output_tokens": 66404,
+    "api_call_count": 119
+  }
+}
