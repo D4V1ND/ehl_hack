@@ -1,0 +1,64 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0Q0N0WVGE2BY0F5KANRRV86",
+  "session_id": "01a02df6-aee0-7c01-bae2-6ad0865c2a83",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T09:55:06.332893Z",
+  "branch": "lorenzkrinner/adjust-presentation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/app/prototype/README.md",
+    "apps/web/components/prototype/slides-deck.module.css",
+    "apps/web/components/prototype/slides-deck.tsx",
+    "apps/web/public/slides/ehl-logo.svg"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "79810fc75306",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 123029,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1503616,
+    "output_tokens": 12497,
+    "api_call_count": 26
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T09:55:06.305548Z",
+    "agent_lines": 74,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 4,
+    "human_removed": 229,
+    "total_committed": 78,
+    "total_lines_changed": 347,
+    "agent_percentage": 21.32564841498559,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 830,
+      "user_lines_removed": 233,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/attachments/TSNgtp/Transcript of Adjust presentation.md": 56,
+        ".context/supplyos-proof-benchmarks.md": 89,
+        "apps/web/app/prototype/README.md": 5,
+        "apps/web/components/home/home-hero.tsx": 17,
+        "apps/web/components/prototype/slides-deck.module.css": 343,
+        "apps/web/components/prototype/slides-deck.tsx": 270,
+        "apps/web/package-lock.json": 49,
+        "apps/web/public/slides/ehl-logo.svg": 1
+      },
+      "user_removed_per_file": {
+        "apps/web/app/prototype/README.md": 3,
+        "apps/web/components/home/home-hero.tsx": 9,
+        "apps/web/components/prototype/slides-deck.module.css": 59,
+        "apps/web/components/prototype/slides-deck.tsx": 135,
+        "apps/web/package-lock.json": 27
+      }
+    }
+  ]
+}

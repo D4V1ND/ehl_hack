@@ -3,13 +3,14 @@
   "checkpoint_id": "01M0Q0N0WVGE2BY0F5KANRRV86",
   "strategy": "manual-commit",
   "branch": "lorenzkrinner/adjust-presentation",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "apps/web/app/prototype/README.md",
     "apps/web/components/home/home-hero.tsx",
     "apps/web/components/prototype/slides-deck.module.css",
     "apps/web/components/prototype/slides-deck.tsx",
-    "apps/web/package-lock.json"
+    "apps/web/package-lock.json",
+    "apps/web/public/slides/ehl-logo.svg"
   ],
   "sessions": [
     {
@@ -25,13 +26,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 638645,
+    "input_tokens": 761674,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 21019776,
-    "output_tokens": 98700,
-    "api_call_count": 184
+    "cache_read_tokens": 22523392,
+    "output_tokens": 111197,
+    "api_call_count": 210
   }
 }
