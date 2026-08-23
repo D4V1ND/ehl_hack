@@ -1,0 +1,51 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "NEXT_PUBLIC_API_BASE",
+        "NEXT_PUBLIC_DATA_SOURCE",
+        "NEXT_PUBLIC_SUPPLYOS_URL"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "API_PORT",
+        "ERP_PORT",
+        "NEXT_PUBLIC_API_BASE",
+        "NEXT_PUBLIC_DATA_SOURCE",
+        "NEXT_PUBLIC_SUPPLYOS_URL",
+        "WEB_PORT"
+      ],
+      "passThroughEnv": [
+        "CALLE_API_KEY",
+        "DEMO_SUPPLIER_PHONE",
+        "DEVIN_API_KEY",
+        "FAKE_CALLS",
+        "PUBLIC_BASE_URL",
+        "RECORD_BACKEND"
+      ]
+    },
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "db:seed": {
+      "cache": false
+    }
+  }
+}

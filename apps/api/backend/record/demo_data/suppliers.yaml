@@ -1,0 +1,446 @@
+# ERPNext `Supplier`-shaped, plus the fields the policy rules and the cost model
+# need. This is the trusted baseline — what OUR files say. What a supplier says
+# on the phone is a Claim, and the two are never merged.
+#
+# PHONE NUMBERS: every number below is in the German BNetzA drama range
+# (+49 30 23125 xxxx), which is reserved for fiction and never routes to a real
+# subscriber. Non-German suppliers carry a German drama number too, deliberately:
+# guessing at another country's fictional range risks hitting a real line, and
+# nothing here is ever dialed anyway (rehearsal is the default, and live
+# rehearsals use a teammate's own number supplied from their env, never
+# committed). Replace with each country's official reserved range before any
+# real call.
+#
+# Five suppliers of PRT-6204 are the story. Everything after them is depth.
+
+# --- incumbent: fast and trusted, but most of its stock is already promised ---
+- supplier_id: SUP-KBY
+  supplier_name: Kugellager Bayern GmbH
+  country: DE
+  locale: de-DE
+  phone: '+4930231250142'
+  email: vertrieb@kugellager-bayern.example
+  channels: [voice, email]
+  part_ids: [PRT-62052RS, PRT-62062RS]
+  approved: true
+  preferred: true
+  incumbent: true
+  contract_unit_price: '1.42'
+  standard_lead_days: 10
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-05-31
+  audit_status: audited
+  known_allocations: 18000
+  max_historical_fill: 30000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '1.68'}
+    - {min_qty: 5000, unit_price: '1.58'}
+    - {min_qty: 15000, unit_price: '1.49'}
+    - {min_qty: 30000, unit_price: '1.42'}
+
+# --- fastest on the board, and the most expensive ---
+- supplier_id: SUP-SKF
+  supplier_name: SKF Nordic
+  country: SE
+  locale: en-GB
+  phone: '+4930231250117'
+  email: industrial.sales@skf-vertrieb.example
+  channels: [voice, email]
+  part_ids: [PRT-6204, PRT-6204ZZ, PRT-62052RS, PRT-63042RS]
+  approved: true
+  preferred: true
+  incumbent: true
+  contract_unit_price: '1.95'
+  standard_lead_days: 6
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-11-30
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 8000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.10'}
+    - {min_qty: 10000, unit_price: '1.88'}
+    - {min_qty: 25000, unit_price: '1.72'}
+
+- supplier_id: SUP-FAG
+  supplier_name: Schaeffler FAG
+  country: JP
+  locale: en-GB
+  phone: '+4930231250121'
+  email: sourcing@fag-recorded.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.00'
+  standard_lead_days: 21
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 32000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.30'}
+    - {min_qty: 25000, unit_price: '1.60'}
+
+- supplier_id: SUP-NSK
+  supplier_name: NSK Europe
+  country: GB
+  locale: en-GB
+  phone: '+4930231250133'
+  email: sourcing@nsk-recorded.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.10'
+  standard_lead_days: 11
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 16000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.22'}
+
+- supplier_id: SUP-SHZ
+  supplier_name: Shenzhen Bearing Co
+  country: CN
+  locale: en-GB
+  phone: '+4930231250144'
+  email: sourcing@shenzhen-recorded.example
+  marketplace_url: https://example-marketplace.invalid/shenzhen-bearing
+  channels: [email, marketplace]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.20'
+  standard_lead_days: 30
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 40000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '1.15'}
+
+- supplier_id: SUP-MUN
+  supplier_name: Munich Motion
+  country: DE
+  locale: de-DE
+  phone: '+4930231250155'
+  email: sourcing@munich-motion.example
+  channels: [voice, email]
+  part_ids: [PRT-6204]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.30'
+  standard_lead_days: 5
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: audited
+  known_allocations: 30000
+  max_historical_fill: 32000
+  price_breaks:
+    - {min_qty: 1000, unit_price: '2.40'}
+
+# --- cheapest compliant source, and far too slow to stop the line on its own ---
+- supplier_id: SUP-RUL
+  supplier_name: Rulmenti Est SRL
+  country: RO
+  locale: en-GB
+  phone: '+4930231250163'
+  email: export@rulmenti-est.example
+  channels: [voice, email]
+  part_ids: [PRT-60042RS, PRT-62052RS, PRT-63022RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.30'
+  standard_lead_days: 21
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-02-28
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 45000
+  price_breaks:
+    - {min_qty: 5000, unit_price: '1.35'}
+    - {min_qty: 20000, unit_price: '1.18'}
+    - {min_qty: 50000, unit_price: '1.06'}
+
+# --- REJECTED: blocked_origin_country. Also the channel-routing beat: CALL-E
+#     has no CN region, so this one would go by email/marketplace, not voice.
+- supplier_id: SUP-NPB
+  supplier_name: Ningbo Precision Bearing Co. Ltd
+  country: CN
+  locale: en-GB
+  phone: '+4930231250188'
+  email: sales@ningbo-precision.example
+  marketplace_url: https://example-marketplace.invalid/ningbo-precision
+  channels: [email, marketplace]
+  part_ids: [PRT-60042RS, PRT-62052RS, PRT-62062RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '0.92'
+  standard_lead_days: 34
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-09-30
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 0
+  price_breaks:
+    - {min_qty: 10000, unit_price: '0.92'}
+    - {min_qty: 50000, unit_price: '0.74'}
+
+# --- REJECTED: missing_required_certification. ISO 9001 lapsed on 2026-03-31. ---
+- supplier_id: SUP-PUL
+  supplier_name: Pulman AG
+  country: DE
+  locale: en-GB
+  phone: '+4930231250174'
+  email: export@pulman.example
+  channels: [voice, email]
+  part_ids: [PRT-62052RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.15'
+  standard_lead_days: 16
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2026-03-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 12000
+  price_breaks:
+    - {min_qty: 5000, unit_price: '1.22'}
+    - {min_qty: 25000, unit_price: '1.05'}
+
+# --- REJECTED: audit_required_and_not_audited. A new supplier promising eight
+#     days is not the same as an incumbent promising ten. ---
+- supplier_id: SUP-NBT
+  supplier_name: NordBearing Trading ApS
+  country: DK
+  locale: en-GB
+  phone: '+4930231250151'
+  email: sales@nordbearing.example
+  channels: [voice, email]
+  part_ids: [PRT-62052RS, PRT-63052RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.35'
+  standard_lead_days: 8
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-01-31
+  audit_status: never_audited
+  known_allocations: 0
+  max_historical_fill: 0
+  price_breaks:
+    - {min_qty: 5000, unit_price: '1.42'}
+    - {min_qty: 25000, unit_price: '1.26'}
+
+# --- catalogue depth: fasteners, seals and other bearing sizes ---
+
+- supplier_id: SUP-SHW
+  supplier_name: Schrauben Werk Schwaben GmbH
+  country: DE
+  locale: de-DE
+  phone: '+4930231250203'
+  email: verkauf@schrauben-schwaben.example
+  channels: [voice, email]
+  part_ids: [PRT-M8X40, PRT-DIN933M6X25A2, PRT-DIN933M8X25A2, PRT-DIN934M8A2, PRT-DIN125M8A2]
+  approved: true
+  preferred: true
+  incumbent: true
+  contract_unit_price: '0.18'
+  standard_lead_days: 7
+  certifications: [ISO_9001]
+  certification_expires_at: 2027-08-31
+  audit_status: audited
+  known_allocations: 40000
+  max_historical_fill: 500000
+  price_breaks:
+    - {min_qty: 10000, unit_price: '0.21'}
+    - {min_qty: 100000, unit_price: '0.18'}
+    - {min_qty: 500000, unit_price: '0.15'}
+
+- supplier_id: SUP-FBP
+  supplier_name: Fixando Bolt Praha s.r.o.
+  country: CZ
+  locale: en-GB
+  phone: '+4930231250216'
+  email: export@fixando-bolt.example
+  channels: [voice, email]
+  part_ids: [PRT-M8X40, PRT-DIN933M10X30A2, PRT-DIN912M8X30A2, PRT-DIN934M10A2]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '0.16'
+  standard_lead_days: 12
+  certifications: [ISO_9001]
+  certification_expires_at: 2027-06-30
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 250000
+  price_breaks:
+    - {min_qty: 25000, unit_price: '0.17'}
+    - {min_qty: 200000, unit_price: '0.14'}
+
+- supplier_id: SUP-VIT
+  supplier_name: Viteria Lombarda S.p.A.
+  country: IT
+  locale: en-GB
+  phone: '+4930231250227'
+  email: vendite@viteria-lombarda.example
+  channels: [voice, email]
+  part_ids: [PRT-DIN912M6X20A2, PRT-DIN912M8X30A2, PRT-DIN912M10X40A2, PRT-DIN933M12X40A2]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '0.20'
+  standard_lead_days: 11
+  certifications: [ISO_9001]
+  certification_expires_at: 2027-04-30
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 180000
+  price_breaks:
+    - {min_qty: 20000, unit_price: '0.22'}
+    - {min_qty: 150000, unit_price: '0.19'}
+
+- supplier_id: SUP-DSW
+  supplier_name: Dichtungswerk Rhein GmbH
+  country: DE
+  locale: de-DE
+  phone: '+4930231250238'
+  email: vertrieb@dichtungswerk-rhein.example
+  channels: [voice, email]
+  part_ids: [PRT-SIM20X47X7, PRT-SIM25X52X7, PRT-SIM30X52X7, PRT-ORING25X3]
+  approved: true
+  preferred: true
+  incumbent: true
+  contract_unit_price: '0.94'
+  standard_lead_days: 9
+  certifications: [ISO_9001]
+  certification_expires_at: 2027-10-31
+  audit_status: audited
+  known_allocations: 5000
+  max_historical_fill: 60000
+  price_breaks:
+    - {min_qty: 5000, unit_price: '1.02'}
+    - {min_qty: 25000, unit_price: '0.94'}
+
+- supplier_id: SUP-PSE
+  supplier_name: Polska Seal Technika Sp. z o.o.
+  country: PL
+  locale: en-GB
+  phone: '+4930231250249'
+  email: eksport@polska-seal.example
+  channels: [voice, email]
+  part_ids: [PRT-SIM25X52X7, PRT-SIM35X62X8, PRT-SIM40X62X8]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '0.88'
+  standard_lead_days: 14
+  certifications: [ISO_9001]
+  certification_expires_at: 2027-12-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 40000
+  price_breaks:
+    - {min_qty: 10000, unit_price: '0.96'}
+    - {min_qty: 40000, unit_price: '0.86'}
+
+- supplier_id: SUP-WLZ
+  supplier_name: Walzlager Handel Nord GmbH
+  country: DE
+  locale: de-DE
+  phone: '+4930231250255'
+  email: info@walzlager-nord.example
+  channels: [voice, email]
+  part_ids: [PRT-60002RS, PRT-60012RS, PRT-60022RS, PRT-60032RS, PRT-69002RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.04'
+  standard_lead_days: 9
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-07-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 22000
+  price_breaks:
+    - {min_qty: 2000, unit_price: '1.14'}
+    - {min_qty: 20000, unit_price: '1.02'}
+
+- supplier_id: SUP-IBS
+  supplier_name: Iberia Bearing Supply S.L.
+  country: ES
+  locale: en-GB
+  phone: '+4930231250261'
+  email: ventas@iberia-bearing.example
+  channels: [voice, email]
+  part_ids: [PRT-63042RS, PRT-63052RS, PRT-63062RS, PRT-68022RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.88'
+  standard_lead_days: 13
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-03-31
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 15000
+  price_breaks:
+    - {min_qty: 3000, unit_price: '2.02'}
+    - {min_qty: 18000, unit_price: '1.84'}
+
+- supplier_id: SUP-NRD
+  supplier_name: Nordiska Lager AB
+  country: SE
+  locale: en-GB
+  phone: '+4930231250272'
+  email: sales@nordiska-lager.example
+  channels: [voice, email]
+  part_ids: [PRT-62062RS, PRT-62072RS, PRT-62082RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '2.66'
+  standard_lead_days: 10
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2027-09-30
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 9000
+  price_breaks:
+    - {min_qty: 2000, unit_price: '2.84'}
+    - {min_qty: 12000, unit_price: '2.60'}
+
+- supplier_id: SUP-ATG
+  supplier_name: Austria Technik Grosshandel GmbH
+  country: AT
+  locale: de-DE
+  phone: '+4930231250283'
+  email: einkauf@austria-technik.example
+  channels: [voice, email]
+  part_ids: [PRT-68022RS, PRT-68032RS, PRT-63012RS, PRT-63032RS]
+  approved: true
+  preferred: false
+  incumbent: false
+  contract_unit_price: '1.46'
+  standard_lead_days: 8
+  certifications: [ISO_9001, DIN_625_CONFORMITY]
+  certification_expires_at: 2028-02-29
+  audit_status: audited
+  known_allocations: 0
+  max_historical_fill: 18000
+  price_breaks:
+    - {min_qty: 2000, unit_price: '1.58'}
+    - {min_qty: 15000, unit_price: '1.44'}

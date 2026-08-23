@@ -1,0 +1,328 @@
+{
+  "case_id": "CASE-001",
+  "stage": "detected",
+  "incident": {
+    "case_id": "CASE-001",
+    "part_id": "PRT-6204",
+    "plant_id": "PLANT-MUC",
+    "production_line": "ASSY-3",
+    "qty_required": 36000,
+    "qty_on_hand": 4200,
+    "needed_by": "2026-09-03",
+    "line_stop_at": "2026-09-03T06:00:00Z",
+    "line_stop_cost_per_hour": "18400.00",
+    "currency": "EUR",
+    "incumbent_supplier_id": "SUP-KBY",
+    "reason": "PO-2291 (30 000 pcs, Kugellager Bayern) slipped from 2026-08-26 to 2026-09-17. On-hand cover is 12 days at the ASSY-3 take rate of 350/day."
+  },
+  "part": {
+    "part_id": "PRT-6204",
+    "item_code": "6204-2RS",
+    "item_name": "Deep-groove ball bearing 6204-2RS",
+    "description": "Single-row deep-groove ball bearing, 20x47x14 mm, rubber-sealed both sides, DIN 625-1.",
+    "spec": {
+      "standard": "DIN 625-1",
+      "bore_mm": "20",
+      "outer_diameter_mm": "47",
+      "width_mm": "14",
+      "seal": "2RS (contact rubber, both sides)",
+      "clearance": "C3",
+      "dynamic_load_rating_kn": "12.7",
+      "max_speed_rpm": "14000"
+    },
+    "stock_uom": "Nos",
+    "criticality": "high",
+    "part_class": "rolling_bearing",
+    "weight_kg": 0.102,
+    "hs_code": "8482.10.10",
+    "standard_cost": "1.42"
+  },
+  "profile_summary": {
+    "legal_entity": "Meridian Motors GmbH",
+    "blocked_origin_countries": [
+      "CN",
+      "RU",
+      "BY",
+      "IR",
+      "KP"
+    ],
+    "required_certifications": [
+      "ISO_9001",
+      "DIN_625_CONFORMITY"
+    ],
+    "audit_required_above_criticality": "high",
+    "wacc": 0.089
+  },
+  "candidates": [],
+  "supplier_records": [
+    {
+      "supplier_id": "SUP-KBY",
+      "supplier_name": "Kugellager Bayern GmbH",
+      "country": "DE",
+      "locale": "de-DE",
+      "phone_masked": "+49*******0142",
+      "email": "vertrieb@kugellager-bayern.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-6204",
+        "PRT-62052RS",
+        "PRT-62062RS"
+      ],
+      "approved": true,
+      "preferred": true,
+      "incumbent": true,
+      "contract_unit_price": "1.42",
+      "standard_lead_days": 10,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2027-05-31",
+      "audit_status": "audited",
+      "known_allocations": 18000,
+      "max_historical_fill": 30000,
+      "price_breaks": [
+        {
+          "min_qty": 1000,
+          "unit_price": "1.68"
+        },
+        {
+          "min_qty": 5000,
+          "unit_price": "1.58"
+        },
+        {
+          "min_qty": 15000,
+          "unit_price": "1.49"
+        },
+        {
+          "min_qty": 30000,
+          "unit_price": "1.42"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-NBT",
+      "supplier_name": "NordBearing Trading ApS",
+      "country": "DK",
+      "locale": "en-GB",
+      "phone_masked": "+49*******0151",
+      "email": "sales@nordbearing.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-6204",
+        "PRT-62052RS",
+        "PRT-63052RS"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "1.35",
+      "standard_lead_days": 8,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2028-01-31",
+      "audit_status": "never_audited",
+      "known_allocations": 0,
+      "max_historical_fill": 0,
+      "price_breaks": [
+        {
+          "min_qty": 5000,
+          "unit_price": "1.42"
+        },
+        {
+          "min_qty": 25000,
+          "unit_price": "1.26"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-NPB",
+      "supplier_name": "Ningbo Precision Bearing Co. Ltd",
+      "country": "CN",
+      "locale": "en-GB",
+      "phone_masked": "+49*******0188",
+      "email": "sales@ningbo-precision.example",
+      "marketplace_url": "https://example-marketplace.invalid/ningbo-precision",
+      "channels": [
+        "email",
+        "marketplace"
+      ],
+      "part_ids": [
+        "PRT-60042RS",
+        "PRT-6204",
+        "PRT-62052RS",
+        "PRT-62062RS"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "0.92",
+      "standard_lead_days": 34,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2027-09-30",
+      "audit_status": "audited",
+      "known_allocations": 0,
+      "max_historical_fill": 0,
+      "price_breaks": [
+        {
+          "min_qty": 10000,
+          "unit_price": "0.92"
+        },
+        {
+          "min_qty": 50000,
+          "unit_price": "0.74"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-PUL",
+      "supplier_name": "Pulman AG",
+      "country": "DE",
+      "locale": "en-GB",
+      "phone_masked": "+49*******0174",
+      "email": "export@pulman.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-6204",
+        "PRT-62052RS"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "1.15",
+      "standard_lead_days": 16,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2026-03-31",
+      "audit_status": "audited",
+      "known_allocations": 0,
+      "max_historical_fill": 12000,
+      "price_breaks": [
+        {
+          "min_qty": 5000,
+          "unit_price": "1.22"
+        },
+        {
+          "min_qty": 25000,
+          "unit_price": "1.05"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-RUL",
+      "supplier_name": "Rulmenti Est SRL",
+      "country": "RO",
+      "locale": "en-GB",
+      "phone_masked": "+49*******0163",
+      "email": "export@rulmenti-est.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-60042RS",
+        "PRT-6204",
+        "PRT-62052RS",
+        "PRT-63022RS"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "1.30",
+      "standard_lead_days": 21,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2027-02-28",
+      "audit_status": "audited",
+      "known_allocations": 0,
+      "max_historical_fill": 45000,
+      "price_breaks": [
+        {
+          "min_qty": 5000,
+          "unit_price": "1.35"
+        },
+        {
+          "min_qty": 20000,
+          "unit_price": "1.18"
+        },
+        {
+          "min_qty": 50000,
+          "unit_price": "1.06"
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUP-SKF",
+      "supplier_name": "SKF Deutschland Vertrieb GmbH",
+      "country": "DE",
+      "locale": "de-DE",
+      "phone_masked": "+49*******0117",
+      "email": "industrial.sales@skf-vertrieb.example",
+      "marketplace_url": null,
+      "channels": [
+        "voice",
+        "email"
+      ],
+      "part_ids": [
+        "PRT-6204",
+        "PRT-6204ZZ",
+        "PRT-62052RS",
+        "PRT-63042RS"
+      ],
+      "approved": true,
+      "preferred": false,
+      "incumbent": false,
+      "contract_unit_price": "1.95",
+      "standard_lead_days": 6,
+      "certifications": [
+        "ISO_9001",
+        "DIN_625_CONFORMITY"
+      ],
+      "certification_expires_at": "2027-11-30",
+      "audit_status": "audited",
+      "known_allocations": 0,
+      "max_historical_fill": 8000,
+      "price_breaks": [
+        {
+          "min_qty": 1000,
+          "unit_price": "2.10"
+        },
+        {
+          "min_qty": 10000,
+          "unit_price": "1.88"
+        },
+        {
+          "min_qty": 25000,
+          "unit_price": "1.72"
+        }
+      ]
+    }
+  ],
+  "outreach_tasks": [],
+  "claims": [],
+  "decision": null,
+  "devin_session_url": null,
+  "last_event_seq": 2
+}

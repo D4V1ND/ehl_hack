@@ -1,0 +1,19 @@
+# Two plants. ERPNext calls these Warehouses; the plant_id is our own grouping.
+- warehouse: Stores - MUC
+  plant_id: PLANT-MUC
+  plant_name: Meridian Motors Munich
+  city: Munich
+  country: DE
+  production_lines: [ASSY-3, ASSY-4]
+- warehouse: Stores - LEI
+  plant_id: PLANT-LEI
+  plant_name: Meridian Motors Leipzig
+  city: Leipzig
+  country: DE
+  production_lines: [ASSY-1]
+- warehouse: Stores - STR
+  plant_id: PLANT-STR
+  plant_name: Meridian Motors Stuttgart
+  city: Stuttgart
+  country: DE
+  production_lines: [ASSY-7]

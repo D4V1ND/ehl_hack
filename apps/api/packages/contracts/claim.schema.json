@@ -1,0 +1,350 @@
+{
+  "$defs": {
+    "Answer": {
+      "description": "A three-state answer. `UNKNOWN` is legal everywhere `YES`/`NO` are.",
+      "enum": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "title": "Answer",
+      "type": "string"
+    },
+    "Currency": {
+      "enum": [
+        "EUR",
+        "USD",
+        "GBP",
+        "unknown"
+      ],
+      "title": "Currency",
+      "type": "string"
+    },
+    "ExpediteOption": {
+      "additionalProperties": false,
+      "description": "Pay `surcharge` total to pull delivery in by `days`.",
+      "properties": {
+        "days": {
+          "title": "Days",
+          "type": "integer"
+        },
+        "surcharge": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Surcharge"
+        }
+      },
+      "required": [
+        "days",
+        "surcharge"
+      ],
+      "title": "ExpediteOption",
+      "type": "object"
+    },
+    "PriceBreak": {
+      "additionalProperties": false,
+      "description": "Buy at least `min_qty` and each unit costs `unit_price`.",
+      "properties": {
+        "min_qty": {
+          "title": "Min Qty",
+          "type": "integer"
+        },
+        "unit_price": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Unit Price"
+        }
+      },
+      "required": [
+        "min_qty",
+        "unit_price"
+      ],
+      "title": "PriceBreak",
+      "type": "object"
+    },
+    "StockStatus": {
+      "description": "What the supplier says about the stock they hold.\n\n`IN_STOCK_ALLOCATED` is the whole point of asking: \"yes, we have some\"\nfrequently means \"yes, but it is already promised to someone else.\"",
+      "enum": [
+        "free_in_stock",
+        "in_stock_allocated",
+        "to_be_made",
+        "unavailable",
+        "unclear"
+      ],
+      "title": "StockStatus",
+      "type": "string"
+    },
+    "TranscriptTurn": {
+      "additionalProperties": false,
+      "description": "One thing said on the call, in order.",
+      "properties": {
+        "offset_seconds": {
+          "default": 0,
+          "title": "Offset Seconds",
+          "type": "integer"
+        },
+        "speaker": {
+          "default": "unknown",
+          "title": "Speaker",
+          "type": "string"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "title": "TranscriptTurn",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+  "properties": {
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "supplier_ref": {
+      "title": "Supplier Ref",
+      "type": "string"
+    },
+    "available": {
+      "default": false,
+      "title": "Available",
+      "type": "boolean"
+    },
+    "qty_offered": {
+      "default": 0,
+      "title": "Qty Offered",
+      "type": "integer"
+    },
+    "unit_price": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unit Price"
+    },
+    "price_breaks": {
+      "items": {
+        "$ref": "#/$defs/PriceBreak"
+      },
+      "title": "Price Breaks",
+      "type": "array"
+    },
+    "currency": {
+      "$ref": "#/$defs/Currency",
+      "default": "unknown"
+    },
+    "moq": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Moq"
+    },
+    "lead_time_days": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lead Time Days"
+    },
+    "expedite_option": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExpediteOption"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "incoterm": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Incoterm"
+    },
+    "certs_claimed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Certs Claimed",
+      "type": "array"
+    },
+    "payment_terms": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Payment Terms"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "transcript": {
+      "items": {
+        "$ref": "#/$defs/TranscriptTurn"
+      },
+      "title": "Transcript",
+      "type": "array"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "transcript_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transcript Url"
+    },
+    "recording_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recording Url"
+    },
+    "confidence": {
+      "default": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "raw": {
+      "additionalProperties": true,
+      "title": "Raw",
+      "type": "object"
+    },
+    "round": {
+      "default": 1,
+      "title": "Round",
+      "type": "integer"
+    },
+    "call_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Call Id"
+    },
+    "earliest_ready_text": {
+      "default": "",
+      "title": "Earliest Ready Text",
+      "type": "string"
+    },
+    "stock_status": {
+      "$ref": "#/$defs/StockStatus",
+      "default": "unclear"
+    },
+    "price_quoted": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "part_number_confirmed": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "certification_current": {
+      "$ref": "#/$defs/Answer",
+      "default": "unknown"
+    },
+    "evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "received_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Received At"
+    }
+  },
+  "required": [
+    "task_id",
+    "case_id",
+    "supplier_ref"
+  ],
+  "title": "Claim",
+  "type": "object"
+}
