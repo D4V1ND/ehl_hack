@@ -1,0 +1,450 @@
+.stage {
+  --deck-ink: oklch(0.95 0.006 72);
+  --deck-muted: oklch(0.7 0.012 72);
+  --deck-line: oklch(0.29 0.012 72);
+  --deck-orange: oklch(0.72 0.19 46);
+  --deck-black: oklch(0.135 0.005 72);
+  align-items: center;
+  background: #000;
+  color: var(--deck-ink);
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+.viewport {
+  aspect-ratio: 16 / 9;
+  background: var(--deck-black);
+  container-type: size;
+  max-height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  width: min(100vw, calc(100dvh * 16 / 9));
+}
+
+.slide {
+  background:
+    radial-gradient(
+      circle at 88% 8%,
+      oklch(0.2 0.025 44 / 0.58),
+      transparent 31%
+    ),
+    var(--deck-black);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 7.5cqh 6.25cqw 6cqh;
+  position: relative;
+  width: 100%;
+}
+
+.slide::after {
+  background: var(--deck-orange);
+  bottom: 0;
+  content: "";
+  height: 0.55cqh;
+  left: 0;
+  position: absolute;
+  transform: scaleX(0.11);
+  transform-origin: left;
+  width: 100%;
+}
+
+.title {
+  font-size: clamp(2rem, 5.3cqw, 5.3rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.titleWide {
+  max-width: 20ch;
+}
+
+.body {
+  color: var(--deck-muted);
+  font-size: clamp(1rem, 1.85cqw, 1.85rem);
+  line-height: 1.35;
+}
+
+.problemGrid {
+  display: grid;
+  flex: 1;
+  gap: 2.2cqw;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 8cqh;
+}
+
+.problemItem {
+  border-top: 1px solid var(--deck-line);
+  display: flex;
+  flex-direction: column;
+  gap: 2.2cqh;
+  min-width: 0;
+  padding-top: 2.8cqh;
+}
+
+.problemWord {
+  color: var(--deck-orange);
+  font-size: clamp(1.2rem, 2.25cqw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.problemCopy {
+  color: var(--deck-ink);
+  font-size: clamp(1rem, 1.72cqw, 1.72rem);
+  line-height: 1.28;
+  max-width: 24ch;
+}
+
+.flow {
+  align-items: stretch;
+  display: grid;
+  flex: 1;
+  gap: 1.2cqw;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 7.5cqh;
+}
+
+.flowStep {
+  border-top: 1px solid var(--deck-line);
+  display: flex;
+  flex-direction: column;
+  gap: 2cqh;
+  padding: 2.5cqh 1.2cqw 0 0;
+  position: relative;
+}
+
+.flowStep:not(:last-child)::after {
+  color: var(--deck-orange);
+  content: "→";
+  font-size: 2cqw;
+  position: absolute;
+  right: -0.25cqw;
+  top: 2cqh;
+}
+
+.flowNumber {
+  color: var(--deck-muted);
+  font-size: 1.1cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.flowLabel {
+  font-size: clamp(1.2rem, 2.15cqw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.flowCopy {
+  color: var(--deck-muted);
+  font-size: clamp(0.85rem, 1.35cqw, 1.35rem);
+  line-height: 1.38;
+  max-width: 20ch;
+}
+
+.demoLayout {
+  display: grid;
+  flex: 1;
+  gap: 3cqw;
+  grid-template-columns: minmax(0, 1fr) 22cqw;
+  margin-top: 4cqh;
+  min-height: 0;
+}
+
+.demoFrame {
+  background: oklch(0.93 0.004 72);
+  border: 1px solid oklch(0.42 0.012 72);
+  border-radius: 1cqw;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.demoImage {
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+
+.demoAside {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5cqh;
+  justify-content: flex-end;
+}
+
+.demoAside p {
+  color: var(--deck-muted);
+  font-size: 1.45cqw;
+  line-height: 1.35;
+}
+
+.buttonSecondary {
+  align-items: center;
+  border-radius: 0.7cqw;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.12cqw;
+  font-weight: 600;
+  justify-content: space-between;
+  min-height: 5.7cqh;
+  padding: 0 1.3cqw;
+  transition: background-color 140ms ease;
+}
+
+.buttonSecondary {
+  border: 1px solid var(--deck-line);
+  color: var(--deck-ink);
+}
+
+.buttonSecondary:hover {
+  background: oklch(0.2 0.01 72);
+}
+
+.gtmGrid {
+  align-items: stretch;
+  display: grid;
+  flex: 1;
+  gap: 4cqw;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 8cqh;
+}
+
+.gtmStep {
+  border-top: 1px solid var(--deck-line);
+  display: flex;
+  flex-direction: column;
+  padding-top: 2.8cqh;
+}
+
+.gtmStep h3 {
+  font-size: 2.5cqw;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.gtmStep p {
+  color: var(--deck-muted);
+  font-size: 1.6cqw;
+  line-height: 1.38;
+  margin-top: 2cqh;
+  max-width: 31ch;
+}
+
+.gtmFoot {
+  color: var(--deck-ink);
+  font-size: 1.3cqw;
+  margin-bottom: 3cqh;
+  margin-top: auto;
+}
+
+.close {
+  align-items: center;
+  background:
+    linear-gradient(180deg, transparent 45%, oklch(0.1 0.006 72 / 0.72)),
+    url("/website/background-4.png") center 38% / cover;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6cqw;
+  position: relative;
+  text-align: center;
+}
+
+.close::before {
+  background: oklch(0.12 0.006 72 / 0.38);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.close > * {
+  position: relative;
+}
+
+.close h2 {
+  font-size: clamp(2.5rem, 6.8cqw, 6.8rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  max-width: 13ch;
+  text-wrap: balance;
+}
+
+.close p {
+  color: oklch(0.9 0.008 72);
+  font-size: 1.55cqw;
+  line-height: 1.4;
+  margin-top: 3cqh;
+  max-width: 47ch;
+}
+
+.controls {
+  align-items: center;
+  background: oklch(0.12 0 0 / 0.82);
+  border: 1px solid oklch(0.95 0 0 / 0.18);
+  border-radius: 0.8rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 0.35rem;
+  left: 50%;
+  padding: 0.35rem;
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.controlButton,
+.counter {
+  align-items: center;
+  color: oklch(0.9 0 0);
+  display: flex;
+  height: 2.5rem;
+  justify-content: center;
+}
+
+.controlButton {
+  border-radius: 0.55rem;
+  cursor: pointer;
+  width: 2.5rem;
+}
+
+.controlButton:hover,
+.controlButton:focus-visible {
+  background: oklch(0.95 0 0 / 0.12);
+  outline: none;
+}
+
+.controlButton:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.counter {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 3.4rem;
+}
+
+.overview {
+  background: oklch(0.11 0.004 72);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  min-height: 100dvh;
+  overflow: auto;
+  padding: 1.5rem 1.5rem 6rem;
+  width: 100%;
+}
+
+.thumbnail {
+  aspect-ratio: 16 / 9;
+  border: 1px solid oklch(0.95 0 0 / 0.16);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.thumbnail:hover,
+.thumbnail:focus-visible {
+  border-color: var(--deck-orange);
+  outline: none;
+}
+
+.thumbnail > div {
+  height: 100%;
+  width: 100%;
+}
+
+.thumbnailLabel {
+  background: oklch(0.08 0 0 / 0.84);
+  bottom: 0.5rem;
+  color: white;
+  font-size: 0.75rem;
+  left: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  position: absolute;
+  z-index: 2;
+}
+
+@media (max-width: 700px) {
+  .title {
+    font-size: 5.3cqw;
+  }
+
+  .body {
+    font-size: 1.85cqw;
+  }
+
+  .problemWord {
+    font-size: 2.25cqw;
+  }
+
+  .problemCopy {
+    font-size: 1.72cqw;
+  }
+
+  .flowLabel {
+    font-size: 2.15cqw;
+  }
+
+  .flowCopy {
+    font-size: 1.35cqw;
+  }
+
+  .close h2 {
+    font-size: 6.8cqw;
+  }
+
+  .controls {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .overview {
+    grid-template-columns: 1fr;
+    padding: 0.75rem 0.75rem 5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buttonSecondary {
+    transition: none;
+  }
+}
+
+@media print {
+  .stage {
+    background: white;
+    display: block;
+    overflow: visible;
+  }
+
+  .viewport {
+    height: auto;
+    max-height: none;
+    page-break-after: always;
+    width: 100vw;
+  }
+
+  .controls {
+    display: none;
+  }
+}
+
+:global(:fullscreen) .controls {
+  opacity: 0;
+  pointer-events: none;
+}

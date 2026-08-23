@@ -154,7 +154,10 @@ function isFinished(status: LivePlanStep["status"]): boolean {
 
 function sectionStatus(steps: LivePlanStep[]): LivePlanSection["status"] {
   if (steps.some((step) => step.status === "active")) return "active"
-  if (steps.some((step) => step.status === "failed") && steps.every(isFinished)) {
+  if (
+    steps.some((step) => step.status === "failed") &&
+    steps.every((step) => isFinished(step.status))
+  ) {
     return "failed"
   }
   if (steps.length > 0 && steps.every((step) => isFinished(step.status))) {
