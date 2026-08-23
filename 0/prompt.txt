@@ -1,0 +1,45 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/lahore directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Adjust our presentation
+
+---
+
+In both end and start slide remove the image.
+
+I want you to actually place slide two and move slide two to slide three, then just move every slide one index forward. And slide two, I want you to explain the problem the manufacturers currently have. The problem is maybe there are some parts missing, or the manufacturer's supplier failed to deliver components in time. They need to have it in X time. That's the problem, that's what we're fixing.
+
+
+
+And then in slide three, it's basically the existing solution, which is using employees or bloated ERP systems that can't get the job 
+
+Here:
+
+Instead of buyers say employees.
+
+Simplify: 
+- Manual calling, finding new suppliers takes ages. Time you cannot waste.
+- Only few humans can keep everything in their head and based on all metrics make a sound decision
+- Employees cost, delays cost
+
+Sth like this, always ismple language. Use AST STE 100 english, no manufacturing jargon.
+
+In the solution it says "Resarches the market", "Calls supliers", ranks them
+
+SLide can be after our soliution, as a list of features in a simple numbered list
+
+Current slide 5 shoudl be replaced with or vision to build a end to end supply chain management AI ssystem that cleanly integrates with your ERP.
+
+Also, add react status that you always click to reveal a new point so listeners can better follow.
