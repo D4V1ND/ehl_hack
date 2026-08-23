@@ -1,4 +1,4 @@
-# Stockout — autonomous sourcing agent
+# SupplyOS — autonomous sourcing agent
 
 > Procurement is an engineering problem. Give it an engineer.
 
@@ -19,7 +19,7 @@ packages/contracts/   The frozen contract. Pydantic models + the JSON Schema and
                       slice; changes need a group ping.
 backend/              Slice B — the service.
   record/             system of record — two adapters behind one interface:
-                      mock_erp.py (YAML) + sqlite_erp.py (SQL), schema.sql, seed data
+                      ERP seed data (YAML) + SQLite, schema.sql, seed data
   store/              case store and append-only event log (cases/ is the database)
   api/                one FastAPI process: Devin tool endpoints + cockpit read API
   detect/             shortage detector (the no-human-in-the-loop trigger)
@@ -41,7 +41,7 @@ Works the same on Windows, macOS and Linux:
 python run.py setup   # once per machine: venv, npm install, build the database
 python run.py         # the whole stack — API + cockpit. Ctrl-C stops both.
 python run.py ui      # cockpit only. Runs offline; this is the demo path.
-python run.py test    # 116 tests + UI typecheck. Never touches the network.
+python run.py test    # backend tests + UI typecheck. Never touches the network.
 ```
 
 | | |
@@ -70,6 +70,126 @@ WSL, and Windows reaches that over `\\wsl.localhost`, which has no POSIX file
 locking, so SQLite reports *"database is locked"* regardless of what is running.
 `db-export` writes a `VACUUM INTO` snapshot to your Windows Downloads folder and
 prints the `C:\...` path to paste in.
+
+## Running SupplyOS end to end on main
+
+Verified from a clean clone on 2026-08-23 with Ubuntu 22.04, Node 20.18.1 and
+pyenv Python 3.12.8. The minimum versions are Python 3.11 and Node 20.9. If the
+system `python3` is older, invoke `run.py` with a 3.11+ interpreter explicitly.
+
+### 1. Set up once
+
+```bash
+git clone https://github.com/D4V1ND/ehl_hack.git
+cd ehl_hack
+python3.12 run.py setup
+```
+
+This creates `.venv`, installs the project and development dependencies,
+installs the UI packages, and seeds the ERP. On main, `calle-ai` is in
+`pyproject.toml`, so no separate `pip install -r requirements.txt` is needed.
+
+### 2. Check the offline path
+
+```bash
+python3.12 run.py test
+```
+
+This ran 292 backend tests and the UI typecheck during the clean-clone
+verification. It does not touch the network.
+
+### 3. Bring up the stack
+
+Start the API from the repository root:
+
+```bash
+.venv/bin/python -m uvicorn backend.api.main:app --port 8010
+```
+
+In a second terminal, start the cockpit against that API:
+
+```bash
+cd ui
+NEXT_PUBLIC_DATA_SOURCE=live \
+NEXT_PUBLIC_API_BASE=http://localhost:8010 \
+npm run dev
+```
+
+Check the safety mode before continuing:
+
+```bash
+curl -s localhost:8010/healthz
+```
+
+The response should contain `"call_mode":"rehearsal"`. Rehearsal is the safe
+default and does not dial anyone.
+
+### 4. Walk the case
+
+Open <http://localhost:3000/inventory> and choose **Source this part**, or drive
+the same flow directly through the API:
+
+```bash
+curl -s localhost:8010/inventory | head
+curl -s -X POST localhost:8010/cases \
+  -H 'content-type: application/json' \
+  -d '{"part_id":"PRT-6204"}'
+# On a clean clone this returns CASE-6204-2RS and a stub Devin session.
+
+curl -s -X POST \
+  "localhost:8010/flow/run?case_id=CASE-6204-2RS&hold_for=SUP-KBY"
+curl -s -X POST \
+  "localhost:8010/flow/call?case_id=CASE-6204-2RS&supplier_ref=SUP-KBY"
+curl -s -X POST \
+  "localhost:8010/flow/collect?case_id=CASE-6204-2RS"
+curl -s \
+  "localhost:8010/flow/state?case_id=CASE-6204-2RS"
+.venv/bin/python -m orchestrator.sourcing publish --case CASE-6204-2RS
+```
+
+If that case ID already exists, `POST /cases` adds a numeric suffix; use the
+returned ID in the remaining commands. No `DEVIN_API_KEY` is needed for the
+stub session.
+
+In the verified rehearsal, the flow screened six suppliers and rejected three
+on policy (blocked origin, missing certification, and missing audit). It asked
+two suppliers, held `SUP-KBY` for the deliberate call, and recommended `STR-05`:
+a 4,000 + 6,500 split with EUR 17,078.27 landed cost that meets the line stop.
+Publishing produced a dry-run pull request containing six procurement
+artifacts.
+
+There is no `POST /flow/publish` route. Publishing uses either the CLI command
+above or `POST /tools/publish_pr?case_id=CASE-6204-2RS`.
+
+### 5. Enable live integrations only when needed
+
+For a real call, start the API with all four settings below and add `--live` to
+the CLI `call` command:
+
+```bash
+export CALLE_API_KEY=...
+export DEMO_CALL_DESTINATION='<your phone in E.164 format>'
+export LIVE_CALLS=yes-place-real-calls
+export FAKE_CALLS=0
+
+.venv/bin/python -m uvicorn backend.api.main:app --port 8010
+```
+
+Then place the call from another terminal:
+
+```bash
+.venv/bin/python -m orchestrator.sourcing call \
+  --case CASE-6204-2RS --supplier SUP-KBY --live
+```
+
+`DEMO_CALL_DESTINATION` must be the E.164 number that should receive every demo
+call. A call result can take roughly 18 minutes to arrive, so do not make the
+post-call repricing the demo finale.
+
+- Set `GITHUB_TOKEN` and `GITHUB_REPO` to make `publish` open a real pull request.
+- Set `DEVIN_API_KEY` to create a real Devin session from `POST /cases`.
+- Set `PUBLIC_BASE_URL` to the public `cloudflared` URL so that Devin can call
+  the local API back.
 
 ## Opening a case for any part
 
@@ -164,7 +284,7 @@ demonstrable rather than a claim:
 | Adapter | Backing | Use |
 |---|---|---|
 | `SqliteERP` | `backend/record/supplyguard.db`, ERPNext-shaped tables | default |
-| `MockERP` | `backend/record/demo_data/*.yaml` | reference implementation, and the seed source |
+| ERP | `backend/record/demo_data/*.yaml` | reference implementation, and the seed source |
 
 The YAML is what a human edits; `python run.py db` compiles it into SQLite. The
 database is a build artifact and is gitignored. Switch with `RECORD_BACKEND=yaml`
