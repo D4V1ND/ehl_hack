@@ -31,6 +31,7 @@ from backend.flow.conductor import run_case
 from backend.flow.provider import RehearsalOutreachProvider
 from backend.outreach.protocol import OutreachProvider
 from backend.outreach.router import route_channel
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.store import STORE
 from packages.contracts.enums import Actor, Level, Stage
@@ -135,7 +136,7 @@ def post_call(
     cases: CaseStore = Depends(store),
     config: Settings = Depends(settings),
 ) -> dict[str, object]:
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     supplier = records.get_supplier(supplier_ref)
@@ -221,7 +222,7 @@ def post_collect(
     the decision only reads claims from the case directory. This moves them
     across, adding the judgement fields, and re-prices the case.
     """
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no incident {case_id}")
     part = records.get_part(incident.part_id)

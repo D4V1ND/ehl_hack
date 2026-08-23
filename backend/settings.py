@@ -29,7 +29,7 @@ FAKE_CALLS: bool = os.environ.get("FAKE_CALLS", "1") == "1"
 
 CALLE_API_KEY: str | None = os.environ.get("CALLE_API_KEY")
 CALLE_BASE_URL: str = os.environ.get("CALLE_BASE_URL", "https://api.heycall-e.com")
-PUBLIC_BASE_URL: str = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
+PUBLIC_BASE_URL: str = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000").strip().rstrip("/")
 
 BUYER_NAME: str = os.environ.get("BUYER_NAME", "Meridian Motors")
 

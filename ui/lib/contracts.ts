@@ -347,3 +347,31 @@ export interface SupplierRecord {
   max_historical_fill?: number
   price_breaks?: PriceBreak[]
 }
+
+/** A row on the inventory screen: one part, and whether it can be triggered. */
+export interface InventoryRow {
+  part_id: string
+  item_code: string
+  item_name: string
+  part_class: string
+  criticality: string
+  plant_id: string
+  on_hand: number
+  reorder_level: number
+  daily_consumption: number
+  days_of_cover: number | null
+  below_reorder: boolean
+  delayed_po: string | null
+  suppliers: number
+  open_case_id: string | null
+}
+
+/** What opening a case returns: the case, and the Devin session working it. */
+export interface OpenedCase {
+  case_id: string
+  incident: Incident
+  session_id: string
+  session_url: string
+  stubbed: boolean
+  session_error: string | null
+}

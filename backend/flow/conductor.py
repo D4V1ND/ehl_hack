@@ -27,6 +27,7 @@ from backend.flow.claims import claim_from_quote
 from backend.flow.rehearsal import rehearsed_quote
 from backend.outreach.router import route_channel
 from backend.policy.screen import screen
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from packages.contracts.enums import Actor, Level, Stage
 from packages.contracts.models import (
@@ -77,7 +78,7 @@ def run_case(
 ) -> FlowResult:
     """The whole procedure. Safe to run again: every step overwrites its own output."""
     today = today or date.today()
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise ValueError(f"no incident {case_id}")
     part = records.get_part(incident.part_id)

@@ -17,6 +17,7 @@ from packages.contracts.models import (
     Event,
     ShortageAlert,
 )
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.casestore.case_store import CaseStore
 
@@ -79,7 +80,7 @@ def get_shortages(records: SystemOfRecord = Depends(erp), cases: CaseStore = Dep
 def list_cases(records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)) -> list[CaseSummary]:
     summaries: list[CaseSummary] = []
     for case_id in cases.list_case_ids():
-        incident = records.get_incident(case_id)
+        incident = resolve_incident(case_id, records, cases)
         if incident is None:
             continue
         part = records.get_part(incident.part_id)
@@ -102,7 +103,7 @@ def list_cases(records: SystemOfRecord = Depends(erp), cases: CaseStore = Depend
 
 @router.get("/cases/{case_id}", response_model=CaseSnapshot, summary="Everything the case page needs, in one response")
 def get_case(case_id: str, records: SystemOfRecord = Depends(erp), cases: CaseStore = Depends(store)) -> CaseSnapshot:
-    incident = records.get_incident(case_id)
+    incident = resolve_incident(case_id, records, cases)
     if incident is None:
         raise HTTPException(status_code=404, detail=f"no case {case_id}")
     part = records.get_part(incident.part_id)

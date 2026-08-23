@@ -17,6 +17,7 @@ import threading
 from backend import settings
 from backend.flow.rehearsal import rehearsed_quote
 from backend.outreach.protocol import DispatchReceipt
+from backend.launch.resolve import resolve_incident
 from backend.record.ports import SystemOfRecord
 from backend.store import STORE
 from packages.contracts.models import OutreachTask
@@ -44,7 +45,7 @@ class RehearsalOutreachProvider:
 
     def _deliver(self, task: OutreachTask) -> None:
         supplier = self._records.get_supplier(task.supplier_ref)
-        incident = self._records.get_incident(task.case_id)
+        incident = resolve_incident(task.case_id, self._records)
         if supplier is None or incident is None:
             return  # nothing to rehearse from; the case log already says who was called
         quote = rehearsed_quote(

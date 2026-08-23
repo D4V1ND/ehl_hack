@@ -127,32 +127,26 @@ def _text(value: Any, default: str = "") -> str:
     return value.strip() if isinstance(value, str) else default
 
 
-def _flag(value: Any) -> bool:
+UNAVAILABLE_STATUSES = (StockStatus.UNAVAILABLE, StockStatus.UNCLEAR)
+
+
+def _available(value: Any, *, stock_status: StockStatus, qty_offered: int) -> bool:
+    """Whether they can supply at all — the field the rest of the system spends.
+
+    An explicit answer wins. When the result is silent, availability follows the
+    stock status and the quantity actually offered, because a claim that says
+    "free in stock, 6,300 pcs" and `available=False` is a contradiction that
+    silently zeroes the supplier out of every plan.
+    """
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        return value.strip().lower() in ("yes", "y", "true", "1")
-    if isinstance(value, (int, float)) and value == value:
-        return value > 0
-    return False
-
-
-def _available(payload: dict[str, Any]) -> bool:
-    """Whether they said they can supply at all -- the field the plans hang on.
-
-    A supplier with no deliverable quantity is dropped from every plan, so the
-    answer sheet's own `available` is read first and taken literally. Where the
-    call never put the question that way, a stated stock position plus a
-    quantity says it instead; silence still means no, because a plan built on an
-    unstated yes is how a line stops twice.
-    """
-    if "available" in payload:
-        return _flag(payload["available"])
-
-    status = _stock_status(payload.get("stock_status"))
-    if status in (StockStatus.UNAVAILABLE, StockStatus.UNCLEAR):
-        return False
-    return (_int(payload.get("qty_offered"), 0) or 0) > 0
+        answer = value.strip().lower()
+        if answer in ("true", "yes", "y", "1"):
+            return True
+        if answer in ("false", "no", "n", "0"):
+            return False
+    return qty_offered > 0 and stock_status not in UNAVAILABLE_STATUSES
 
 
 def claim_from_result(
@@ -173,16 +167,21 @@ def claim_from_result(
     payload: dict[str, Any] = result if isinstance(result, dict) else {}
     unparsed = {} if isinstance(result, dict) else {"unparsed_result": repr(result)[:2000]}
 
+    stock_status = _stock_status(payload.get("stock_status"))
+    qty_offered = _int(payload.get("qty_offered"), 0) or 0
+
     return Claim(
         task_id=task_id,
         case_id=case_id,
         supplier_ref=supplier_ref,
         round=round_,
         call_id=call_id,
-        available=_available(payload),
-        qty_offered=_int(payload.get("qty_offered"), 0) or 0,
+        available=_available(
+            payload.get("available"), stock_status=stock_status, qty_offered=qty_offered
+        ),
+        qty_offered=qty_offered,
         earliest_ready_text=_text(payload.get("earliest_ready_text")),
-        stock_status=_stock_status(payload.get("stock_status")),
+        stock_status=stock_status,
         lead_time_days=_int(payload.get("lead_time_days")),
         price_quoted=_answer(payload.get("price_quoted")),
         unit_price=_money(payload.get("unit_price")),
