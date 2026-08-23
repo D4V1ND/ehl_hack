@@ -37,6 +37,15 @@ def get_shortages(records: SystemOfRecord = Depends(erp), cases: CaseStore = Dep
     delayed_pos = {po.part_id: po for po in records.get_open_pos() if po.is_delayed}
     known_cases = set(cases.list_case_ids())
 
+    # Cases opened from the inventory screen are derived, not seeded, so their
+    # part is not in `incidents` -- without this the strip offers no way back
+    # into a case the operator just opened.
+    opened: dict[str, str] = {}
+    for case_id in known_cases:
+        stored = resolve_incident(case_id, records, cases)
+        if stored is not None:
+            opened.setdefault(stored.part_id, case_id)
+
     alerts: list[ShortageAlert] = []
     for stock in records.list_stock():
         part = records.get_part(stock.part_id)
@@ -68,7 +77,11 @@ def get_shortages(records: SystemOfRecord = Depends(erp), cases: CaseStore = Dep
                     incident.line_stop_cost_per_hour if incident else part.standard_cost * 100
                 ),
                 criticality=part.criticality,
-                case_id=(incident.case_id if incident and incident.case_id in known_cases else None),
+                case_id=(
+                    incident.case_id
+                    if incident and incident.case_id in known_cases
+                    else opened.get(part.part_id)
+                ),
                 delayed_po_id=delayed_pos[part.part_id].po_id if part.part_id in delayed_pos else None,
             )
         )

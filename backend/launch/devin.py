@@ -21,6 +21,11 @@ from packages.contracts.models import Incident, Part
 
 DEFAULT_API_BASE = "https://api.devin.ai"
 
+# A sourcing case is a dozen HTTP calls, not an engineering task. The cap is the
+# only hard stop on a session that decides to go exploring, so it is low on
+# purpose and overridable for a longer run.
+DEFAULT_MAX_ACU = 20
+
 
 @dataclass(frozen=True)
 class DevinSession:
@@ -56,14 +61,38 @@ def session_prompt(incident: Incident, part: Part, base_url: str) -> str:
             f"5. POST {base}/tools/decide?case_id={incident.case_id} — price every single-source and"
             " split plan, then POST /tools/publish_pr to file the review package.",
             "",
-            f"Narrate every step with POST {base}/tools/events (case_id, stage, message): a human is"
-            " watching the cockpit and needs to see where you are.",
-            "You do not place the order and you do not pick the winner — you present the ranked"
-            " options with landed cost and arrival date so a buyer decides.",
-            "Do not dial anyone yourself. Calling is the backend's job and is rehearsed unless live"
+            "",
+            f"POST {base}/tools/events (case_id, stage, message) BEFORE and AFTER every step above,"
+            " naming the supplier you are on — \"reading the ERP record for 6204-2RS\","
+            " \"screening Kugellager Bayern\", \"Rulmenti rejected: DIN 625 lapsed\","
+            " \"asking NordBearing\", \"pricing 9 split plans\". A human is watching the cockpit and"
+            " the only thing they can see is what you post here. One line each, no internal detail.",
+            "",
+            "Bounds, all of them hard:",
+            "- This is a procurement case. It is not a coding task: do not read, write or refactor"
+            " repository source code, do not run test suites, do not open a GitHub pull request"
+            f" yourself \u2014 the review package is filed only by POST {base}/tools/publish_pr, and by"
+            " nothing else",
+            "- Use only the endpoints named above. No other tool, host, browser or shell.",
+            "- Do not dial anyone yourself. Calling is the backend's job and is rehearsed unless live"
             " calling is switched on there.",
+            "- You do not place the order and you do not pick the winner — present the ranked options"
+            " with landed cost and arrival date so a buyer decides.",
+            "- Never invent a supplier answer. A field a call did not establish stays unknown.",
+            "- If an endpoint fails twice, post the failure as an event and carry on with the rest of"
+            " the case. Do not debug the backend.",
+            f"- Stop when {base}/cases/{incident.case_id} shows the ranked options and the review"
+            " package. Do not wait for a human.",
         ]
     ).replace("\n\n\n", "\n\n")
+
+
+def _max_acu() -> int:
+    raw = os.environ.get("DEVIN_MAX_ACU", "").strip()
+    try:
+        return max(1, int(raw)) if raw else DEFAULT_MAX_ACU
+    except ValueError:
+        return DEFAULT_MAX_ACU
 
 
 def _stub(incident: Incident, error: str | None = None) -> DevinSession:
@@ -92,6 +121,12 @@ def start_session(incident: Incident, part: Part, base_url: str) -> DevinSession
                 "prompt": session_prompt(incident, part, base_url),
                 "title": f"Sourcing {incident.case_id} ({part.item_code})",
                 "tags": ["supplyguard", incident.case_id],
+                # Nothing in a sourcing case needs a credential or an
+                # organisation's knowledge base, so it gets neither: the smallest
+                # blast radius a session can be started with.
+                "secret_ids": [],
+                "knowledge_ids": [],
+                "max_acu_limit": _max_acu(),
             },
             timeout=30.0,
         )

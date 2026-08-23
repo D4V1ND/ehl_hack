@@ -117,6 +117,41 @@ export async function openCase(partId: string): Promise<OpenedCase> {
   return (await response.json()) as OpenedCase
 }
 
+async function post<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, { method: "POST", cache: "no-store" })
+  if (!response.ok) {
+    throw new Error(
+      ((await response.json()) as { detail?: string }).detail ?? `${path} -> ${response.status}`,
+    )
+  }
+  return (await response.json()) as T
+}
+
+/**
+ * Run the whole case: screen, ask, file claims, price every split.
+ *
+ * `holdFor` leaves one supplier unasked so its call can be placed live from the
+ * cockpit -- the stage moment. Rehearsed by default; the backend refuses to dial
+ * for real unless the operator turned live calling on there.
+ */
+export async function runFlow(caseId: string, holdFor?: string | null) {
+  const held = holdFor ? `&hold_for=${encodeURIComponent(holdFor)}` : ""
+  return post<Record<string, unknown>>(`/flow/run?case_id=${encodeURIComponent(caseId)}${held}`)
+}
+
+export async function placeCall(caseId: string, supplierRef: string, isLive: boolean) {
+  return post<Record<string, unknown>>(
+    `/flow/call?case_id=${encodeURIComponent(caseId)}&supplier_ref=${encodeURIComponent(
+      supplierRef,
+    )}&live=${isLive}`,
+  )
+}
+
+/** Turn whatever the call came back with into a claim and re-price the case. */
+export async function collectCalls(caseId: string) {
+  return post<Record<string, unknown>>(`/flow/collect?case_id=${encodeURIComponent(caseId)}`)
+}
+
 export async function getProfile(): Promise<CompanyProfile> {
   if (DATA_SOURCE === "fixtures") return FIXTURES.profile
   return live<CompanyProfile>("/profile")

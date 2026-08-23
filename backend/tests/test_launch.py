@@ -165,6 +165,48 @@ def test_every_endpoint_the_prompt_names_exists(records):
         assert templated in known, f"{path} is not a route"
 
 
+def test_the_prompt_keeps_the_session_inside_the_case(records):
+    """A sourcing session that starts editing code or opening PRs is a loose agent."""
+    incident = incident_for_part(records=records, part_id="PRT-6204", today=TODAY)
+    prompt = session_prompt(incident, records.get_part("PRT-6204"), "http://api").lower()
+
+    assert "not a coding task" in prompt
+    assert "pull request" in prompt  # named, so it can be forbidden
+    assert "do not dial anyone yourself" in prompt
+    assert "unknown" in prompt
+    # It has to narrate, per supplier -- that feed is the whole cockpit.
+    assert "/tools/events" in prompt
+    assert "before and after every step" in prompt
+
+
+def test_the_session_starts_with_no_secrets_and_a_cap(records, monkeypatch):
+    """Least privilege: a case needs no credential and no knowledge base."""
+    sent: dict[str, object] = {}
+
+    class _Response:
+        status_code = 200
+
+        @staticmethod
+        def json() -> dict[str, str]:
+            return {"session_id": "devin-1", "url": "https://app.devin.ai/sessions/devin-1"}
+
+    def _post(url, headers=None, json=None, timeout=None):  # noqa: A002 - httpx's name
+        sent.update(json or {})
+        return _Response()
+
+    monkeypatch.setenv("DEVIN_API_KEY", "apk_test")
+    monkeypatch.setenv("DEVIN_MAX_ACU", "7")
+    monkeypatch.setattr("backend.launch.devin.httpx.post", _post)
+    incident = incident_for_part(records=records, part_id="PRT-6204", today=TODAY)
+
+    session = start_session(incident, records.get_part("PRT-6204"), "http://api")
+
+    assert session.stubbed is False
+    assert sent["secret_ids"] == []
+    assert sent["knowledge_ids"] == []
+    assert sent["max_acu_limit"] == 7
+
+
 def test_one_demo_number_takes_every_supplier_call(monkeypatch):
     """So a live call on stage reaches the room, not a real supplier."""
     monkeypatch.setenv("DEMO_CALL_DESTINATION", DRAMA_NUMBER)

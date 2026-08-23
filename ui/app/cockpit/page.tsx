@@ -2,22 +2,29 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowUpRight, Play, RotateCcw } from "lucide-react"
+import { Play, RotateCcw } from "lucide-react"
 
 import {
   DATA_SOURCE,
+  collectCalls,
   getCase,
   getProfile,
   getShortages,
   initialCase,
   initialProfile,
   initialShortages,
+  placeCall,
+  runFlow,
 } from "@/lib/api/client"
 import type { CaseSnapshot, CompanyProfile, ShortageAlert, Stage } from "@/lib/contracts"
 import { useEvents } from "@/lib/api/use-events"
 import { stageMeta } from "@/lib/stages"
-import { AwaitingSlice, Card, Kicker, Mono, Section } from "@/components/cockpit/primitives"
+import { Card, Kicker, Mono, Section } from "@/components/cockpit/primitives"
+import { CandidateTable } from "@/components/cockpit/candidate-table"
+import { ClaimCards } from "@/components/cockpit/claim-cards"
 import { Countdown } from "@/components/cockpit/countdown"
+import { DecisionPanel } from "@/components/cockpit/decision-panel"
+import { StrategyTable } from "@/components/cockpit/strategy-table"
 import { EventDock } from "@/components/cockpit/event-dock"
 import { IncidentPanel } from "@/components/cockpit/incident-panel"
 import { ShortageStrip } from "@/components/cockpit/shortage-strip"
@@ -34,6 +41,12 @@ const SECTIONS = [
   { id: "decision", label: "Decision" },
 ]
 
+/**
+ * `fixtures` replays the recorded log; `live` polls the running API and the
+ * buttons actually do something. Same components either way.
+ */
+const LIVE = DATA_SOURCE === "live"
+
 export default function CockpitPage() {
   // Seeded synchronously from the fixture bundle so the case paints on first
   // render; in `live` mode these start empty and the effects below fill them.
@@ -42,6 +55,8 @@ export default function CockpitPage() {
   const [caseId, setCaseId] = React.useState("CASE-001")
   const [snapshot, setSnapshot] = React.useState<CaseSnapshot | null>(() => initialCase("CASE-001"))
   const [running, setRunning] = React.useState(false)
+  const [busy, setBusy] = React.useState<string | null>(null)
+  const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (DATA_SOURCE === "fixtures") return
@@ -51,17 +66,47 @@ export default function CockpitPage() {
 
   React.useEffect(() => {
     setRunning(false)
-    if (DATA_SOURCE === "fixtures") {
+    if (!LIVE) {
       setSnapshot(initialCase(caseId))
       return
     }
     getCase(caseId).then(setSnapshot).catch(() => setSnapshot(null))
   }, [caseId])
 
+  // The case is joined server-side, so one poll refreshes candidates, claims and
+  // the priced plans together -- no partial screen while a phase lands.
+  React.useEffect(() => {
+    if (!LIVE) return
+    const timer = setInterval(() => {
+      getCase(caseId)
+        .then((fresh) => setSnapshot((prior) => fresh ?? prior))
+        .catch(() => undefined)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [caseId])
+
   // Replaying the recorded log is what "launch" does with the backend off. It is
   // the same read path live polling uses, at 4x -- not a second implementation.
-  const { events, complete } = useEvents(caseId, { replay: true, speed: 4, enabled: running })
+  const { events, complete } = useEvents(caseId, {
+    replay: !LIVE,
+    speed: 4,
+    enabled: LIVE || running,
+  })
   const stage: Stage = events.length ? events[events.length - 1].stage : "detected"
+
+  const act = React.useCallback(async (key: string, action: () => Promise<unknown>) => {
+    setBusy(key)
+    setError(null)
+    try {
+      await action()
+      const fresh = await getCase(caseId)
+      if (fresh) setSnapshot(fresh)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setBusy(null)
+    }
+  }, [caseId])
 
   if (!snapshot) {
     return (
@@ -130,8 +175,17 @@ export default function CockpitPage() {
             aside={
               <button
                 type="button"
-                onClick={() => setRunning(true)}
-                disabled={running && !complete}
+                onClick={() => {
+                  setRunning(true)
+                  // Live: the incumbent is held back so its call can be placed
+                  // from the Calls section while everyone else is already priced.
+                  if (LIVE) {
+                    void act("run", () =>
+                      runFlow(caseId, snapshot.incident.incumbent_supplier_id ?? null),
+                    )
+                  }
+                }}
+                disabled={busy === "run" || (running && !LIVE && !complete)}
                 className={cn(
                   "inline-flex h-10 items-center gap-2 rounded-md px-[18px] text-[14px] font-medium transition-colors",
                   running && !complete
@@ -139,12 +193,18 @@ export default function CockpitPage() {
                     : "bg-primary text-on-primary hover:bg-primary-active",
                 )}
               >
-                {running ? (
-                  complete ? <RotateCcw className="size-4" /> : null
-                ) : (
+                {running && (LIVE ? busy !== "run" : complete) ? (
+                  <RotateCcw className="size-4" />
+                ) : busy === "run" || (running && !complete) ? null : (
                   <Play className="size-4" />
                 )}
-                {running ? (complete ? "Run again" : "Running…") : "Launch sourcing agent"}
+                {busy === "run"
+                  ? "Sourcing…"
+                  : running
+                    ? LIVE || complete
+                      ? "Run again"
+                      : "Running…"
+                    : "Launch sourcing agent"}
               </button>
             }
           >
@@ -197,11 +257,7 @@ export default function CockpitPage() {
             kicker="Screening"
             title="Candidates, and the rule that rejected each one"
           >
-            <AwaitingSlice
-              owner=""
-              what="Each candidate scored against the four rules in the company profile, with rejections named by rule — blocked origin, lapsed certification, unaudited supplier, lead time past the line stop."
-              endpoint="GET /cases/{id} → candidates[]"
-            />
+            <CandidateTable candidates={snapshot.candidates ?? []} />
           </Section>
 
           <Section
@@ -210,28 +266,56 @@ export default function CockpitPage() {
             kicker="Outreach"
             title="What the suppliers actually said"
           >
-            <AwaitingSlice
-              owner="CALL-E outreach"
-              what="One card per call: masked number, live status, and the claim it produced — including whether stock is free or already allocated to someone else. Nothing here is treated as fact; it sits beside our own records for comparison."
-              endpoint="GET /cases/{id} → claims[]"
+            <ClaimCards
+              claims={snapshot.claims ?? []}
+              candidates={snapshot.candidates ?? []}
+              heldFor={
+                LIVE && (snapshot.candidates ?? []).length
+                  ? snapshot.incident.incumbent_supplier_id
+                  : null
+              }
+              calling={busy}
+              onCall={
+                LIVE
+                  ? (supplierRef) => void act(supplierRef, () => placeCall(caseId, supplierRef, true))
+                  : undefined
+              }
             />
+            {LIVE ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void act("collect", () => collectCalls(caseId))}
+                  disabled={busy === "collect"}
+                  className="inline-flex h-9 items-center rounded-md border border-hairline-strong bg-surface-card px-4 text-[13px] font-medium text-ink transition-colors hover:bg-hairline-soft disabled:text-muted-ink"
+                >
+                  {busy === "collect" ? "Collecting…" : "Collect answers and re-price"}
+                </button>
+                <span className="text-[12px] text-muted-ink">
+                  A CALL-E answer can take minutes to come back; collecting is safe to repeat.
+                </span>
+              </div>
+            ) : null}
           </Section>
 
           <Section id="cost" step={5} kicker="Landed cost" title="Every option, fully costed">
-            <AwaitingSlice
-              owner="cost engine"
-              what="Strategies compared on total landed cost — goods, freight, duty, carrying cost and expedite — with the ones that miss the line-stop date marked, and the recommended split highlighted."
-              endpoint="GET /cases/{id} → decision.strategies[]"
+            <StrategyTable
+              strategies={snapshot.decision?.strategies ?? []}
+              recommendedId={snapshot.decision?.recommended_strategy_id}
+              claims={snapshot.claims ?? []}
             />
           </Section>
 
           <Section id="decision" step={6} kicker="The artifact" title="The decision, as a pull request">
-            <AwaitingSlice
-              owner="artifact writer"
-              what="The rationale, the runner-up strategies, both green test suites, and a link to the pull request carrying the case, the policy report, the cost report and the PO draft."
-              endpoint="GET /cases/{id} → decision.pr_url"
-            />
+            <DecisionPanel decision={snapshot.decision} />
           </Section>
+
+          {error ? (
+            <Card className="mt-4 border-semantic-error/35 bg-semantic-error/5 px-5 py-4">
+              <Kicker>Backend said no</Kicker>
+              <p className="mt-1 text-[14px] text-semantic-error">{error}</p>
+            </Card>
+          ) : null}
 
           <footer className="border-t border-hairline py-6 text-[12px] text-muted-ink">
             Data source <Mono>{DATA_SOURCE}</Mono>
@@ -247,7 +331,7 @@ export default function CockpitPage() {
 
         <div className="hidden w-[320px] shrink-0 xl:block">
           <div className="sticky top-16 h-[calc(100dvh-4rem)]">
-            <EventDock events={events} replaying={running && !complete} />
+            <EventDock events={events} replaying={LIVE ? busy !== null : running && !complete} />
           </div>
         </div>
       </div>
