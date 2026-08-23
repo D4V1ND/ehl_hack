@@ -80,6 +80,30 @@ def test_a_good_result_survives_intact_and_money_stays_exact():
     assert [b.min_qty for b in claim.price_breaks] == [1000, 10000]
 
 
+def test_a_stated_yes_survives_into_the_claim():
+    """`available` is the field every plan hangs on: dropping it zeroes the
+    supplier's deliverable quantity and the case decides "no plan"."""
+    claim = claim_from_result(
+        {"available": True, "qty_offered": 6300, "unit_price": "1.58", "lead_time_days": 10},
+        **KW,
+    )
+    assert claim.available is True
+    assert claim.qty_offered == 6300
+
+
+def test_a_stated_no_is_still_a_no():
+    claim = claim_from_result({"available": False, "qty_offered": 6300}, **KW)
+    assert claim.available is False
+
+
+def test_stock_and_quantity_stand_in_for_an_unasked_availability():
+    assert claim_from_result(
+        {"stock_status": "free_in_stock", "qty_offered": 6300}, **KW
+    ).available is True
+    assert claim_from_result({"stock_status": "unavailable", "qty_offered": 6300}, **KW).available is False
+    assert claim_from_result({"qty_offered": 6300}, **KW).available is False
+
+
 def test_unparseable_input_is_kept_for_a_human():
     claim = claim_from_result("caller hung up mid-sentence", **KW)
     assert "unparsed_result" in claim.raw

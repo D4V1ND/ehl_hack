@@ -1,0 +1,104 @@
+[
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-KBY",
+    "supplier_name": "Kugellager Bayern GmbH",
+    "country": "DE",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, incumbent, preferred, contract EUR 1.42/pc, 10d door-to-door",
+    "channel": "voice",
+    "source": "erp",
+    "compliance": {
+      "passed": true,
+      "failed_rules": [],
+      "explanations": {}
+    }
+  },
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-NPB",
+    "supplier_name": "Ningbo Precision Bearing Co. Ltd",
+    "country": "CN",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, contract EUR 0.92/pc, 34d door-to-door",
+    "channel": "email",
+    "source": "erp",
+    "compliance": {
+      "passed": false,
+      "failed_rules": [
+        "blocked_origin_country"
+      ],
+      "explanations": {
+        "blocked_origin_country": "CN is on the blocked-origin list (CN, RU, BY, IR, KP)."
+      }
+    }
+  },
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-PUL",
+    "supplier_name": "Pulman AG",
+    "country": "DE",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, contract EUR 1.15/pc, 16d door-to-door",
+    "channel": "voice",
+    "source": "erp",
+    "compliance": {
+      "passed": false,
+      "failed_rules": [
+        "missing_required_certification"
+      ],
+      "explanations": {
+        "missing_required_certification": "rolling_bearing requires ISO_9001, DIN_625_CONFORMITY; SUP-PUL ISO_9001, DIN_625_CONFORMITY lapsed on 2026-03-31."
+      }
+    }
+  },
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-RUL",
+    "supplier_name": "Rulmenti Est SRL",
+    "country": "RO",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, contract EUR 1.30/pc, 21d door-to-door",
+    "channel": "voice",
+    "source": "erp",
+    "compliance": {
+      "passed": true,
+      "failed_rules": [],
+      "explanations": {}
+    }
+  },
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-NBT",
+    "supplier_name": "NordBearing Trading ApS",
+    "country": "DK",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, contract EUR 1.35/pc, 8d door-to-door",
+    "channel": "voice",
+    "source": "erp",
+    "compliance": {
+      "passed": false,
+      "failed_rules": [
+        "audit_required_and_not_audited"
+      ],
+      "explanations": {
+        "audit_required_and_not_audited": "6204-2RS is high criticality, which requires an on-site audit; SUP-NBT is never_audited."
+      }
+    }
+  },
+  {
+    "case_id": "CASE-6204-2RS",
+    "supplier_ref": "SUP-SKF",
+    "supplier_name": "SKF Deutschland Vertrieb GmbH",
+    "country": "DE",
+    "confidence": 0.9,
+    "why_matched": "approved for 6204-2RS, contract EUR 1.95/pc, 6d door-to-door",
+    "channel": "voice",
+    "source": "erp",
+    "compliance": {
+      "passed": true,
+      "failed_rules": [],
+      "explanations": {}
+    }
+  }
+]

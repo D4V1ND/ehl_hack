@@ -127,6 +127,34 @@ def _text(value: Any, default: str = "") -> str:
     return value.strip() if isinstance(value, str) else default
 
 
+def _flag(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in ("yes", "y", "true", "1")
+    if isinstance(value, (int, float)) and value == value:
+        return value > 0
+    return False
+
+
+def _available(payload: dict[str, Any]) -> bool:
+    """Whether they said they can supply at all -- the field the plans hang on.
+
+    A supplier with no deliverable quantity is dropped from every plan, so the
+    answer sheet's own `available` is read first and taken literally. Where the
+    call never put the question that way, a stated stock position plus a
+    quantity says it instead; silence still means no, because a plan built on an
+    unstated yes is how a line stops twice.
+    """
+    if "available" in payload:
+        return _flag(payload["available"])
+
+    status = _stock_status(payload.get("stock_status"))
+    if status in (StockStatus.UNAVAILABLE, StockStatus.UNCLEAR):
+        return False
+    return (_int(payload.get("qty_offered"), 0) or 0) > 0
+
+
 def claim_from_result(
     result: Any,
     *,
@@ -151,6 +179,7 @@ def claim_from_result(
         supplier_ref=supplier_ref,
         round=round_,
         call_id=call_id,
+        available=_available(payload),
         qty_offered=_int(payload.get("qty_offered"), 0) or 0,
         earliest_ready_text=_text(payload.get("earliest_ready_text")),
         stock_status=_stock_status(payload.get("stock_status")),
@@ -167,6 +196,7 @@ def claim_from_result(
         certification_current=_answer(payload.get("certification_current")),
         certs_claimed=_strings(payload.get("certs_claimed")),
         notes=_text(payload.get("notes")),
+        summary=_text(payload.get("summary")),
         transcript_url=_text(payload.get("transcript_url")) or None,
         recording_url=_text(payload.get("recording_url")) or None,
         confidence=_confidence(payload.get("confidence")),
