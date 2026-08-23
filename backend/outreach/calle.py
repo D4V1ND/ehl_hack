@@ -167,6 +167,47 @@ def _create_with_minimal_schema(payload: dict, case_id: str, task: OutreachTask)
         ) from exc
 
 
+MAX_LIVE_CALLS = int(os.environ.get("MAX_LIVE_CALLS", "0") or 0)
+
+_placed = 0
+
+
+def live_calls_placed() -> int:
+    """How many real calls this process has placed."""
+    return _placed
+
+
+class LiveCallBudgetSpent(RuntimeError):
+    """Raised instead of dialling once MAX_LIVE_CALLS is used up."""
+
+
+def _check_call_budget(task: OutreachTask) -> None:
+    """Refuse the dial when the budget for this process is gone.
+
+    A demo has one phone on stage and every supplier is redirected to it, so a
+    caller that loops over suppliers rings that phone once per supplier. The cap
+    lives here, at the last point before the network, so it holds no matter who
+    asks -- the API, a script, or an agent driving the flow.
+
+    Unset or 0 means no cap, which keeps existing behaviour the default.
+    """
+    if MAX_LIVE_CALLS and _placed >= MAX_LIVE_CALLS:
+        raise LiveCallBudgetSpent(
+            f"refusing to dial {task.supplier_ref}: MAX_LIVE_CALLS={MAX_LIVE_CALLS} "
+            f"already spent on {_placed} call(s) this run"
+        )
+
+
+def _record_call_placed() -> None:
+    """Spend the budget only once CALL-E has accepted the call.
+
+    Counting the attempt instead would let one upstream 503 burn the single
+    call a demo gets, and the phone would never ring.
+    """
+    global _placed
+    _placed += 1
+
+
 class CalleOutreachProvider:
     name = "calle"
 
@@ -185,6 +226,7 @@ class CalleOutreachProvider:
         phones = _load_supplier_phones([t.supplier_ref for t in tasks])
 
         for task in tasks:
+            _check_call_budget(task)
             payload = build_calle_payload([task], phones, buyer_name=settings.BUYER_NAME)
 
             STORE.append_event(
@@ -210,6 +252,8 @@ class CalleOutreachProvider:
                     raise RuntimeError(
                         f"{exc} (code={exc.code} status={exc.status_code} details={exc.details})"
                     ) from exc
+
+            _record_call_placed()
 
             call_id = accepted.get("id")
             STORE.append_event(
