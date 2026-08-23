@@ -253,3 +253,11 @@ I put new key, you use the browser and record that one page end to end.
 ---
 
 force push my repo to the main. my repo works.
+
+---
+
+Found the problem: my output isnt saved after "Calling Supplier". the supplier that I act as, should be getting the Output.
+
+---
+
+B
