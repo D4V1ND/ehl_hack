@@ -18,3 +18,7 @@ file:///tmp/supplyos-cockpit-ui-handoff.md
 ---
 
 fuck that, let me test myself
+
+---
+
+Looks good. Commit.
