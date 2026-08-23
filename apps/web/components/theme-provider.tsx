@@ -15,6 +15,7 @@ function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
+      <ThemeFavicon />
       <ThemeHotkey />
       {children}
     </NextThemesProvider>
@@ -64,6 +65,27 @@ function ThemeHotkey() {
       window.removeEventListener("keydown", onKeyDown)
     }
   }, [resolvedTheme, setTheme])
+
+  return null
+}
+
+function ThemeFavicon() {
+  const { resolvedTheme } = useTheme()
+
+  React.useEffect(() => {
+    if (!resolvedTheme) {
+      return
+    }
+
+    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+
+    if (favicon) {
+      favicon.href =
+        resolvedTheme === "dark"
+          ? "/favicon-white.png"
+          : "/favicon-black.png"
+    }
+  }, [resolvedTheme])
 
   return null
 }
