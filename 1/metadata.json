@@ -1,0 +1,79 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0Q0N0WVGE2BY0F5KANRRV86",
+  "session_id": "01a02ded-7511-7e80-a724-c21a5ee79b95",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T09:55:05.652264Z",
+  "branch": "lorenzkrinner/adjust-presentation",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/app/prototype/README.md",
+    "apps/web/components/home/home-hero.tsx",
+    "apps/web/components/prototype/slides-deck.module.css",
+    "apps/web/components/prototype/slides-deck.tsx",
+    "apps/web/package-lock.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "20559306534f",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 380219,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 9930240,
+    "output_tokens": 43237,
+    "api_call_count": 100
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T09:55:05.563273Z",
+    "agent_lines": 225,
+    "agent_removed": 58,
+    "human_added": 0,
+    "human_modified": 5,
+    "human_removed": 176,
+    "total_committed": 228,
+    "total_lines_changed": 464,
+    "agent_percentage": 60.991379310344826,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 589,
+      "user_lines_removed": 179,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "apps/web/app/prototype/README.md": 4,
+        "apps/web/components/home/home-hero.tsx": 17,
+        "apps/web/components/prototype/slides-deck.module.css": 318,
+        "apps/web/components/prototype/slides-deck.tsx": 201,
+        "apps/web/package-lock.json": 49
+      },
+      "user_removed_per_file": {
+        "apps/web/app/prototype/README.md": 3,
+        "apps/web/components/home/home-hero.tsx": 9,
+        "apps/web/components/prototype/slides-deck.module.css": 55,
+        "apps/web/components/prototype/slides-deck.tsx": 85,
+        "apps/web/package-lock.json": 27
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 161,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/attachments/TSNgtp/Transcript of Adjust presentation.md": 56,
+        ".context/attachments/VHWjB3/PR instructions.md": 15,
+        ".context/chrome-data-dir.txt": 1,
+        ".context/supplyos-proof-benchmarks.md": 89
+      }
+    }
+  ]
+}

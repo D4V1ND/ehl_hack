@@ -1,0 +1,26 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/lorenzkrinner/conductor/workspaces/ehl_hack/lahore directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/7MYgRq/image.png (79.6 KB)
+</system_instruction>
+
+
+
+We need to add a second slide to prove that our solution is the actual best play, for example, displaying metrics and how we improve those metrics. This is what they write in the presentation: "Why are we the best?" Right now, we don't have any benchmarks, but other benchmarks about what we're doing online on the internet. For example, average time to find a supplier when a product is delivered late or something like that.
+
+Can you research that online? Also, what metrics could we use to display that we actually improved this flow?.context/attachments/7MYgRq/image.png
