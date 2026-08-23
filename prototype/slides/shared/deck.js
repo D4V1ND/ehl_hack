@@ -19,6 +19,8 @@
     var slides = Array.prototype.slice.call(deck.querySelectorAll(".slide"));
     var total = slides.length;
     var budget = parseInt(deck.getAttribute("data-budget") || "300", 10);
+    /* appendix slides are backup for Q&A: they carry data-seconds="0" and are
+       excluded from the planned time. */
     var label = deck.getAttribute("data-deck") || "deck";
     var current = 0;
     var started = null;
@@ -52,8 +54,9 @@
     document.body.appendChild(overview);
 
     slides.forEach(function (slide, i) {
+        var isAppendix = slide.hasAttribute("data-appendix");
         var thumb = document.createElement("div");
-        thumb.className = "thumb";
+        thumb.className = isAppendix ? "thumb app" : "thumb";
         thumb.innerHTML =
             '<div class="i">' + pad(i + 1) + "</div>" +
             '<div class="t">' + (slide.getAttribute("data-title") || "—") + "</div>" +
@@ -67,7 +70,7 @@
         var foot = document.createElement("div");
         foot.className = "slide-foot";
         foot.innerHTML =
-            "<span>Stockout · autonomous sourcing</span>" +
+            "<span>Stockout · autonomous sourcing" + (isAppendix ? " · appendix" : "") + "</span>" +
             "<span>" + pad(i + 1) + " / " + pad(total) + "</span>";
         slide.appendChild(foot);
     });

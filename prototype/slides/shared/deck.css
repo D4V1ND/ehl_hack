@@ -450,6 +450,8 @@ body.overview-on .overview { display: grid; }
     line-height: 1.4;
 }
 .thumb:hover { border-color: var(--primary); }
+.thumb.app { border-style: dashed; opacity: .72; }
+.thumb.app .t::after { content: " · backup"; color: var(--muted-soft); font-size: 12px; }
 .thumb .i { font-family: var(--mono); font-size: 11px; color: var(--muted-soft); }
 .thumb .t { color: #ffffff; margin-top: 4px; font-size: 15px; }
 .thumb .s { color: var(--muted-soft); margin-top: 6px; font-family: var(--mono); font-size: 11px; }
