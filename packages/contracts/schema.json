@@ -157,7 +157,7 @@
       },
       "PlanStep": {
         "additionalProperties": false,
-        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `apps/api/src/supplyos_api/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
         "properties": {
           "step_id": {
             "title": "Step Id",
@@ -407,7 +407,7 @@
         "type": "string"
       },
       "Claim": {
-        "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+        "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so the\nnormalized offer and its evidence cannot drift apart.",
         "properties": {
           "task_id": {
             "title": "Task Id",
@@ -1871,7 +1871,7 @@
         "type": "object"
       }
     },
-    "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+    "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so the\nnormalized offer and its evidence cannot drift apart.",
     "properties": {
       "task_id": {
         "title": "Task Id",
@@ -3548,7 +3548,7 @@
       },
       "PlanStep": {
         "additionalProperties": false,
-        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+        "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `apps/api/src/supplyos_api/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
         "properties": {
           "step_id": {
             "title": "Step Id",
@@ -3716,7 +3716,7 @@
       }
     },
     "additionalProperties": false,
-    "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
+    "description": "One line on the checklist.\n\n`step_id` is stable and chosen by whoever creates the step, so the same call\nmade twice updates one line instead of appending a second one. Fixed steps\nuse the ids in `apps/api/src/supplyos_api/plan/checklist.py`; dynamic ones are namespaced by\ntheir group, e.g. `outreach:SUP-KBY`.",
     "properties": {
       "step_id": {
         "title": "Step Id",

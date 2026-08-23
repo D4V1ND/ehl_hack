@@ -38,27 +38,6 @@ export function resolveChecklist(
   }
 }
 
-export function pickLiveCallSupplier(
-  plan: LivePlan | null,
-  candidates: readonly LiveCandidate[],
-  holdFor = ""
-): string | null {
-  if (holdFor) return holdFor
-  const passed = candidates.find((candidate) => candidate.compliance.passed)
-  if (passed) return passed.supplier_ref
-  const calling = plan?.sections
-    .find((section) => section.group === "outreach")
-    ?.steps.find((step) => step.supplier_ref && step.status === "active")
-  return calling?.supplier_ref ?? null
-}
-
-export function outreachIsLive(plan: LivePlan | null): boolean {
-  if (!plan) return false
-  return outreachStarted(
-    plan.sections.find((section) => section.group === "outreach")
-  )
-}
-
 function outreachStarted(section: LivePlanSection | undefined): boolean {
   if (!section) return false
   if (section.status === "active") return true
@@ -117,7 +96,7 @@ function screeningRow(
     status: candidate.compliance.passed ? "done" : "failed",
     detail: candidate.compliance.passed
       ? "Passed procurement policy"
-      : candidate.compliance.failed_rules.join(", ") || "Rejected",
+      : candidate.compliance.failed_rules?.join(", ") || "Rejected",
     supplier_ref: candidate.supplier_ref,
     dynamic: true,
     started_at: null,

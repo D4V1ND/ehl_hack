@@ -1,14 +1,36 @@
 # Tech stack
 
-- **[Entire](https://docs.entire.io/)** — Agent context capture, session history, and review tooling integrated with this repo's agent workflows.
-- **[Vinext](https://vinext.dev/)** — Vite plugin that re-implements the Next.js 16 API surface (App Router, RSC, server actions) and targets Cloudflare Workers.
-- **[React 19](https://react.dev/)** — Component library for the UI.
-- **[Vite](https://vitejs.dev/)** — Build tool and dev server.
-- **[@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/)** — Vite plugin that provides local Cloudflare Workers bindings (D1, R2, ASSETS, IMAGES).
-- **[Wrangler](https://developers.cloudflare.com/workers/wrangler/)** — CLI for local Cloudflare Workers development and deployment.
-- **[Cloudflare D1](https://developers.cloudflare.com/d1/)** — Serverless SQLite database used by the worker `DB` binding.
-- **[Drizzle ORM / Drizzle Kit](https://orm.drizzle.team/)** — Type-safe SQL-like ORM and migration tooling (see `db/schema.ts` and `drizzle.config.ts`).
-- **[Tailwind CSS v4](https://tailwindcss.com/docs/)** — Utility-first CSS framework.
-- **[TypeScript](https://www.typescriptlang.org/docs/)** — Typed JavaScript.
-- **[ESLint](https://eslint.org/docs/latest/)** — Linting and code quality.
-- **[Node.js test runner](https://nodejs.org/api/test.html)** — Built-in test runner used in `npm test`.
+Use these links when a task touches the corresponding area. Application
+versions are pinned in each app's manifest; the manifests are authoritative.
+
+## API and contracts
+
+- [Python](https://docs.python.org/3/) 3.11+
+- [FastAPI](https://fastapi.tiangolo.com/) and
+  [Uvicorn](https://www.uvicorn.org/) for `supplyos_api.main:app`
+- [Pydantic](https://docs.pydantic.dev/) and `Decimal` for shared domain models
+- SQLite and [PyYAML](https://pyyaml.org/wiki/PyYAMLDocumentation) for the mock
+  system of record
+- [pytest](https://docs.pytest.org/) for the offline API suite
+- [setuptools](https://setuptools.pypa.io/) for the separate contracts and API
+  distributions; [uv](https://docs.astral.sh/uv/) for the API lockfile
+- CALL-E for outbound voice, behind the explicit live-call gate
+
+## ERP and SupplyOS
+
+- [Next.js](https://nextjs.org/docs) 16 and [React](https://react.dev/) 19
+- [TypeScript](https://www.typescriptlang.org/docs/) and
+  [Tailwind CSS](https://tailwindcss.com/docs) 4
+- [Vitest](https://vitest.dev/) for ERP tests
+- [ESLint](https://eslint.org/docs/latest/) and
+  [Prettier](https://prettier.io/docs/) for frontend quality
+
+Next.js 16 may differ from remembered APIs. Read the relevant locally-installed
+guide under the application's `node_modules/next/dist/docs/` before editing
+Next.js code.
+
+## Agent workflow
+
+- [Entire](https://docs.entire.io/) for checkpoint history and review context
+- GitHub issues through `gh`; repository label policy is documented beside this
+  file

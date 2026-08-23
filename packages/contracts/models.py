@@ -1,17 +1,8 @@
-"""Shared data shapes. Frozen in hour 1 — see test/sourcing_agent_plan_v3.md §4.
+"""Canonical SupplyOS domain and wire models.
 
-Adding a NEW model to this file is fine. Editing an existing one needs a
-group ping, because every slice builds against these.
-
-Slice C owns: Currency, Channel, PriceBreak, ExpediteOption, OutreachBrief,
-OutreachTask, Quote. Other slices append Part, Shortage, Supplier,
-Candidate, LandedCost, OrderLine, Strategy, Decision, Event.
-
-Slice B appended everything below the divider: the system-of-record shapes
-(Part, StockLevel, OpenPurchaseOrder, SupplierPriceRecord, SupplierRecord,
-Incident, CompanyProfile), the decision shapes (ComplianceResult, Candidate,
-LandedCost, OrderLine, Strategy, Decision), the Event log, and the read models
-the cockpit fetches. Nothing above the divider was edited.
+These shapes cross API, ERP, SupplyOS, case artifacts, and provider-normalizing
+boundaries. Keep money exact, unknown answers explicit, and regenerate the JSON
+Schema and TypeScript projection after changes.
 """
 
 from __future__ import annotations
@@ -146,11 +137,6 @@ class Quote(BaseModel):
         return sorted(v, key=lambda pb: pb.min_qty)
 
 
-# ===========================================================================
-# Slice B appends from here down. Nothing above this line was edited.
-# ===========================================================================
-
-
 class Contract(BaseModel):
     """Base for the models below: unknown fields are a bug, not a shrug."""
 
@@ -167,9 +153,8 @@ class Claim(Quote):
     admits `unknown`, and building one never raises -- a garbled call becomes a
     confidence-0 claim, because one bad call must not kill a five-supplier case.
 
-    Subclassing rather than duplicating on purpose: a Claim *is* a Quote, so
-    anything Slice C hands back fits wherever a Quote is expected, and the shared
-    fields cannot drift apart.
+    Subclassing rather than duplicating on purpose: a Claim *is* a Quote, so the
+    normalized offer and its evidence cannot drift apart.
     """
 
     round: int = 1
@@ -470,7 +455,7 @@ class PlanStep(Contract):
 
     `step_id` is stable and chosen by whoever creates the step, so the same call
     made twice updates one line instead of appending a second one. Fixed steps
-    use the ids in `backend/plan/checklist.py`; dynamic ones are namespaced by
+    use the ids in `apps/api/src/supplyos_api/plan/checklist.py`; dynamic ones are namespaced by
     their group, e.g. `outreach:SUP-KBY`.
     """
 

@@ -30,6 +30,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!apps/*/.env.example
 
 # vercel
 .vercel
@@ -53,14 +55,14 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 
-# SQL system of record — a build artifact, rebuilt by `./run.sh db`
-backend/record/*.db
+# SQL system of record — a build artifact, rebuilt by `python run.py db`
+apps/api/data/*.db
 
 # run.py writes background logs here
 .logs/
 
 # a real supplier number for a live call never belongs in git
-backend/fixtures/supplier_phones.local.json
+apps/api/src/supplyos_api/fixtures/supplier_phones.local.json
 
 # Case output belongs to a run, not to the repo. The two seeded cases keep their
 # events.jsonl and sourcing_case.yaml; everything a run writes stays local.
@@ -70,6 +72,9 @@ cases/*/decision.json
 cases/*/outreach.json
 cases/*/incident.json
 cases/*/*.md
+cases/*/events.jsonl
+cases/*/plan.json
+cases/*/sourcing_case.yaml
 
 # Saved call results: real phone numbers and call transcripts, never committed.
 /data/quotes/

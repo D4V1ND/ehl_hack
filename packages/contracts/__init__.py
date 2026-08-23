@@ -1,11 +1,8 @@
-"""The frozen contract. One source of truth, three consumers.
+"""Canonical SupplyOS domain and wire contracts.
 
-The Pydantic models here are exported as JSON Schema for two other slices:
-`Claim` is handed to CALL-E as its `recipient_result_schema`, and the whole set
-is compiled to TypeScript for the cockpit UI. Changing a model changes all three
-at once, which is the point — contract drift is structurally impossible.
-
-Later changes need a group ping.
+The Pydantic models are exported as JSON Schema and as one generated TypeScript
+module consumed by ERP and SupplyOS. Provider-specific transport schemas stay
+inside the API package and normalize into these domain models.
 """
 
 from packages.contracts.enums import (

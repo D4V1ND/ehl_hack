@@ -1,6 +1,6 @@
 # The checklist API
 
-The cockpit no longer tries to show what the agent is *doing* — it shows what it
+SupplyOS does not try to show what the agent is *thinking* — it shows what it
 has *finished*. That is a to-do list: eight fixed headers that exist from the
 moment a case is opened, plus one line per supplier that only appears once the
 agent decides that supplier is worth screening or calling.
@@ -90,7 +90,7 @@ Rules the endpoints enforce:
   one. This is what makes it safe for an agent that repeats itself.
 - **A new id needs a `label` and a `group`**, or it is a 422. An unlabelled line
   on a screen a human is watching is worse than a missing one.
-- **`started_at` / `completed_at` are set by the backend**, not the caller.
+- **`started_at` / `completed_at` are set by the API**, not the caller.
 - Every transition is also appended to the event log, so the existing event dock
   and the checklist can never disagree.
 
@@ -99,8 +99,10 @@ Rules the endpoints enforce:
 Both paths write the same list, which is why the recorded demo and a live run
 look identical:
 
-- `backend/flow/conductor.py` — the deterministic run, sub-second, used on stage.
-- The Devin session — instructed in `backend/launch/devin.py::session_prompt`
+- `apps/api/src/supplyos_api/flow/workflow.py` — the deterministic run,
+  sub-second, used on stage.
+- The Devin session — instructed in
+  `apps/api/src/supplyos_api/launch/devin.py::session_prompt`
   with the exact ids above and the naming convention for dynamic ones
   (`screening:<SUPPLIER_REF>`, `outreach:<SUPPLIER_REF>`).
 

@@ -109,7 +109,7 @@
       "type": "object"
     }
   },
-  "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so\nanything Slice C hands back fits wherever a Quote is expected, and the shared\nfields cannot drift apart.",
+  "description": "A Quote, plus what the call could and could not establish.\n\n`Quote` is what a supplier offered. A `Claim` is the same offer carrying the\nfoundation spec's answer sheet: whether stock is actually free or already\npromised elsewhere, whether the certification and part number were confirmed\nor merely asserted, and the evidence for each. Every added judgement field\nadmits `unknown`, and building one never raises -- a garbled call becomes a\nconfidence-0 claim, because one bad call must not kill a five-supplier case.\n\nSubclassing rather than duplicating on purpose: a Claim *is* a Quote, so the\nnormalized offer and its evidence cannot drift apart.",
   "properties": {
     "task_id": {
       "title": "Task Id",

@@ -1,41 +1,59 @@
 # Demo run sheet
 
-Five minutes, one laptop. The deterministic backend does the whole case in under a
-second; a live Devin session takes tens of minutes, so a session belongs in the
-recorded part of the video, never in the live slot.
+Five minutes, one laptop. The deterministic rehearsal completes quickly; a live
+Devin session or CALL-E result can take many minutes and belongs in a recorded
+segment rather than the live finale.
 
 ## Before the room
 
 ```bash
-.venv/bin/python -m backend.record.seed_db        # 40 parts, 15 suppliers
-.venv/bin/python run.py api                       # :8010
-cloudflared tunnel --url http://localhost:8010    # only needed for a live call
-cd ui && NEXT_PUBLIC_DATA_SOURCE=live NEXT_PUBLIC_API_BASE=http://localhost:8010 npm run dev
+python run.py setup
+python run.py test
+python run.py
 ```
 
-Check `GET /healthz`: `call_mode` must read `live` only when you intend to dial.
-Live dialling needs `CALLE_API_KEY`, `DEMO_CALL_DESTINATION` (your phone, E.164),
-`LIVE_CALLS=yes-place-real-calls` and `FAKE_CALLS=0`. `DEMO_CALL_DESTINATION`
-sends every supplier call to that one number, so no real supplier can be reached.
+Confirm these pages and endpoints:
+
+- ERP inventory: <http://localhost:3000/inventory>
+- SupplyOS: <http://localhost:3001/chat>
+- API health: <http://localhost:8010/healthz>
+- API docs: <http://localhost:8010/docs>
+
+`call_mode` in `/healthz` must read `rehearsal`. For a deliberate live segment,
+set `CALLE_API_KEY`, `DEMO_CALL_DESTINATION`,
+`LIVE_CALLS=yes-place-real-calls`, and `FAKE_CALLS=0`, restart the API, and check
+health again. `DEMO_CALL_DESTINATION` must be a phone controlled by the operator.
 
 ## On stage
 
-1. `http://localhost:3000/inventory` — the item master. Any part, not just bearings.
-   Press **Source this part** on 6204-2RS. The shortage is derived from the ERP:
-   bin, take rate, the BOM line that stops, the incumbent, the slipped PO.
-2. `POST /flow/run?case_id=<id>&hold_for=SUP-KBY` — screens 6 suppliers, asks the
-   compliant ones, prices every single-source and split plan. Sub-second, and it
-   leaves SUP-KBY uncalled for the live moment.
-3. The case page is the deliverable: what each supplier offered, what is still
-   unknown, and the plans ranked on-time-first-then-cheapest.
-4. `POST /flow/call?case_id=<id>&supplier_ref=SUP-KBY&live=true` — the phone
-   rings. Answer it as the supplier.
-5. `POST /flow/collect?case_id=<id>` files that answer as a claim and re-prices.
-   **CALL-E took ~18 minutes to return a result in rehearsal on 2026-08-23**, so
-   do not make the re-price the finale: talk through the analysis while it lands.
+1. In ERP, open inventory and choose **Source this part** for `6204-2RS`.
+2. Show the handoff to SupplyOS with the returned case ID in the URL.
+3. Run the unattended rehearsal while leaving one compliant supplier for the
+   live moment:
 
-## What not to promise
+   ```bash
+   python -m supplyos_api.cli run --case <case-id> --hold-for SUP-KBY
+   ```
 
-Nothing is ordered. The agent ranks and stops; a buyer picks. Every field a call
-did not establish reads `unknown`, and a plan that misses the line stop is shown
-as too late however cheap it is.
+4. In SupplyOS, show the incident evidence, policy exclusions, per-supplier
+   checklist, and the difference between records and claims.
+5. Optional live segment only:
+
+   ```bash
+   python -m supplyos_api.cli call --case <case-id> --supplier SUP-KBY --live
+   ```
+
+6. Do not wait on the provider result for the finale. End on the rehearsed ranked
+   plans and the explicit buyer-approval boundary. Collect later with:
+
+   ```bash
+   python -m supplyos_api.cli collect --case <case-id>
+   ```
+
+## Claims to make precisely
+
+- The ERP is a replaceable mock behind the system-of-record interface.
+- Supplier statements remain claims until checked against records and policy.
+- The system prices and ranks options; it does not create purchase orders.
+- Rehearsal is the safe default and the live path requires multiple deliberate
+  confirmations.
