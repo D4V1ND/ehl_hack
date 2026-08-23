@@ -59,7 +59,7 @@ export function SessionSidebar({
                       isActive={incident.caseId === activeSession}
                       onClick={() => setActiveSession(incident.caseId)}
                       className={cn(
-                        "mb-px text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted data-active:bg-muted data-active:font-normal data-active:text-foreground py-1!",
+                        "mb-px text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted data-active:bg-muted data-active:font-normal data-active:text-foreground py-0.5! h-10",
                         hasUpdate &&
                           "font-semibold text-foreground data-active:font-semibold"
                       )}
