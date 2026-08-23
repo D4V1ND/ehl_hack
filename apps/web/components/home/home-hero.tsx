@@ -1,23 +1,30 @@
-import { OpenChatButton } from "@/components/home/open-chat-button"
-import { Logo } from "@/components/logo"
+import { OpenChatButton } from "@/components/home/open-chat-button";
+import { Logo } from "@/components/logo";
 
 export function HomeHero({ presentation = false }: { presentation?: boolean }) {
-  const heightClass = presentation ? "h-full min-h-0" : "min-h-svh"
+  const heightClass = presentation ? "h-full min-h-0" : "min-h-svh";
+  const sectionSpacing = presentation
+    ? "px-6 pt-32 pb-28 sm:px-12 sm:pb-18 lg:px-20"
+    : "px-6 pt-32 pb-16 sm:px-12 sm:pb-18 lg:px-20";
 
   return (
     <main
       className={`relative overflow-hidden bg-background text-foreground ${heightClass}`}
     >
-      <div
-        className="absolute inset-0 bg-cover bg-[position:center_44%] sm:bg-[position:center_38%] lg:bg-[position:center_34%]"
-        style={{ backgroundImage: "url('/website/background-4.png')" }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/5 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background/25 via-transparent to-transparent" />
+      {presentation ? null : (
+        <>
+          <div
+            className="absolute inset-0 bg-cover bg-[position:center_44%] sm:bg-[position:center_38%] lg:bg-[position:center_34%]"
+            style={{ backgroundImage: "url('/website/background-4.png')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/5 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/25 via-transparent to-transparent" />
+        </>
+      )}
       <Logo className="absolute top-6 left-6 z-20 text-foreground sm:top-8 sm:left-10" />
 
       <section
-        className={`relative z-10 flex items-end px-6 pt-32 pb-16 sm:px-12 sm:pb-18 lg:px-20 ${heightClass}`}
+        className={`relative z-10 flex items-end ${sectionSpacing} ${heightClass}`}
       >
         <div className="grid w-full items-end gap-10 md:grid-cols-[minmax(0,1fr)_20rem] md:gap-16">
           <div className="max-w-3xl">
@@ -27,13 +34,14 @@ export function HomeHero({ presentation = false }: { presentation?: boolean }) {
               <span className="block">was missing.</span>
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-foreground/70 sm:text-lg">
-              Agents call suppliers, check every claim, and bring you the best
-              strategy.
+              {presentation
+                ? "SupplyOS finds suppliers, calls them, and ranks the best options."
+                : "Agents call suppliers, check every claim, and bring you the best strategy."}
             </p>
           </div>
           <OpenChatButton />
         </div>
       </section>
     </main>
-  )
+  );
 }
