@@ -22,6 +22,16 @@ The question: which single-screen beta layout best fits SupplyOS?
 - All descriptions contain at most 16 words.
 - The email fields are visual mocks and do not send data.
 
+## Pitch deck
+
+Open the interactive deck at:
+
+`http://localhost:3000/prototype/slides`
+
+Use the arrow keys, space bar, or the on-screen controls. Press `O` for the
+slide overview and `F` for fullscreen. Slide 4 uses the saved SupplyOS case
+screen and links to the live cockpit.
+
 ## Cockpit screen frames
 
 Open the HTML file directly. No build step.
