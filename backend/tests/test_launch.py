@@ -44,13 +44,15 @@ def cases(tmp_path) -> CaseStore:
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
-    monkeypatch.delenv("DEVIN_API_KEY", raising=False)
+    # Keep the key present-but-empty: get_settings() reloads .env values that
+    # are absent, and a launch test must never create a paid Devin session.
+    monkeypatch.setenv("DEVIN_API_KEY", "")
     store_ = CaseStore(tmp_path / "cases")
     app.dependency_overrides[store] = lambda: store_
     app.dependency_overrides[settings] = lambda: replace(
         get_settings(), github_token=None, github_repo=None
     )
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"origin": "http://localhost:3000"}) as test_client:
         yield test_client, store_
     app.dependency_overrides.pop(store)
     app.dependency_overrides.pop(settings)
@@ -165,12 +167,35 @@ def test_every_endpoint_the_prompt_names_exists(records):
         assert templated in known, f"{path} is not a route"
 
 
+def test_agent_openapi_does_not_expose_recursive_case_launch():
+    """A sourcing agent must not discover the human-only session launcher."""
+    case_operations = app.openapi()["paths"]["/cases"]
+
+    assert "get" in case_operations
+    assert "post" not in case_operations
+
+
+def test_agent_cannot_call_the_human_case_launcher(client):
+    test_client, store_ = client
+
+    response = test_client.post(
+        "/cases",
+        json={"part_id": "PRT-62052RS"},
+        headers={"origin": ""},
+    )
+
+    assert response.status_code == 403
+    assert store_.list_case_ids() == []
+
+
 def test_the_prompt_keeps_the_session_inside_the_case(records):
     """A sourcing session that starts editing code or opening PRs is a loose agent."""
     incident = incident_for_part(records=records, part_id="PRT-6204", today=TODAY)
     prompt = session_prompt(incident, records.get_part("PRT-6204"), "http://api").lower()
 
     assert "not a coding task" in prompt
+    assert "never call post http://api/cases" in prompt
+    assert "launches another devin" in prompt
     assert "pull request" in prompt  # named, so it can be forbidden
     assert "do not dial anyone yourself" in prompt
     assert "unknown" in prompt

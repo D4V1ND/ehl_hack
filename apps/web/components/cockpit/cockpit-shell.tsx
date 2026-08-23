@@ -1,46 +1,62 @@
-"use client"
+"use client";
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable"
+} from "@/components/ui/resizable";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export function CockpitShell({
   children,
+  leftSidebar,
   rightSidebar,
 }: {
-  children: ReactNode
-  rightSidebar?: ReactNode
+  children: ReactNode;
+  leftSidebar: ReactNode;
+  rightSidebar?: ReactNode;
 }) {
   return (
-    <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
-      <WorkspacePanels rightSidebar={rightSidebar}>{children}</WorkspacePanels>
-    </div>
-  )
+    <SidebarProvider
+      defaultOpen
+      className="h-dvh min-h-0 overflow-hidden"
+      style={
+        {
+          "--sidebar-width": "clamp(13rem, 17vw, 18rem)",
+        } as CSSProperties
+      }
+    >
+      {leftSidebar}
+      <SidebarInset className="h-dvh min-h-0 min-w-0 overflow-hidden">
+        <WorkspacePanels rightSidebar={rightSidebar}>
+          {children}
+        </WorkspacePanels>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
 
 function WorkspacePanels({
   children,
   rightSidebar,
 }: {
-  children: ReactNode
-  rightSidebar?: ReactNode
+  children: ReactNode;
+  rightSidebar?: ReactNode;
 }) {
-  const [showsCandidatePanel, setShowsCandidatePanel] = useState(false)
+  const [showsCandidatePanel, setShowsCandidatePanel] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 48rem)")
-    const update = () => setShowsCandidatePanel(media.matches)
+    const media = window.matchMedia("(min-width: 48rem)");
+    const update = () => setShowsCandidatePanel(media.matches);
 
-    update()
-    media.addEventListener("change", update)
-    return () => media.removeEventListener("change", update)
-  }, [])
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
-  if (!showsCandidatePanel) return children
+  if (!showsCandidatePanel) return children;
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
@@ -61,5 +77,5 @@ function WorkspacePanels({
         </>
       ) : null}
     </ResizablePanelGroup>
-  )
+  );
 }

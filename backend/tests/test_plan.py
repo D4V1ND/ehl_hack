@@ -38,13 +38,14 @@ def records():
 
 
 @pytest.fixture
-def client(tmp_path):
+def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEVIN_API_KEY", "")
     store_ = CaseStore(tmp_path / "cases")
     app.dependency_overrides[store] = lambda: store_
     app.dependency_overrides[settings] = lambda: replace(
         get_settings(), github_token=None, github_repo=None
     )
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"origin": "http://localhost:3000"}) as test_client:
         yield test_client, store_
     app.dependency_overrides.pop(store)
     app.dependency_overrides.pop(settings)

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Play, RotateCcw } from "lucide-react"
+import { Play } from "lucide-react"
 
 import {
   DATA_SOURCE,
@@ -16,7 +16,6 @@ import {
   initialProfile,
   initialShortages,
   placeCall,
-  runFlow,
 } from "@/lib/api/client"
 import type { CasePlan, CaseSnapshot, CompanyProfile, ShortageAlert, Stage } from "@/lib/contracts"
 import { useEvents } from "@/lib/api/use-events"
@@ -34,6 +33,7 @@ import { ShortageStrip } from "@/components/cockpit/shortage-strip"
 import { StageRail } from "@/components/cockpit/stage-rail"
 import { SupplierTable } from "@/components/cockpit/supplier-table"
 import { cn } from "@/lib/utils"
+import { openChat } from "@/lib/web-app"
 
 const SECTIONS = [
   { id: "shortage", label: "Shortage" },
@@ -58,7 +58,6 @@ export default function CockpitPage() {
   const [caseId, setCaseId] = React.useState("CASE-001")
   const [snapshot, setSnapshot] = React.useState<CaseSnapshot | null>(() => initialCase("CASE-001"))
   const [plan, setPlan] = React.useState<CasePlan | null>(() => initialPlan("CASE-001"))
-  const [running, setRunning] = React.useState(false)
   const [busy, setBusy] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -69,7 +68,6 @@ export default function CockpitPage() {
   }, [])
 
   React.useEffect(() => {
-    setRunning(false)
     if (!LIVE) {
       setSnapshot(initialCase(caseId))
       setPlan(initialPlan(caseId))
@@ -98,10 +96,10 @@ export default function CockpitPage() {
 
   // Replaying the recorded log is what "launch" does with the backend off. It is
   // the same read path live polling uses, at 4x -- not a second implementation.
-  const { events, complete } = useEvents(caseId, {
+  const { events } = useEvents(caseId, {
     replay: !LIVE,
     speed: 4,
-    enabled: LIVE || running,
+    enabled: LIVE,
   })
   const stage: Stage = events.length ? events[events.length - 1].stage : "detected"
 
@@ -188,36 +186,15 @@ export default function CockpitPage() {
             aside={
               <button
                 type="button"
-                onClick={() => {
-                  setRunning(true)
-                  // Live: the incumbent is held back so its call can be placed
-                  // from the Calls section while everyone else is already priced.
-                  if (LIVE) {
-                    void act("run", () =>
-                      runFlow(caseId, snapshot.incident.incumbent_supplier_id ?? null),
-                    )
-                  }
-                }}
-                disabled={busy === "run" || (running && !LIVE && !complete)}
-                className={cn(
-                  "inline-flex h-10 items-center gap-2 rounded-md px-[18px] text-[14px] font-medium transition-colors",
-                  running && !complete
-                    ? "cursor-not-allowed bg-hairline-soft text-muted-ink"
-                    : "bg-primary text-on-primary hover:bg-primary-active",
-                )}
+                onClick={() =>
+                  openChat(caseId, window.location.origin, (url) =>
+                    window.location.assign(url),
+                  )
+                }
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-[18px] text-[14px] font-medium text-on-primary transition-colors hover:bg-primary-active"
               >
-                {running && (LIVE ? busy !== "run" : complete) ? (
-                  <RotateCcw className="size-4" />
-                ) : busy === "run" || (running && !complete) ? null : (
-                  <Play className="size-4" />
-                )}
-                {busy === "run"
-                  ? "Sourcing…"
-                  : running
-                    ? LIVE || complete
-                      ? "Run again"
-                      : "Running…"
-                    : "Launch sourcing agent"}
+                <Play className="size-4" />
+                Launch sourcing agent
               </button>
             }
           >
@@ -349,7 +326,7 @@ export default function CockpitPage() {
           <div className="sticky top-16 flex h-[calc(100dvh-4rem)] flex-col gap-3 overflow-y-auto border-l border-hairline pl-4 pt-4">
             <PlanChecklist plan={plan} />
             <div className="min-h-[280px] flex-1">
-              <EventDock events={events} replaying={LIVE ? busy !== null : running && !complete} />
+              <EventDock events={events} replaying={LIVE && busy !== null} />
             </div>
           </div>
         </div>

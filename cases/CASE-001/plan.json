@@ -9,8 +9,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 0,
-    "started_at": "2026-08-23T03:01:09.530949Z",
-    "completed_at": "2026-08-23T03:01:09.530953Z"
+    "started_at": "2026-08-23T13:04:54.386354Z",
+    "completed_at": "2026-08-23T13:04:54.386366Z"
   },
   {
     "step_id": "erp:part",
@@ -22,8 +22,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 1,
-    "started_at": "2026-08-23T03:01:09.533537Z",
-    "completed_at": "2026-08-23T03:01:09.533538Z"
+    "started_at": "2026-08-23T13:04:54.388729Z",
+    "completed_at": "2026-08-23T13:04:54.388735Z"
   },
   {
     "step_id": "erp:stock",
@@ -35,8 +35,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 2,
-    "started_at": "2026-08-23T03:01:09.534848Z",
-    "completed_at": "2026-08-23T03:01:09.534849Z"
+    "started_at": "2026-08-23T13:04:54.390371Z",
+    "completed_at": "2026-08-23T13:04:54.390377Z"
   },
   {
     "step_id": "erp:open_pos",
@@ -48,8 +48,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 3,
-    "started_at": "2026-08-23T03:01:09.536536Z",
-    "completed_at": "2026-08-23T03:01:09.536539Z"
+    "started_at": "2026-08-23T13:04:54.391779Z",
+    "completed_at": "2026-08-23T13:04:54.391784Z"
   },
   {
     "step_id": "erp:price_history",
@@ -61,8 +61,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 4,
-    "started_at": "2026-08-23T03:01:09.538982Z",
-    "completed_at": "2026-08-23T03:01:09.538985Z"
+    "started_at": "2026-08-23T13:04:54.393358Z",
+    "completed_at": "2026-08-23T13:04:54.393364Z"
   },
   {
     "step_id": "suppliers:list",
@@ -74,8 +74,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 5,
-    "started_at": "2026-08-23T03:01:09.542947Z",
-    "completed_at": "2026-08-23T03:01:09.542949Z"
+    "started_at": "2026-08-23T13:04:54.397199Z",
+    "completed_at": "2026-08-23T13:04:54.397203Z"
   },
   {
     "step_id": "screening:policy",
@@ -87,8 +87,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 6,
-    "started_at": "2026-08-23T03:01:09.545019Z",
-    "completed_at": "2026-08-23T03:01:09.563194Z"
+    "started_at": "2026-08-23T13:04:54.398284Z",
+    "completed_at": "2026-08-23T13:04:54.408299Z"
   },
   {
     "step_id": "outreach:brief",
@@ -100,8 +100,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 7,
-    "started_at": "2026-08-23T03:01:09.565284Z",
-    "completed_at": "2026-08-23T03:01:09.565286Z"
+    "started_at": "2026-08-23T13:04:54.408853Z",
+    "completed_at": "2026-08-23T13:04:54.408854Z"
   },
   {
     "step_id": "claims:normalise",
@@ -109,12 +109,12 @@
     "group": "claims",
     "label": "Turning every answer into a structured claim",
     "status": "done",
-    "detail": "3 answers turned into claims",
+    "detail": "2 answers turned into claims",
     "supplier_ref": null,
     "dynamic": false,
     "seq": 8,
-    "started_at": "2026-08-23T03:01:09.581522Z",
-    "completed_at": "2026-08-23T03:01:09.581524Z"
+    "started_at": "2026-08-23T13:04:54.419037Z",
+    "completed_at": "2026-08-23T13:04:54.419038Z"
   },
   {
     "step_id": "costing:landed",
@@ -126,8 +126,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 9,
-    "started_at": "2026-08-23T03:01:09.583163Z",
-    "completed_at": "2026-08-23T03:01:09.591303Z"
+    "started_at": "2026-08-23T13:04:54.419657Z",
+    "completed_at": "2026-08-23T13:04:54.423782Z"
   },
   {
     "step_id": "review:package",
@@ -139,8 +139,8 @@
     "supplier_ref": null,
     "dynamic": false,
     "seq": 10,
-    "started_at": "2026-08-23T03:01:09.592421Z",
-    "completed_at": "2026-08-23T03:01:09.592423Z"
+    "started_at": "2026-08-23T13:04:54.424393Z",
+    "completed_at": "2026-08-23T13:04:54.424394Z"
   },
   {
     "step_id": "screening:SUP-KBY",
@@ -152,8 +152,8 @@
     "supplier_ref": "SUP-KBY",
     "dynamic": true,
     "seq": 101,
-    "started_at": "2026-08-23T03:01:09.549439Z",
-    "completed_at": "2026-08-23T03:01:09.549441Z"
+    "started_at": "2026-08-23T13:04:54.400485Z",
+    "completed_at": "2026-08-23T13:04:54.400490Z"
   },
   {
     "step_id": "screening:SUP-NPB",
@@ -165,8 +165,8 @@
     "supplier_ref": "SUP-NPB",
     "dynamic": true,
     "seq": 102,
-    "started_at": "2026-08-23T03:01:09.551398Z",
-    "completed_at": "2026-08-23T03:01:09.551399Z"
+    "started_at": "2026-08-23T13:04:54.402005Z",
+    "completed_at": "2026-08-23T13:04:54.402006Z"
   },
   {
     "step_id": "screening:SUP-PUL",
@@ -178,8 +178,8 @@
     "supplier_ref": "SUP-PUL",
     "dynamic": true,
     "seq": 103,
-    "started_at": "2026-08-23T03:01:09.553135Z",
-    "completed_at": "2026-08-23T03:01:09.553137Z"
+    "started_at": "2026-08-23T13:04:54.403310Z",
+    "completed_at": "2026-08-23T13:04:54.403311Z"
   },
   {
     "step_id": "screening:SUP-RUL",
@@ -191,8 +191,8 @@
     "supplier_ref": "SUP-RUL",
     "dynamic": true,
     "seq": 104,
-    "started_at": "2026-08-23T03:01:09.554576Z",
-    "completed_at": "2026-08-23T03:01:09.554577Z"
+    "started_at": "2026-08-23T13:04:54.404674Z",
+    "completed_at": "2026-08-23T13:04:54.404676Z"
   },
   {
     "step_id": "screening:SUP-NBT",
@@ -204,8 +204,8 @@
     "supplier_ref": "SUP-NBT",
     "dynamic": true,
     "seq": 105,
-    "started_at": "2026-08-23T03:01:09.558076Z",
-    "completed_at": "2026-08-23T03:01:09.558078Z"
+    "started_at": "2026-08-23T13:04:54.405897Z",
+    "completed_at": "2026-08-23T13:04:54.405898Z"
   },
   {
     "step_id": "screening:SUP-SKF",
@@ -217,21 +217,21 @@
     "supplier_ref": "SUP-SKF",
     "dynamic": true,
     "seq": 106,
-    "started_at": "2026-08-23T03:01:09.560289Z",
-    "completed_at": "2026-08-23T03:01:09.560291Z"
+    "started_at": "2026-08-23T13:04:54.407147Z",
+    "completed_at": "2026-08-23T13:04:54.407147Z"
   },
   {
     "step_id": "outreach:SUP-KBY",
     "case_id": "CASE-001",
     "group": "outreach",
     "label": "Calling Kugellager Bayern GmbH",
-    "status": "done",
-    "detail": "in_stock_allocated, 12,000 pcs at EUR 1.4897",
+    "status": "active",
+    "detail": "holding for the live call",
     "supplier_ref": "SUP-KBY",
     "dynamic": true,
     "seq": 101,
-    "started_at": "2026-08-23T03:01:09.566983Z",
-    "completed_at": "2026-08-23T03:01:09.571672Z"
+    "started_at": "2026-08-23T13:04:54.410466Z",
+    "completed_at": null
   },
   {
     "step_id": "outreach:SUP-RUL",
@@ -243,8 +243,8 @@
     "supplier_ref": "SUP-RUL",
     "dynamic": true,
     "seq": 102,
-    "started_at": "2026-08-23T03:01:09.568300Z",
-    "completed_at": "2026-08-23T03:01:09.573992Z"
+    "started_at": "2026-08-23T13:04:54.411012Z",
+    "completed_at": "2026-08-23T13:04:54.414318Z"
   },
   {
     "step_id": "outreach:SUP-SKF",
@@ -256,7 +256,7 @@
     "supplier_ref": "SUP-SKF",
     "dynamic": true,
     "seq": 103,
-    "started_at": "2026-08-23T03:01:09.569318Z",
-    "completed_at": "2026-08-23T03:01:09.578055Z"
+    "started_at": "2026-08-23T13:04:54.411568Z",
+    "completed_at": "2026-08-23T13:04:54.417554Z"
   }
 ]
