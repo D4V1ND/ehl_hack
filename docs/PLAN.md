@@ -12,18 +12,18 @@ This plan builds **on top of** [`docs/specs/supplyguard-plan-1-foundation-spec.m
 
 > **Procurement is an engineering problem. Give it an engineer.**
 >
-> A production line is 12 days from standing still because a part won't arrive. We file that shortage with Devin. Devin reads the system of record, works out exactly what's missing, finds candidate suppliers, dispatches **CALL-E** agents to phone them and gather claims, runs those claims against the factory's own records, through a **landed-cost model** (quantity price breaks, MOQ, freight, duty, carrying cost) and through the company's **compliance rules** — then ships the whole decision as a **pull request**: the case, the executable checks, the real call transcripts, the cost model, and a recommended purchase order.
+> A German automotive manufacturer is 12 days from a bearing shortage across its Munich and Stuttgart plants. Devin reads the system of record, finds Candidates, launches parallel **CALL-E** Outreach Tasks, checks Claims against Supplier Records, runs landed-cost and compliance models, and presents one Decision in SupplyOS. A human marks that Decision approved; approved is final.
 
 ### Why this wins the Cognition track
 
 | Track requirement | How we satisfy it |
 |---|---|
-| "output can be expressed as code" | A procurement decision **is a Git repo**: `sourcing_case.yaml`, `policy/*.py`, `cost_model.py`, `claims/*.json`, `decision.md`. Procurement-as-code. |
+| "output can be expressed as code" | Policy and landed-cost checks remain executable and testable; the user-facing output is an auditable Decision in SupplyOS. |
 | "programmatically triggers Devin sessions" | Reorder-point scanner / webhook / UI button → `POST /v1/sessions` on the Devin API. No human writes the prompt. |
-| "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Devin must get both green **before** opening the PR. |
-| "produces real artifacts without a human in the loop" | A merged PR, real recorded CALL-E calls, real claims, a costed PO recommendation. |
+| "gives them a way to check their own work" | Two `pytest` suites per case — the compliance policy and the cost model. Both must be green before the Decision is ready for approval. |
+| "produces real artifacts without a human in the loop" | Structured Claims, checked Strategies, and a costed recommendation are produced before human approval. |
 
-**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the *autonomous layer* — Devin is the procurement engineer, CALL-E is one of its tools, and the deliverable is reviewable, testable, diffable code.
+**The differentiator to say out loud:** everyone else will demo "an agent that calls a supplier." We demo the autonomous layer: Devin is the procurement engineer, CALL-E is one tool, checks are executable, and the human approves one auditable Decision in SupplyOS.
 
 ---
 
@@ -98,11 +98,11 @@ Enough to reject a supplier **by name, citing the rule that rejected it** — th
 
 The foundation spec explicitly puts comparison and decision-making out of scope: *"It never compares those claims against the factory's own records or makes any purchasing decision."* That's the right call for Plan 1, but **the Cognition track grades exactly that layer** — the autonomous decision and the artifact it produces. Foundation-only, we have a well-engineered call-logging tool and no answer to "where does Devin do the work?" So Plan 2 (§5, §6 Slice D) is the graded deliverable, not a nice-to-have. Plan 1 is the substrate; Plan 2 is the submission.
 
-**Three genuine conflicts to settle:**
+**Three implementation choices now settled:**
 
-1. **Demo scale.** The spec's demo data is 12 units needed / 4 on hand → shortfall of **8 units**. At 8 units there are no quantity price breaks, no freight-mode trade-off, no split order, no carrying cost — the entire cost engine in §5 has nothing to chew on, and the decision is trivially "call the preferred supplier." **Proposal:** keep the 4-supplier fixture shape exactly as specified, but scale the incident to a realistic production quantity (e.g. 40 000 pcs against a 12-day line stop) and give each supplier record price-break tiers. Small data change, and it's the difference between a demo with a punchline and one without.
-2. **Claims are per-supplier; decisions are per-case.** The spec has no case/incident-scoped artifact directory. We need `cases/<case_id>/` as the unit Devin commits, with claims filed underneath it. Additive, but it needs agreeing.
-3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** Read as permanent, it forbids the submission. **Proposal:** it stays true in the strict sense — Devin *recommends*, with a human approving the PR — and we say so explicitly, because "the human approves the merge" is a better answer to a judge's governance question than "it buys things autonomously."
+1. **Demo scale.** CASE-001 needs 40,000 units, has 8,000 on hand, and has a 32,000-unit shortfall. Five Candidates create enough price, freight, allocation, and compliance variation for a split Strategy.
+2. **Claims are per-supplier; Decisions are per-case.** Operational SQLite stores both scopes and their relationship. The fixture-driven Cockpit preserves the same boundary until API integration.
+3. **"Never makes a purchasing decision" as a permanent rule vs. a Plan-1 boundary.** It stays true in the strict sense: Devin recommends, and a human marks the Decision approved in SupplyOS. Approved is final; there is no PR card or merge approval.
 
 ---
 
@@ -115,36 +115,40 @@ The five steps, in order — and the order is the whole point. Most hackathon te
 | We assumed we need… | Interrogated | Verdict |
 |---|---|---|
 | A real ERP | Judges see JSON from an endpoint either way | ❌ mock behind the adapter |
-| A database | A case is ~8 files and we want them in Git anyway | ❌ **the repo is the database** |
+| A production database in this fixture UI | The Cockpit rehearsal must run with no backend | ⚠️ backend Cases use SQLite; Cockpit uses fixtures now |
 | User accounts / auth | Nobody logs into a 4-minute demo | ❌ delete |
-| An approve/reject workflow in-app | Merging the PR *is* the approval | ❌ read-only review view |
+| A PR-based approve/reject workflow | Approval belongs on the Decision in SupplyOS | ❌ delete PR and merge approval |
 | Transcript→JSON extraction | CALL-E's `recipient_result_schema` does it | ❌ delete |
 | A parallel call dispatcher | CALL-E `recipients[]` is the dispatcher | ❌ delete |
 | WebSockets for live updates | Append-only event log + 2s poll looks identical on stage | ❌ delete |
 | Calling Chinese suppliers | CALL-E has no CN region | ❌ → email/Alibaba channel |
-| A real PO PDF | A committed `po_draft.md` is more on-thesis | ⚠️ downgrade |
+| A real PO PDF | The Cockpit Decision carries the approval evidence | ❌ delete |
 | Many part classes | One part told well, with `part_class` as the seam | ⚠️ one primary, one secondary |
-| **Devin: API-triggered, self-checking, artifact-emitting** | **This is the graded requirement** | ✅ **the only thing truly required** |
+| **Devin: API-triggered and self-checking** | **This is the graded requirement** | ✅ **the only thing truly required** |
 
 ### Step 2 — Delete the part or process
 
-Deleted outright: Postgres, ORM/migrations, auth, Docker Compose orchestration, the email channel *on the MVP path*, Alibaba automation, the dispatcher, the extraction layer, WebSockets, multi-tenancy.
+Deleted outright: Postgres, Supabase, auth, Docker Compose orchestration, the email channel *on the MVP path*, Alibaba automation, the extraction layer, WebSockets, and multi-tenancy.
 
-The big one, and the one that makes the pitch coherent: **delete the database.** State lives in `cases/<case_id>/` as files Devin writes and commits; the UI reads a served JSON index of that directory. The artifact *is* the datastore, so there's zero gap between what the system knows and what the judges can review.
+**SQLite is the operational backend datastore.** The Cockpit remains fixture-driven and needs no backend. Supabase is explicitly ignored. Files can remain exportable audit artifacts, but the repository is not the operational datastore.
 
 > Musk's caveat: if you don't add back ~10% of what you deleted, you didn't delete enough. Expect to re-add the email channel and the PO PDF late. Fine.
 
 ### Step 3 — Simplify and optimise (only now)
 
+- **One Turborepo** with three workspaces: `apps/web` owns SupplyOS, `apps/erp` owns the mock system of record UI, and `apps/api` owns FastAPI plus SQLite. Calls and Decisions stay in SupplyOS.
+- **One external entry contract:** the ERP opens `${NEXT_PUBLIC_SUPPLYOS_URL}?case=<case_id>` in a new tab. The URL carries only the Case ID; SupplyOS reads trusted records through FastAPI.
 - **One** FastAPI process serves the Devin tool endpoints *and* the UI read API. No service mesh.
-- **One** contracts module (Pydantic) → JSON Schema exported for the UI **and** for CALL-E's `recipient_result_schema`. One source of truth, three consumers, contract drift impossible.
-- **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 3 real claims — and **the cheapest unit price is not the right answer** (§5).
+- **One** PR 22-derived contracts module uses Pydantic to generate JSON Schema and TypeScript. The UI and CALL-E schema consume those artifacts.
+- **One** `CaseModule` owns Case creation, durable reads, immutable Events, deterministic execution, and final approval.
+- **Two** SQLite boundaries keep trusted ERP records separate from operational Case state. Rebuilding ERP seed data never deletes Cases.
+- **One** scenario, seeded for drama: incumbent slips, 12 days to line stop, 5 Candidates, 1 rejected by compliance, 1 whose stock turns out to be allocated elsewhere, 4 Claims — and **the cheapest unit price is not the right answer** (§5).
 - Policy rules and cost functions as pure functions over dataclasses. No rules engine, no DSL.
 
 ### Step 4 — Accelerate cycle time
 
-- `make demo` runs a full case end-to-end in **under 90 seconds** in rehearsal mode with a cached Devin transcript. You should run it 50× on Saturday.
-- `make replay CASE=001` replays a recorded event log into the UI at 4× speed — the frontend never waits on the backend, and it's the fallback if venue wifi dies on stage.
+- `POST /cases` runs a full Case synchronously in deterministic rehearsal.
+- Cockpit Replay restarts the current client fixture without mutating backend Case state.
 - Fixture-first everywhere: every slice ships its fake before its real.
 
 ### Step 5 — Automate (last)
@@ -153,15 +157,15 @@ Only once a human-triggered case runs green end-to-end: switch on the reorder-po
 
 ### The MVP as one testable sentence
 
-> `python -m orchestrator.run --case CASE-001` (or the cron detector firing) launches a real Devin session that reads the system of record, produces 5 candidates, filters them through the policy rules, gets 3 claims back through CALL-E (rehearsal or live), checks each claim against our records, computes landed cost with quantity breaks and freight, ranks the options including a split-order strategy, gets both `pytest` suites green, and opens a GitHub PR with the case, claims, policy report, cost model and PO draft — **with no human input after the trigger.** The cockpit shows all of it live.
+> `POST /cases` starts the configured Case runner, reads the system of record, produces five Candidates, runs parallel Outreach Tasks, checks Claims against Supplier Records, computes Landed Cost, and persists a checked split-order Strategy. The Cockpit shows the run, then a human marks the Decision approved in SupplyOS.
 
 Everything else in this document is optional.
 
 ### The hour-3 walking skeleton — build this before anything pretty
 
-End-to-end, ugly, all rehearsal, one command: trigger → Devin session created → reads one hardcoded part from the stub API → gets one saved call result back → writes a two-line `decision.md` → opens a PR → UI shows "done" + PR link.
+End-to-end, ugly, all rehearsal, one command: trigger → deterministic Case runner → recorded provider results → checked Decision → UI shows ready for approval.
 
-**Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose. Full task spec in §11 — it's one person, ~2 hours, and it should start the moment the contracts are frozen.
+**Once that loop is closed, every remaining task is fill-in-the-blank** and can be done in parallel with no integration risk. Teams that skip the skeleton integrate at hour 20 and lose.
 
 ---
 
@@ -171,17 +175,19 @@ The single most important artifact of the weekend. Pydantic models, reviewed by 
 
 ```python
 # --- from the foundation spec, unchanged in meaning ---
-Incident       = { case_id, part_id, qty_required, qty_on_hand, line_stop_at,
-                   line_stop_cost_per_hour, expedite_fee, currency }   # shortfall = required - on_hand, floored at 0
+Incident       = { case_id, part_id, plant_id, production_line, plants:[...],
+                   qty_required, qty_on_hand, needed_by, line_stop_at,
+                   line_stop_cost_per_hour, currency }   # shortfall = required - on_hand, floored at 0
 SupplierRecord = { supplier_id, name, phone (E.164, masked on display), country, locale,
                    part_id, approved, preferred, contract_unit_price: Decimal,
                    standard_lead_days, certification, certification_expires_at,
                    known_allocations, max_historical_fill }
-Claim          = { supplier_id, round, call_id, qty_offered, earliest_ready_text,
-                   price_quoted: yes|no|unknown, unit_price: Decimal|None, currency,
+Claim          = { task_id, case_id, supplier_ref, round, call_id, qty_offered,
+                   earliest_ready_text, price_quoted: yes|no|unknown,
+                   unit_price: Money|None, price_breaks:[...], currency,
                    certification_current: yes|no|unknown, part_number_confirmed: yes|no|unknown,
                    stock_status: free_in_stock|in_stock_allocated|to_be_made|unavailable|unclear,
-                   confidence, evidence:[...] }
+                   transcript:[...], summary, confidence, evidence:[...] }
 
 # --- added by this plan ---
 Part        = { part_id, sku, description, spec:{...}, unit, criticality,
@@ -191,19 +197,50 @@ Candidate   = { case_id, supplier_ref, confidence, why_matched, channel,
 OutreachTask= { task_id, case_id, supplier_ref, channel:"voice"|"email"|"marketplace",
                 brief:{part_spec, qty, needed_by, target_price, floor_price,
                        must_ask:[price_breaks, moq, lead_time, incoterm, cert, stock_status]} }
-PriceBreak  = { min_qty, unit_price: Decimal }
+PriceBreak  = { min_qty, unit_price: Money }
 LandedCost  = { supplier_ref, qty, goods_cost, freight, duty, tooling, carrying_cost,
                 expedite_surcharge, total, unit_effective, breakdown_md }
 OrderLine   = { supplier_ref, qty, mode:"air"|"sea"|"road", eta, landed: LandedCost }
 Strategy    = { lines:[OrderLine], total_cost, coverage_date, risk_score, rationale }
-Decision    = { case_id, strategies:[Strategy], recommended, runner_ups,
-                policy_report_url, cost_report_url, pr_url }
-Event       = { case_id, ts, actor:"devin"|"calle"|"system", stage, level, message, payload }
+Decision    = { case_id, strategies:[Strategy], recommended_strategy_id, runner_up_ids,
+                rationale_md, policy_report_url, cost_report_url, devin_session_url,
+                decided_at, revision, checks:{policy_passed,cost_model_passed},
+                status:"ready"|"approved", approved_at, approved_by }
+Event       = { seq, case_id, ts, actor:"devin"|"calle"|"system"|"human",
+                stage, level, message, payload }
 ```
 
 **`Claim` does double duty**: it is also CALL-E's `recipient_result_schema` (the spec's "answer sheet"), exported as JSON Schema from the same model. `price_breaks` is added to the answer sheet — the call must ask for tiers, not just one price.
 
-The `Event` log is what makes the UI feel alive *and* makes debugging possible: `GET /cases/{id}/events`, append-only, everything writes to it.
+Every monetary field uses exact `Decimal` arithmetic. Public JSON serializes money as text, such as `"1.6400"` and `"94880.00"`.
+
+The `Event` log is append-only. SQLite assigns each per-Case `seq` once at commit. Reads never merge memory Events or renumber stored Events.
+
+### Public Case contract
+
+The Cockpit uses five public routes. `/flow/*`, `/tools/*`, provider routes, and artifact exports are not Cockpit dependencies.
+
+| Route | Success behavior | Main errors |
+|---|---|---|
+| `POST /cases` | `201`; persists the Incident, runs the configured runner, and returns the PR 22-compatible open receipt | `404` unknown Part; `409` duplicate explicit Case ID; `422` invalid body |
+| `GET /cases` | `200`; returns public summaries, newest first with a stable Case-ID tie-breaker | No Cases returns `[]` |
+| `GET /cases/{case_id}` | `200`; returns one consistent public snapshot and its Event high-water mark | `404` unknown Case |
+| `GET /cases/{case_id}/events?since=N` | `200`; returns committed Events where `seq > N`, ordered by `seq` | `404` unknown Case; `422` invalid cursor |
+| `POST /cases/{case_id}/decision/approve` | `200`; atomically approves one ready, passing revision and appends one human Event | `404` missing Case or Decision; `409` conflict; `422` invalid body |
+
+The default backend runner is deterministic and synchronous. It reads recorded provider results from `apps/api/backend/outreach/fixtures/` and makes no network request. Recorded provider output is the only provider fake. The same defensive normalizer handles recorded and provider output.
+
+A malformed result becomes a confidence-zero Claim. Claims below `0.40` remain auditable, but cannot affect policy, Landed Cost, Strategy, or Decision output. Claims remain separate from trusted Supplier Records at every layer.
+
+Operational state lives in `apps/api/backend/casestore/cases.db` by default. It stores Incident snapshots, Candidates, Outreach Tasks, Claims, Decisions, and Events. Trusted Part, stock, Supplier Record, and company-policy data remains in the ERP adapter's separate SQLite database.
+
+Public routes use explicit safe projections. Public Claims exclude raw provider output, call IDs, provider storage URLs, and notes. Public Supplier Records exclude email and marketplace URLs. Public Decisions and summaries exclude pull-request URLs. Event payload keys are allowlisted, and public free text is recursively scrubbed.
+
+`last_event_seq` comes from the same read transaction as the snapshot. `since` is exclusive. Event cursors remain stable after restart.
+
+A Decision exists in `ready` only after policy and cost checks pass. Approval records `approved_at`, `approved_by`, and one `human` Event in the same transaction. An identical retry is idempotent. Approved is final and never places an order.
+
+CASE-001 produces five Candidates and four Claims. Shenzhen fails only `blocked_origin_country`; Munich Motion reports `in_stock_allocated`. The recommendation orders 6,400 SKF units by air and 25,600 FAG units by sea for `"94880.00"` total.
 
 ---
 
@@ -239,22 +276,37 @@ Four decisions Devin then makes on top of the model — each a genuine trade-off
 Each is a demoable strip through the whole stack, not a layer. Each ships **its fake before its real**. Ownership TBD.
 
 ### SLICE A — Cockpit UI
+
+Slice A lives in `apps/web`. It does not import product components from the mock ERP.
+
+One Cockpit route: `/chat`. The landing stays at `/` and opens the Cockpit directly. There is no `/dashboard`, no Dashboard navigation, and no additional product route. The ERP still owns the live stock picture. CASE-001 is a bearing Incident for a German automotive manufacturer with Munich and Stuttgart plants.
+
+The Cockpit composes [AI Elements](https://elements.ai-sdk.dev/) (`Conversation`, `Message`, `PromptInput`, `Tool`, `Task`) and a local 24×24 `DotLoader` for in-flight states.
+
+The prototype enters an existing Session, matching an external ERP link. The sidebar lists fixture Sessions by part label; every selection opens the same CASE-001 rehearsal. The linked Incident appears inline in the first user message, and a bottom composer accepts local follow-up messages. Its temporary submission delay, varied tool waits, streamed summaries, and stop behavior are recorded in [`deterministic-rehearsal.md`](deterministic-rehearsal.md) for removal when the live Devin transport arrives.
+
+`/chat` has the main conversation and one resizable, closable **Candidate** panel. The Session sidebar spans 10–20% of the viewport; the Candidate panel spans 20–50%. It has no file tree and no **Files | Results** tabs. Candidate rows use a compact trigger containing only the Candidate name, a short Supplier Record description, a state-coloured status pebble, and a chevron. Rows expand independently for detail. Toggling the Candidate panel preserves the conversation and its scroll position. Outreach Tasks progress in parallel. When the deterministic run completes, its messages and borderless Tool calls collapse into one count-labelled disclosure with muted Tool icons. Opening the disclosure preserves the viewport, while one deterministic recommendation remains visible below it. `?call=<id>` opens a large call modal, while `?mock=true` opens its first fixture directly for UI review. The call modal uses equal resizable History, voice, and Transcript panels. One full-width fixed header holds Incident context, Replay, and Candidate restore; its compact state omits the part number because expanded context includes it. Thread content, Tool calls, the borderless upward-expanding Decision bar, and the composer use `w-full` in one centred column capped at 50% of the viewport. The Decision bar uses total cost as its compact title without a subtitle or duplicate trailing cost. Only the conversation between the header and bottom dock scrolls.
+
 | # | Deliverable |
 |---|---|
-| A1 | **Shortage dashboard** — parts at risk, hours-to-line-stop, stock vs. reorder point, cost-of-standing-still, "Launch sourcing agent" button |
-| A2 | **Case timeline** — stages live from the event feed, with the Devin session link |
-| A3 | **Supplier board** — candidate cards: matched / compliance-passed / called / claimed / **rejected + the rule that rejected it**, with `stock_status` front and centre |
-| A4 | **Live calls panel** — which CALL-E calls are in flight, status, transcript streaming in. **Masked numbers only.** |
-| A5 | **Claim vs. record comparison** — side by side: what they said next to what our contract says, with the delta highlighted. Plus landed-cost breakdown, price-break curve, and **the split-order strategy** with Devin's pick highlighted |
-| A6 | **Decision view** — rationale, runner-ups, link to the GitHub PR |
+| A0 | **Direct entry** — `/` links to `/chat`; the resizable sidebar lists one-line, icon-free fixture Sessions that all render the same CASE-001 rehearsal. Selected Sessions use a muted background and foreground text. Unselected Sessions use muted text. Completed Sessions use bold foreground text |
+| A1 | **Incident context** — the first user message contains an inline light-neutral CASE-001 mention with foreground text and one accent pebble, while compact Munich and Stuttgart plant context shows the 6204-2RS bearing shortage |
+| A2 | **Run control** — the current step appears inline during playback; a secondary Replay Button lives in the single conversation header |
+| A3 | **Candidate panel** — one closable panel contains compact, independently expandable Candidate rows with short descriptions and matched, compliance-passed, claimed, or rejected status pebbles; a top-right header icon restores it |
+| A4 | **Parallel Outreach Tasks and calls** — tasks progress together; a large `?call=<id>` modal shows timestamped call activity, a System-first transcript with bubbles only for Candidate turns, masked call state, animated voice activity, and an expandable Claim with Evidence. `?mock=true` opens the first fixture directly |
+| A5 | **Claim versus Supplier Record** — completed-flow messages keep the separation explicit, while call detail keeps Claim evidence available for audit |
+| A6 | **Decision bar** — borderless and fixed above the composer, with details that expand upward for rationale, runner-ups, and checks. A human marks the Decision approved in SupplyOS; approved is final. No PR card or merge approval |
 
-**Unblock:** build 100% against contract fixtures + `make replay`; the UI must be fully demoable with the backend switched off. **DoD:** the demo command tells the whole story with no backend running.
+**Data:** The backend Case path uses SQLite. The current Cockpit remains fully fixture-driven, works with no backend, and explicitly ignores Supabase. **DoD:** the rehearsal tells the whole story from `/chat` with no backend running.
 
 ### SLICE B — Core API, system of record & seed data
+
+Slice B lives in `apps/api`. Its generated SQLite database remains local and gitignored.
+
 | # | Deliverable |
 |---|---|
 | B1 | **Seeded mock system of record** behind the spec's two-question adapter, ERPNext-shaped field names. ~40 parts, BOMs, stock, reorder points, open POs, 15 suppliers with price history **and price-break tiers**, 2 plants. *Believable data is not optional — the demo lives or dies here.* |
-| B2 | **Case store + event log** — files under `cases/<id>/`, `GET /cases/{id}/events` |
+| B2 | **Case store + Event log** — operational SQLite behind the five public Case routes; stable cursors, safe projections, and durable approval; fixtures stand in for it in the current UI |
 | B3 | **Devin tool endpoints** — `/tools/part/{id}`, `/tools/stock`, `/tools/suppliers`, `/tools/price_history`, `/tools/alternates`, `POST /tools/outreach`, `POST /tools/claims`. Boring, fast, documented, stable. |
 | B4 | **Shortage detector** — reorder-point + open-PO-delay scan → launches a Devin session. The "no human in the loop" trigger. *(Step 5 — build last.)* |
 | B5 | **Company profile YAML** — legal entity, country, blocked origin countries, required certs **per part class**, audit requirements, budget thresholds, WACC + warehousing rate for carrying cost |
@@ -264,7 +316,7 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 ### SLICE C — CALL-E outreach & negotiation
 | # | Deliverable |
 |---|---|
-| C1 | **Rehearsal dispatcher first** — `OutreachTask → Claim` from saved results, with price breaks and random delays. Ships hour 1; B and D develop against it all weekend. |
+| C1 | **Rehearsal dispatcher first** — `OutreachTask → recorded provider result → Claim` through the shared normalizer, with price breaks and zero network access. |
 | C2 | **CALL-E integration** — batch `POST /v1/calls`, our `Claim` JSON Schema as `recipient_result_schema`, `Idempotency-Key`, `metadata.case_id` |
 | C3 | **Webhook receiver** — `/calle/webhook` → normalise `structured_result` + `evidence` + `completion_confidence` + `transcript_turns` → `Claim` → event log. **Never raises** (spec rule): garbage in → confidence-0 claim. Needs a public tunnel (ngrok/cloudflared) — **set it up in hour 1, it's a classic time sink.** |
 | C4 | **The call script** — mandatory AI disclosure first, then the answer-sheet questions **including price-break tiers and the free-vs-allocated stock question**, negotiate within `[target, floor]`, never mention our contract price, confirm numbers back before hanging up |
@@ -275,22 +327,22 @@ Each is a demoable strip through the whole stack, not a layer. Each ships **its 
 
 **DoD:** one real call to a teammate's own number produces a schema-valid `Claim` end-to-end.
 
-### SLICE D — Devin orchestration & procurement-as-code
+### SLICE D — Devin orchestration & auditable sourcing
 The slice the judges are actually grading. Strongest Devin-API person; must not be a side job.
 
 | # | Deliverable |
 |---|---|
 | D1 | **Session launcher** — Devin API client: create session with structured prompt + `case_id`, stream status, capture session URL into the event log |
-| D2 | **Prompt pack / playbook** — versioned, in-repo: the procedure, the available tool endpoints, the artifacts to write, and the rule *"both test suites must be green before you open the PR"* |
+| D2 | **Prompt pack / playbook** — versioned, in-repo: the procedure, tool endpoints, outputs, and the rule *"both test suites must be green before the Decision is ready for approval"* |
 | D3 | **Policy-as-code** — the four rules from §2.5 as pure functions |
 | D4 | **Self-check suites** — `pytest` over the policy **and** the cost model; fail loudly. **This is the "checks its own work" requirement — name it explicitly on stage.** |
 | D5 | **Cost engine** (§5) — `cost_model.py` + strategy search over split orders and quantity breaks |
 | D6 | **Claim-vs-record verification** — the comparison the foundation spec deliberately left out: claimed price vs. contract price, claimed lead time vs. standard, `qty_offered` vs. `known_allocations`, certification claim vs. `certification_expires_at`. Low-confidence claims get distrusted, not used. |
-| D7 | **Artifact writer** — `cases/<id>/{sourcing_case.yaml, candidates.json, claims/*.json, policy_report.md, cost_report.md, decision.md, po_draft.md}` → branch → PR |
+| D7 | **Decision persistence** — store the case, Claims, policy and cost reports, Decision, and approval state in SQLite; allow audit exports |
 | D8 | **Web supplier research** — Devin searches for distributors matching the exact spec → `Candidate` records with `why_matched` and a contact channel |
 
-**Unblock:** you need only the contracts + stub. Start by launching one Devin session from a script that reads a fixture case and opens a PR with a hand-written `decision.md`. **Close the loop empty, then fill it.**
-**DoD:** one command → real session → real PR → both suites green → zero human input.
+**Unblock:** you need only the contracts and fixtures. Start with one Devin session that reads a fixture bearing case and produces a checked Decision. **Close the loop empty, then fill it.**
+**DoD:** one command → real session → Decision ready → both suites green → human approval in SupplyOS.
 
 ---
 
@@ -306,14 +358,11 @@ The panel reviews our work through **Entire**, which is already wired into this 
 
 Until that's answered, assume nothing. Everything below holds regardless:
 
-1. **One monorepo — this one.** Four top-level areas matching the slices. One repo = one review surface = one integration to configure.
+1. **One monorepo — this one.** `apps/web`, `apps/erp`, and `apps/api` provide one review surface and one integration to configure.
 2. **Everything lands through a PR. Nothing is pushed to `main` directly.** A direct push is invisible to PR-driven tooling — one lazy `git push origin main` is a hole in the audit trail.
 3. **Never force-push, never squash-merge, never rewrite history.** History *is* the evidence. Merge commits keep the trail intact. Entire's checkpoints are git refs — rewriting refs is exactly what breaks them.
-4. **Two PR streams, clearly labelled:**
-   - `feat/*` — the system being built (Devin sessions doing engineering work)
-   - `case/CASE-xxx` — the artifacts the *product* generates (Devin sessions doing procurement work)
-   The second stream is what proves autonomy. Have **several merged** by demo time, not one.
-5. **Every PR body carries its Devin session URL** (Devin's PR tooling adds this automatically — don't strip it). Prompt → diff → review → merge, fully traceable.
+4. **Development PRs stay separate from product Decisions.** `feat/*` PRs audit engineering work. Product cases live in SQLite and end as approved Decisions in SupplyOS.
+5. **Every development PR body carries its Devin session URL** when available. This engineering review flow is not product approval.
 6. **`AGENTS.md` at the repo root**, and keep `CLAUDE.md` in sync with it — conventions, how to run things, the tool endpoints, commit style. Makes every session reproducible and shows the panel our operating manual.
 7. **`DEMO.md`** — the exact commands to reproduce the demo from a clean clone. Costs 10 minutes; judges love it.
 8. **One Devin session per meaningful unit of work** — not one 40-hour session. Easier to audit, easier to point at on stage.
@@ -327,13 +376,13 @@ Hourly sync, 5 minutes, structured: **(1) what's green, (2) what I need from who
 | Phase | Focus | Gate |
 |---|---|---|
 | **H0–H1** | Together: freeze contracts, `AGENTS.md`, **resolve the Entire/Devin coverage question (§7)**, CALL-E accounts + keys, **public tunnel working**, agree the demo script | Contracts merged, tunnel reachable, Entire coverage confirmed |
-| **H1–H3** | **Walking skeleton** (§3) + each slice's fake running standalone | One command → empty PR + UI shows it |
+| **H1–H3** | **Walking skeleton** (§3) + each slice's fake running standalone | One command → checked fixture Decision in the UI |
 | **H3–H8** | Real logic per slice, still on fakes | Each slice demoable alone |
 | **H8** | **Integration checkpoint #1** — A↔B and D↔B real, C in rehearsal | One case end-to-end in rehearsal |
 | **H8–H14** | Real Devin session, cost + policy suites green, **first real CALL-E call** | |
 | **H14** | **Integration checkpoint #2** — everything real, one full case | 🎥 **Record the backup demo video the moment this goes green** |
 | **H14–H18** | Polish, better seed data, the compliance-rejection beat, the allocated-stock beat, the split-order beat, second case, optional session fan-out | |
-| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, get the `case/*` PRs merged | |
+| **Last 3h** | **Code freeze.** Rehearse 3×, finish `DEMO.md` + README + architecture diagram, verify the approved Decision ending | |
 
 Two rules that save hackathons: **record the backup video the first time the happy path works**, and **hard freeze 3 hours out, no exceptions.**
 
@@ -346,12 +395,12 @@ Two rules that save hackathons: **record the backup video the first time the hap
 | 1 | **Entire doesn't capture Devin's work** → the panel can't see the thing we're judged on | §7 — resolve in hour 1 by asking the sponsors directly |
 | 2 | **Real distributors don't cooperate on the phone** — IVR, gatekeeper, hangs up on a bot, no sales line | Validate in the **first 3 hours**: one person hand-dials two real distributors for 30 minutes and reports what actually happens. Worth more than any code written in that window. Demo with teammate personas. |
 | 3 | 20-call free tier burns out mid-Saturday | Rehearsal default; one account untouched for the demo |
-| 4 | Tunnel/webhook dies on venue wifi | Polling fallback behind the same interface; `make replay` for the UI |
+| 4 | Tunnel/webhook dies on venue wifi | Recorded provider results behind the same interface; Cockpit Replay for the UI |
 | 5 | Devin's decision looks like a black box | Policy tests + `cost_report.md` + runner-ups; show a **rejected** supplier and the exact rule |
 | 6 | Web search returns garbage suppliers | Curated shortlist of real bearing distributors seeded; free search is bonus, not the path |
 | 7 | Integration hell at hour 20 | Walking skeleton at H3 + the two checkpoints are mandatory |
 | 8 | Foundation-only scope means nothing to grade | §2.6 — Plan 2 is the submission, prioritise Slice D accordingly |
-| 9 | Scope creep into "central ERP brain" | Roadmap slide, not MVP. One part, one plant, one scenario. |
+| 9 | Scope creep into "central ERP brain" | Roadmap slide, not MVP. One part, two plants, one scenario. |
 | 10 | ACU budget spent on debugging | Fixture-driven prompt iteration, fast endpoints, webhooks not polling |
 
 ---
@@ -359,107 +408,5 @@ Two rules that save hackathons: **record the backup video the first time the hap
 ## 10. Open, deliberately deferred
 
 - **Slice ownership** — next conversation, after everyone has read this.
-- **The three conflicts in §2.6** — especially the demo scale. Needs a decision before B1 seed data is written.
 - **Session fan-out** (§2.4b) — decide at hour 14 based on whether the happy path is solid. Don't decide now.
-- **Name** — SupplyGuard is the working name and it's good. Alternatives floated: LineStop, Stockout.
-
----
-
-## 11. Slice 0 — the walking skeleton, as one assignable task
-
-**One person. ~2 hours. Starts the moment the contracts (§4) are frozen. Nobody else's real work can safely start in parallel until this is green.**
-
-> **Task: close the loop empty.** Make one command drive a real Devin session that reads a stub endpoint, receives one saved CALL-E result, writes a two-line `decision.md`, opens a real GitHub PR, and makes the cockpit show "done" plus the PR link. Every piece is a stub. Nothing is correct. Nothing is styled. **The only deliverable is that the loop closes.**
-
-The point is not the code — all of it gets thrown away or replaced. The point is that by hour 3 every wire in the system has had a real message pushed through it, so the remaining 15 hours are four people filling in blanks instead of four people discovering at hour 20 that their pieces don't fit.
-
-### How it flows
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Human
-    participant UI as Cockpit (Slice A)
-    participant API as Core API (Slice B)
-    participant Devin as Devin session (Slice D)
-    participant Fake as Outreach fake (Slice C)
-    participant GH as GitHub
-
-    Human->>UI: click "Launch sourcing agent"
-    UI->>API: POST /cases {part_id, qty_required}
-    API->>API: mkdir cases/CASE-001/ · Event(stage="created")
-    API->>Devin: POST /v1/sessions  (prompt + case_id)
-    Devin-->>API: session_id, session_url
-    API-->>UI: 202 {case_id, session_url}
-
-    rect rgb(245,245,245)
-    note over UI,API: UI polls every 2s for the whole run
-    UI->>API: GET /cases/CASE-001/events
-    API-->>UI: [Event, ...]
-    end
-
-    Devin->>API: GET /tools/part/BRG-6204-2RS
-    note right of API: STUB #1 — system of record<br/>hardcoded, ERPNext-shaped keys
-    API-->>Devin: {item_code, item_name, actual_qty, supplier_name}
-
-    Devin->>API: POST /tools/outreach {OutreachTask}
-    API->>Fake: dispatch (rehearsal — always)
-    note right of Fake: STUB #2 — CALL-E<br/>replays one saved response<br/>no network, no credits
-    Fake-->>API: {structured_result, transcript_turns, evidence, completion_confidence}
-    API->>API: normalise → Claim · Event(stage="claim_received")
-    API-->>Devin: Claim
-
-    Devin->>Devin: write cases/CASE-001/decision.md  (2 lines, wrong, fine)
-    Devin->>GH: branch → commit → open PR
-    GH-->>Devin: pr_url
-    Devin->>API: POST /cases/CASE-001/done {pr_url}
-    API->>API: Event(stage="done", pr_url)
-    UI-->>Human: "Done" · PR link · transcript
-```
-
-### The two stub APIs — this is the bit that was unclear
-
-They are **two different stubs with two different jobs**, and the skeleton person owns both temporarily, then hands each to its real owner:
-
-| | **Stub #1 — system of record** | **Stub #2 — CALL-E / outreach** |
-|---|---|---|
-| Endpoint | `GET /tools/part/{part_id}` | `POST /tools/outreach` |
-| Answers | "what is this part and how many do we have?" | "what did the supplier say?" |
-| Returns | one hardcoded part + stock + one supplier, using ERPNext field names (`item_code`, `actual_qty`, `supplier_name`) | one **saved CALL-E response**, replayed verbatim: `structured_result` (a `Claim`), `transcript_turns`, `evidence`, `completion_confidence` |
-| Stands in for | the mock ERP → **Slice B (B1/B3)** | the rehearsal dispatcher → **Slice C (C1/C3)** |
-| Network | none | **none** |
-
-**Yes, put the CALL-E stub in the MVP skeleton** — that was the open question and the answer is unambiguous:
-
-- It's what **freezes the `Claim` schema**, and `Claim` is the one contract that Slices A, C and D all depend on. Discovering its real shape at hour 14 is the single most expensive mistake available to us.
-- It costs **zero calls and zero credits** — it's a file read, so the 20-call free tier is untouched.
-- It gives Slice A something real to render on the live-calls panel and the claim-vs-record view from hour 3 instead of hour 12.
-- It makes the skeleton demoable as a *story* ("a supplier was asked and answered") rather than a plumbing test, which is what gets the team to actually keep it working.
-
-What **doesn't** go in the skeleton: real dialing, the negotiation script, the webhook, the policy rules, the cost model, web search, the real ERP, and any styling. All of those are Slices A–D.
-
-### Where the example transcript comes from
-
-Don't invent it by hand — a hand-written fixture is a guess at CALL-E's response shape, and the whole value of the stub is that the shape is *right*.
-
-`test/test_calle.py` already talks to the live API. So: **make exactly one real call, to your own phone, and save the raw response verbatim.**
-
-1. Set `CALLE_API_KEY`, `TEST_CALL_DESTINATION_NUMBER` (your own number), `CALLE_LIVE_TEST_CONFIRM=yes-call-my-phone` in your local `.env` — never committed.
-2. Place one call with the frozen `Claim` JSON Schema as `recipient_result_schema`. Read the "supplier" side yourself: give a price, a lead time, a quantity, and say the stock is *committed to another customer* so we capture `in_stock_allocated`.
-3. Save the **unmodified** response JSON to `fixtures/calle/recorded_001.json`, redacting only the phone number (masked per the repo rules). Commit it.
-4. Never call again during development. That one file is what the whole weekend runs against.
-
-One credit, spent deliberately, buys a correctly-shaped fixture and proves the CALL-E integration works on day one. Best-value call of the jam.
-
-### Done when
-
-- [ ] Contracts imported from the shared module — the skeleton must not define its own types.
-- [ ] `make skeleton` (or `python -m orchestrator.run --case CASE-001`) runs with **no arguments and no manual steps**.
-- [ ] A **real Devin session** is created via the API and its `session_url` is in the event log — not a local script pretending to be Devin. This is the requirement being graded; don't fake it here of all places.
-- [ ] `GET /cases/CASE-001/events` returns at least: `created → part_read → claim_received → decision_written → pr_opened → done`.
-- [ ] A **real PR** exists on this repo containing `cases/CASE-001/decision.md`.
-- [ ] The cockpit — unstyled is fine — shows the stage list, the transcript, and a clickable PR link.
-- [ ] `fixtures/calle/recorded_001.json` is committed and no test or run touches the network.
-- [ ] Total runtime **under 90 seconds**, because it's going to be run a few hundred times this weekend.
-
-Then hand over: stub #1 → whoever has Slice B, stub #2 → Slice C, the launcher and prompt → Slice D, the poll-and-render page → Slice A. Each replaces their stub behind the same URL, and the loop never breaks.
+- **Name** — settled as SupplyOS for every product surface. SupplyGuard remains the planning document's historical working name.

@@ -1,0 +1,36 @@
+# The shortages, as our own records see them. No supplier claim is involved yet.
+#
+# CASE-001 is the recorded acceptance story used by the deterministic runner.
+
+- case_id: CASE-001
+  part_id: PRT-6204
+  plant_id: PLANT-MUC
+  production_line: ASSY-3
+  qty_required: 40000
+  qty_on_hand: 8000
+  needed_by: 2026-09-03
+  line_stop_at: 2026-09-03T06:00:00Z
+  line_stop_cost_per_hour: '4000.00'
+  currency: EUR
+  incumbent_supplier_id: SUP-SKF
+  reason: >-
+    Confirmed supply slipped. Munich and Stuttgart need a 32 000-piece recovery
+    before the line-stop date.
+  plants:
+    - {plant_id: PLANT-MUC, name: Meridian Motors Munich, production_line: ASSY-3}
+    - {plant_id: PLANT-STR, name: Meridian Motors Stuttgart, production_line: ASSY-7}
+
+- case_id: CASE-002
+  part_id: PRT-M8X40
+  plant_id: PLANT-LEI
+  production_line: ASSY-1
+  qty_required: 180000
+  qty_on_hand: 22000
+  needed_by: 2026-09-11
+  line_stop_at: 2026-09-11T06:00:00Z
+  line_stop_cost_per_hour: '9200.00'
+  currency: EUR
+  incumbent_supplier_id: SUP-SHW
+  reason: >-
+    Consumption on ASSY-1 ran 18% above forecast for six weeks; on-hand is now
+    below the reorder point with no open PO covering the quarter.

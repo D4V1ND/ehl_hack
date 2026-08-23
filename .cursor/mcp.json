@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "devin": {
+      "url": "https://mcp.devin.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:DEVIN_API_KEY}"
+      }
+    }
+  }
+}
