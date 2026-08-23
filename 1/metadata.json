@@ -1,0 +1,79 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "01M0NZFWEBD5VGZDPTXZ511EZA",
+  "session_id": "01a02bf0-1b0a-7af1-92ed-81ebd118d4a5",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-23T00:14:26.80634Z",
+  "branch": "lorenzkrinner/send-streaming-controls",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/PLAN.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "31e2ff12fd09",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 158044,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 3901440,
+    "output_tokens": 18314,
+    "api_call_count": 44
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-23T00:14:26.773441Z",
+    "agent_lines": 0,
+    "agent_removed": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 10,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2735,
+      "user_lines_removed": 601,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".context/attachments/qBcw2F/PR instructions.md": 15,
+        "AGENTS.md": 113,
+        "CONTEXT.md": 49,
+        "app/chat/page.tsx": 13,
+        "app/layout.tsx": 40,
+        "components/cockpit/cockpit-chat.tsx": 462,
+        "docs/PLAN.md": 13,
+        "docs/adr/0001-claim-stock-status-enum.md": 7,
+        "test/test_calle.py": 287,
+        "ui/app/page.tsx": 77,
+        "ui/components/ui/alert.tsx": 76,
+        "ui/components/ui/attachment.tsx": 207,
+        "ui/components/ui/avatar.tsx": 109,
+        "ui/components/ui/bubble.tsx": 128,
+        "ui/components/ui/collapsible.tsx": 21,
+        "ui/components/ui/field.tsx": 238,
+        "ui/components/ui/input-group.tsx": 158,
+        "ui/components/ui/input.tsx": 20,
+        "ui/components/ui/label.tsx": 20,
+        "ui/components/ui/marker.tsx": 71,
+        "ui/components/ui/message-scroller.tsx": 131,
+        "ui/components/ui/message.tsx": 92,
+        "ui/components/ui/spinner.tsx": 10,
+        "ui/components/ui/table.tsx": 116,
+        "ui/components/ui/textarea.tsx": 18,
+        "ui/lib/case-001.ts": 224,
+        "ui/package-lock.json": 19,
+        "ui/package.json": 1
+      },
+      "user_removed_per_file": {
+        "AGENTS.md": 9,
+        "DESIGN.md": 537,
+        "ui/app/page.tsx": 55
+      }
+    }
+  ]
+}
