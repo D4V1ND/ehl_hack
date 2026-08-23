@@ -1,0 +1,9 @@
+it should open in a new tab, apart from that, yes commit your changes.
+
+---
+
+Create a consise doc on how you consolidated these two branches and store it somewhere in docs, where would you store it first? when I give green light, actually implement
+
+---
+
+maybe store it under plans/notes, go ahead
